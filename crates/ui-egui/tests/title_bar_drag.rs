@@ -50,6 +50,10 @@ impl Window {
     }
 }
 
+fn sent_move(h: &Harness) -> bool {
+    h.output().viewport_output.get(&ViewportId::ROOT).is_some_and(|v| v.commands.iter().any(|c| matches!(c, ViewportCommand::OuterPosition(_))))
+}
+
 #[test]
 fn dragging_the_empty_title_bar_moves_the_window_under_the_pointer() {
     let mut w = Window { h: harness(), at: pos2(300.0, 200.0), moves: 0, commands: Vec::new() };
@@ -60,6 +64,11 @@ fn dragging_the_empty_title_bar_moves_the_window_under_the_pointer() {
     // A steady drag, 10 px at a time: the window keeps pace, so the pointer stays put relative to it.
     for i in 1..20 {
         w.step(start + vec2(10.0, 0.0) * i as f32, None);
+        // A repaint with no pointer event in the middle of the drag must not move the window.
+        if i == 5 || i == 12 {
+            w.h.step();
+            assert!(!sent_move(&w.h), "a repaint without pointer input moved the window at i={i}");
+        }
     }
     // The 20th move arrives with the release.
     w.step(start + vec2(200.0, 0.0), Some(false));
@@ -69,10 +78,5 @@ fn dragging_the_empty_title_bar_moves_the_window_under_the_pointer() {
     // Repaints without pointer input leave it there.
     w.h.step();
     w.h.step();
-    assert!(
-        !w.h.output()
-            .viewport_output
-            .get(&ViewportId::ROOT)
-            .is_some_and(|v| v.commands.iter().any(|c| matches!(c, ViewportCommand::OuterPosition(_))))
-    );
+    assert!(!sent_move(&w.h));
 }

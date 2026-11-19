@@ -57,6 +57,9 @@ pub(super) fn drag_window(ui: &Ui, drag: &egui::Response) {
         if let (Some(outer), Some(press), Some(now)) = (outer, press, now) {
             ui.ctx().send_viewport_cmd(egui::ViewportCommand::OuterPosition(outer.min + (now - press)));
         }
+        if drag.drag_stopped() {
+            ui.data_mut(|d| d.remove_temp::<Option<egui::Pos2>>(drag.id));
+        }
     }
 }
 
