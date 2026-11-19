@@ -63,7 +63,7 @@
       <string>Slide</string>
       <key>LSItemContentTypes</key>
       <array>
-        <string>io.github.jeongeee.slide.presentation</string>
+        <string>ai.storyteller.deckcraft.presentation</string>
       </array>
     </dict>
     <dict>
@@ -116,12 +116,14 @@
     </dict>
   </array>
 
-  <!-- DeckCraft's own format: a zip of a JSON manifest plus media. -->
-  <key>UTExportedTypeDeclarations</key>
+  <!-- Open XML presentations; the system's own declaration wins when it has one. -->
+  <key>UTImportedTypeDeclarations</key>
   <array>
+    <!-- `.deckcraft` belongs to the original DeckCraft.app, which exports this type; Slide only
+         declares it so it can offer to open the files, never exporting the extension itself. -->
     <dict>
       <key>UTTypeIdentifier</key>
-      <string>io.github.jeongeee.slide.presentation</string>
+      <string>ai.storyteller.deckcraft.presentation</string>
       <key>UTTypeDescription</key>
       <string>DeckCraft Presentation</string>
       <key>UTTypeConformsTo</key>
@@ -129,8 +131,6 @@
         <string>public.data</string>
         <string>public.presentation</string>
       </array>
-      <key>UTTypeIconFile</key>
-      <string>Slide</string>
       <key>UTTypeTagSpecification</key>
       <dict>
         <key>public.filename-extension</key>
@@ -139,10 +139,6 @@
         <array><string>application/x-deckcraft</string></array>
       </dict>
     </dict>
-  </array>
-  <!-- Open XML presentations; the system's own declaration wins when it has one. -->
-  <key>UTImportedTypeDeclarations</key>
-  <array>
     <dict>
       <key>UTTypeIdentifier</key>
       <string>org.openxmlformats.presentationml.presentation</string>

@@ -37,6 +37,17 @@ class MacBundle(unittest.TestCase):
         self.assertEqual(info["CFBundleIdentifier"], "io.github.jeongeee.slide")
         self.assertTrue(all(t["LSHandlerRank"] == "Alternate" for t in info["CFBundleDocumentTypes"]))
 
+    def test_deckcraft_extension_is_imported_never_exported(self):
+        # The original DeckCraft.app owns `.deckcraft`; a second exporter would fight it in Launch Services.
+        info = plistlib.loads((ROOT / "packaging/macos/Info.plist.in").read_bytes())
+        for key in ("UTExportedTypeDeclarations", "UTImportedTypeDeclarations"):
+            for decl in info.get(key, []):
+                exts = decl.get("UTTypeTagSpecification", {}).get("public.filename-extension", [])
+                if "deckcraft" in exts:
+                    self.assertEqual(key, "UTImportedTypeDeclarations", decl["UTTypeIdentifier"])
+                    self.assertEqual(decl["UTTypeIdentifier"], "ai.storyteller.deckcraft.presentation")
+        self.assertNotIn("io.github.jeongeee.slide.presentation", plistlib.dumps(info).decode())
+
     def test_package_names(self):
         script = (ROOT / "packaging/macos/package.sh").read_text(encoding="utf-8")
         self.assertIn('APP="$WORK/Slide.app"', script)
@@ -119,6 +130,16 @@ class KoreanInstaller(unittest.TestCase):
             package.find(f"{WIX}SummaryInformation").attrib["Description"],
             package.find(f"{WIX}MajorUpgrade").attrib["DowngradeErrorMessage"],
         ] + [s.attrib["Description"] for s in wxs().iter(f"{WIX}Shortcut")]
+        for t in texts:
+            self.assertRegex(t, r"[\uac00-\ud7a3]", t)
+
+    def test_scope_dialog_and_launch_messages_are_korean(self):
+        wxi = ET.parse(ROOT / "packaging/windows/install-policy.wxi").getroot()
+        texts = [e.attrib["Message"] for e in wxi.iter(f"{WIX}Launch")]
+        for e in wxi.iter():
+            if e.tag in (f"{WIX}Dialog", f"{WIX}Control", f"{WIX}RadioButton"):
+                texts += [e.attrib[k] for k in ("Title", "Text") if k in e.attrib]
+        self.assertGreaterEqual(len(texts), 9)
         for t in texts:
             self.assertRegex(t, r"[\uac00-\ud7a3]", t)
 
