@@ -47,4 +47,12 @@ mod tests {
         }
         assert_eq!(super::pinned_key(&format!("{}\n", "ab".repeat(32))).unwrap(), vec![0xab; 32]);
     }
+
+    /// Slide's release public key is pinned in source. Changing it strands every installed copy
+    /// (they would no longer trust new releases), so a change here must be deliberate.
+    #[test]
+    fn pinned_release_key_matches_owner_key() {
+        let expected = "40e8c5e256a5a997475914c92d218b5dc561d8ffe71db0d154d9553e33991e83";
+        assert_eq!(super::public_key().unwrap(), super::manifest::decode_hex(expected).unwrap());
+    }
 }
