@@ -24,6 +24,18 @@
     ],
     [
       "-1",
+      "Software\\Classes\\JeongEEE.Slide.Presentation\\shell\\open\\command",
+      "",
+      "\"[#DeckcraftExe]\" \"%1\""
+    ],
+    [
+      "-1",
+      "Software\\Classes\\.deckcraft\\OpenWithProgids",
+      "JeongEEE.Slide.Presentation",
+      ""
+    ],
+    [
+      "-1",
       "Software\\Classes\\Applications\\slide.exe\\shell\\open\\command",
       "",
       "\"[#DeckcraftExe]\" \"%1\""

@@ -88,6 +88,8 @@ class WindowsInstall(unittest.TestCase):
         self.assertEqual(names, ["Slide (JeongEEE)"])
 
     def test_file_types_are_open_with_candidates_only(self):
+        # An <Extension> (also under a ProgId) writes `Software\\Classes\\.<ext>` default = the ProgId.
+        self.assertEqual(list(wxs().iter(f"{WIX}Extension")), [])
         # A value without a name on `Software\Classes\.<ext>` would take over the default app.
         for v in wxs().iter(f"{WIX}RegistryValue"):
             if re.fullmatch(r"Software\\Classes\\\.[^\\]+", v.attrib["Key"]):

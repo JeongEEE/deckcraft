@@ -57,12 +57,11 @@
           <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="Slide (JeongEEE)" Description="Slide presentations and slide shows" WorkingDirectory="INSTALLFOLDER" Advertise="no" />
         </File>
 
-        <!-- .deckcraft: DeckCraft's own format. -->
-        <ProgId Id="JeongEEE.Slide.Presentation" Description="DeckCraft Presentation" Icon="DeckcraftExe" IconIndex="0">
-          <Extension Id="deckcraft" ContentType="application/x-deckcraft">
-            <Verb Id="open" Command="Open" TargetFile="DeckcraftExe" Argument="&quot;%1&quot;" />
-          </Extension>
-        </ProgId>
+        <!-- .deckcraft: DeckCraft's own format, an "Open with" candidate only. No <Extension>: it
+             would set the extension's default app and take .deckcraft over from an installed DeckCraft. -->
+        <ProgId Id="JeongEEE.Slide.Presentation" Description="DeckCraft Presentation" Icon="DeckcraftExe" IconIndex="0" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\JeongEEE.Slide.Presentation\shell\open\command" Value="&quot;[#DeckcraftExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKMU" Key="Software\Classes\.deckcraft\OpenWithProgids" Name="JeongEEE.Slide.Presentation" Value="" Type="string" />
 
         <!-- "Open with" for PowerPoint formats, without becoming the default. -->
         <RegistryValue Root="HKMU" Key="Software\Classes\Applications\slide.exe" Name="FriendlyAppName" Value="Slide" Type="string" />
