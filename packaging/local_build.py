@@ -81,9 +81,14 @@ def build_source(d, output, source):
     def run(*args, **kwargs):
         return d.command(*args, cwd=source, **kwargs)
 
+    # An unprovisioned key would only surface when signing, after both builds are uploaded.
+    key = (source/'crates/update/public-key.hex').read_text().strip() if (source/'crates/update/public-key.hex').is_file() else ''
+    if not re.fullmatch(r'[0-9a-fA-F]{64}', key):
+        raise DeployError('공개키가 비어 있습니다. crates/update/public-key.hex에 업데이트 서명 공개키(64자리 hex)를 커밋한 뒤 다시 빌드하세요.')
     if d.args.platform == 'macos':
         require_universal_targets(d)
     run(os.sys.executable, 'packaging/test_fork_contract.py', capture=False, label='포크 설치 식별자 검증')
+    run(d.cargo, 'test', '--locked', '-p', 'deckcraft-ui-egui', '--test', 'fork_identity', capture=False, label='포크 식별자 검증(Rust)')
     run(d.cargo, 'test', '--locked', '-p', 'deckcraft-update', capture=False, label='자동 업데이트 회귀 검사')
     if d.args.platform == 'macos':
         run('bash', 'packaging/macos/package.sh', '--arch', 'universal', capture=False, label='macOS universal 빌드·DMG 패키징')

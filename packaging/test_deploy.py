@@ -443,6 +443,20 @@ class LocalDeployTest(unittest.TestCase):
             self.assertEqual(local_build.build(deployment,Path(folder)),['verified'])
         self.assertFalse(hasattr(local_build, 'prepare_i18n'))
 
+    def test_build_stops_before_compiling_when_public_key_is_empty(self):
+        import local_build
+        args=argparse.Namespace(platform='windows',version=None,finalize=False,draft=True,dry_run=False,key_file=None)
+        with patch.object(deploy,'ROOT',self.repo):
+            deployment=deploy.Deployment(args)
+        deployment.sha=self.sha; deployment.version='0.19.1'
+        with tempfile.TemporaryDirectory() as folder:
+            source=Path(folder)/'source'; (source/'crates/update').mkdir(parents=True)
+            for bad in ('','abc','zz'*32):
+                (source/'crates/update/public-key.hex').write_text(bad)
+                with patch.object(deployment,'command',side_effect=AssertionError('build started')), \
+                        self.assertRaisesRegex(deploy.DeployError,'공개키가 비어 있습니다'):
+                    local_build.build_source(deployment,Path(folder)/'out',source)
+
     def test_release_asset_change_during_confirmation_blocks_publication(self):
         self.ok('macos',draft=True); self.ok('windows',draft=True)
         original_hash=deploy.assets.file_hash
