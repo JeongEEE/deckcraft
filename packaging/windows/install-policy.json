@@ -1,7 +1,7 @@
 {
-  "id": "deckcraft",
-  "name": "DeckCraft",
-  "upgradeCode": "6F9C69E7-7825-40D2-BF26-C274DA676425",
+  "id": "slide",
+  "name": "Slide",
+  "upgradeCode": "1254CE28-A4BC-4E31-BA0A-DC5D959DA341",
   "sources": [
     "deckcraft.wxs"
   ],
@@ -12,67 +12,67 @@
   ],
   "payloads": [
     "NOTICE",
-    "deckcraft-cli.exe",
-    "deckcraft.exe"
+    "slide-cli.exe",
+    "slide.exe"
   ],
   "registry": [
     [
       "-1",
-      "Software\\Classes\\Applications\\deckcraft.exe",
+      "Software\\Classes\\Applications\\slide.exe",
       "FriendlyAppName",
-      "DeckCraft"
+      "Slide"
     ],
     [
       "-1",
-      "Software\\Classes\\Applications\\deckcraft.exe\\shell\\open\\command",
+      "Software\\Classes\\Applications\\slide.exe\\shell\\open\\command",
       "",
       "\"[#DeckcraftExe]\" \"%1\""
     ],
     [
       "-1",
-      "Software\\Classes\\Applications\\deckcraft.exe\\SupportedTypes",
+      "Software\\Classes\\Applications\\slide.exe\\SupportedTypes",
       ".deckcraft",
       ""
     ],
     [
       "-1",
-      "Software\\Classes\\Applications\\deckcraft.exe\\SupportedTypes",
+      "Software\\Classes\\Applications\\slide.exe\\SupportedTypes",
       ".pptx",
       ""
     ],
     [
       "-1",
-      "Software\\Classes\\Applications\\deckcraft.exe\\SupportedTypes",
+      "Software\\Classes\\Applications\\slide.exe\\SupportedTypes",
       ".potx",
       ""
     ],
     [
       "-1",
-      "Software\\Classes\\Applications\\deckcraft.exe\\SupportedTypes",
+      "Software\\Classes\\Applications\\slide.exe\\SupportedTypes",
       ".ppsx",
       ""
     ],
     [
       "-1",
       "Software\\Classes\\.pptx\\OpenWithProgids",
-      "DeckCraft.Presentation",
+      "JeongEEE.Slide.Presentation",
       ""
     ],
     [
       "-1",
       "Software\\Classes\\.potx\\OpenWithProgids",
-      "DeckCraft.Presentation",
+      "JeongEEE.Slide.Presentation",
       ""
     ],
     [
       "-1",
       "Software\\Classes\\.ppsx\\OpenWithProgids",
-      "DeckCraft.Presentation",
+      "JeongEEE.Slide.Presentation",
       ""
     ],
     [
       "-1",
-      "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\deckcraft.exe",
+      "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\slide.exe",
       "",
       "[#DeckcraftExe]"
     ]

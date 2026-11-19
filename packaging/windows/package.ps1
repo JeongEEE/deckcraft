@@ -1,11 +1,11 @@
 <#
 .SYNOPSIS
-  Build, sign and package DeckCraft for Windows.
+  Build, sign and package Slide for Windows.
 
 .DESCRIPTION
   Produces, in $env:DIST (default: dist/release):
-    deckcraft-<version>-windows-<arch>.msi            per-machine installer (WiX v5)
-    deckcraft-<version>-windows-<arch>-portable.zip   deckcraft.exe + deckcraft-cli.exe
+    slide-<version>-windows-<arch>.msi                installer (WiX v5), per-user by default
+    slide-<version>-windows-<arch>-portable.zip       slide.exe + slide-cli.exe
 
   The binaries link the C runtime statically (+crt-static), so neither the MSI nor the portable
   zip needs the Visual C++ redistributable. Signing is delegated to sign.ps1 (skipped with a
@@ -53,7 +53,7 @@ New-Item -ItemType Directory -Force -Path $Dist | Out-Null
 if (-not $env:DECKCRAFT_BUILD_SHA) { $env:DECKCRAFT_BUILD_SHA = (git -C $Root rev-parse HEAD 2>$null) }
 if (-not $env:DECKCRAFT_BUILD_DATE) { $env:DECKCRAFT_BUILD_DATE = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd') }
 
-Write-Output "DeckCraft $Version for Windows $Arch ($Target)"
+Write-Output "Slide $Version for Windows $Arch ($Target)"
 
 if (-not $SkipBuild) {
   # Static CRT: no VC++ redistributable needed. Scoped to the target so host build scripts and
@@ -97,9 +97,11 @@ Remove-Item -Recurse -Force $Stage -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $Stage | Out-Null
 # Dependency font notices are required even without optional craft-fonts.
 Copy-Item -LiteralPath (Join-Path $Root 'NOTICE') -Destination $Stage
-Copy-Item (Join-Path $Bin 'deckcraft.exe'), (Join-Path $Bin 'deckcraft-cli.exe') $Stage
+# The installed and portable files carry the fork's names; Cargo's binaries keep upstream's.
+Copy-Item (Join-Path $Bin 'deckcraft.exe') (Join-Path $Stage 'slide.exe')
+Copy-Item (Join-Path $Bin 'deckcraft-cli.exe') (Join-Path $Stage 'slide-cli.exe')
 
-& (Join-Path $PSScriptRoot 'sign.ps1') (Join-Path $Stage 'deckcraft.exe') (Join-Path $Stage 'deckcraft-cli.exe')
+& (Join-Path $PSScriptRoot 'sign.ps1') (Join-Path $Stage 'slide.exe') (Join-Path $Stage 'slide-cli.exe')
 
 # ---- font notices for the MSI ------------------------------------------------------------------
 # The portable ZIP already carries these notices; stage the complete files before MSI creation too.
@@ -115,7 +117,7 @@ if ($env:CRAFT_FONTS_DIR) {
 # ---- end font notices for the MSI --------------------------------------------------------------
 
 # ---- MSI ---------------------------------------------------------------------------------------
-$Msi = Join-Path $Dist "deckcraft-$Version-windows-$Arch.msi"
+$Msi = Join-Path $Dist "slide-$Version-windows-$Arch.msi"
 Invoke-Native 'WiX UI extension' { wix extension add -g WixToolset.UI.wixext/5.0.2 }
 Invoke-Native 'wix build' {
   wix build (Join-Path $PSScriptRoot 'deckcraft.wxs') -arch $Arch -ext WixToolset.UI.wixext `
@@ -130,7 +132,7 @@ Remove-Item -Force -ErrorAction SilentlyContinue ([IO.Path]::ChangeExtension($Ms
 & (Join-Path $PSScriptRoot 'sign.ps1') $Msi
 
 # ---- portable zip ------------------------------------------------------------------------------
-$Portable = Join-Path $TargetDir "windows-package\deckcraft-$Version-windows-$Arch-portable"
+$Portable = Join-Path $TargetDir "windows-package\slide-$Version-windows-$Arch-portable"
 Remove-Item -Recurse -Force $Portable -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $Portable | Out-Null
 Copy-Item (Join-Path $Stage '*.exe') $Portable
@@ -144,7 +146,7 @@ if ($env:CRAFT_FONTS_DIR) {
     Copy-Item $ofl.FullName (Join-Path $Portable "OFL-$($ofl.Directory.Name).txt")
   }
 }
-$Zip = Join-Path $Dist "deckcraft-$Version-windows-$Arch-portable.zip"
+$Zip = Join-Path $Dist "slide-$Version-windows-$Arch-portable.zip"
 Remove-Item -Force $Zip -ErrorAction SilentlyContinue
 Compress-Archive -Path $Portable -DestinationPath $Zip
 
@@ -152,8 +154,8 @@ Compress-Archive -Path $Portable -DestinationPath $Zip
 # here.
 $HostArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
 if ($Arch -ne 'arm64' -or $HostArch -eq 'arm64') {
-  Invoke-Native 'deckcraft-cli --version' { & (Join-Path $Stage 'deckcraft-cli.exe') --version }
+  Invoke-Native 'slide-cli --version' { & (Join-Path $Stage 'slide-cli.exe') --version }
 } else {
-  Write-Output "skipping deckcraft-cli --version: an $Arch build doesn't run on this $HostArch machine"
+  Write-Output "skipping slide-cli --version: an $Arch build doesn't run on this $HostArch machine"
 }
 Get-Item $Msi, $Zip | Format-Table Name, Length

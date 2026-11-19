@@ -7,13 +7,13 @@
   <key>CFBundleDevelopmentRegion</key>
   <string>en</string>
   <key>CFBundleDisplayName</key>
-  <string>DeckCraft</string>
+  <string>Slide</string>
   <key>CFBundleName</key>
-  <string>DeckCraft</string>
+  <string>Slide</string>
   <key>CFBundleExecutable</key>
-  <string>DeckCraft</string>
+  <string>Slide</string>
   <key>CFBundleIdentifier</key>
-  <string>ai.storyteller.deckcraft</string>
+  <string>io.github.jeongeee.slide</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundlePackageType</key>
@@ -29,7 +29,7 @@
   <key>DeckCraftBuildCommit</key>
   <string>@BUILD_SHA@</string>
   <key>CFBundleIconFile</key>
-  <string>DeckCraft</string>
+  <string>Slide</string>
   <key>LSApplicationCategoryType</key>
   <string>public.app-category.productivity</string>
   <!-- Must match MACOSX_DEPLOYMENT_TARGET in package.sh. Big Sur is the first release on
@@ -58,12 +58,12 @@
       <key>CFBundleTypeRole</key>
       <string>Editor</string>
       <key>LSHandlerRank</key>
-      <string>Owner</string>
+      <string>Alternate</string>
       <key>CFBundleTypeIconFile</key>
-      <string>DeckCraft</string>
+      <string>Slide</string>
       <key>LSItemContentTypes</key>
       <array>
-        <string>ai.storyteller.deckcraft.presentation</string>
+        <string>io.github.jeongeee.slide.presentation</string>
       </array>
     </dict>
     <dict>
@@ -121,7 +121,7 @@
   <array>
     <dict>
       <key>UTTypeIdentifier</key>
-      <string>ai.storyteller.deckcraft.presentation</string>
+      <string>io.github.jeongeee.slide.presentation</string>
       <key>UTTypeDescription</key>
       <string>DeckCraft Presentation</string>
       <key>UTTypeConformsTo</key>
@@ -130,7 +130,7 @@
         <string>public.presentation</string>
       </array>
       <key>UTTypeIconFile</key>
-      <string>DeckCraft</string>
+      <string>Slide</string>
       <key>UTTypeTagSpecification</key>
       <dict>
         <key>public.filename-extension</key>
