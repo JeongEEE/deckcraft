@@ -105,5 +105,48 @@ class WindowsInstall(unittest.TestCase):
             self.assertIn((row[1], row[2], row[3]), rows)
 
 
+class KoreanInstaller(unittest.TestCase):
+    """Only the installer screens (MSI, DMG) are Korean; the app's own text stays English."""
+
+    def test_wix_build_is_korean_with_english_fallback(self):
+        script = (ROOT / "packaging/windows/package.ps1").read_text(encoding="utf-8")
+        self.assertRegex(script, r"-culture ko-KR -culture en-US")
+
+    def test_wxs_texts_are_korean(self):
+        package = wxs().find(f"{WIX}Package")
+        self.assertEqual((package.attrib["Language"], package.attrib["Codepage"]), ("1042", "949"))
+        texts = [
+            package.find(f"{WIX}SummaryInformation").attrib["Description"],
+            package.find(f"{WIX}MajorUpgrade").attrib["DowngradeErrorMessage"],
+        ] + [s.attrib["Description"] for s in wxs().iter(f"{WIX}Shortcut")]
+        for t in texts:
+            self.assertRegex(t, r"[\uac00-\ud7a3]", t)
+
+    def test_update_test_scripts_use_slide_values(self):
+        d = ROOT / "packaging/windows"
+        smoke = (d / "test-auto-update.ps1").read_text(encoding="utf-8")
+        self.assertIn("SLIDE_DISPOSABLE_WINDOWS", smoke)
+        self.assertIn("SLIDE_UPDATE_SMOKE_PACKAGE", smoke)
+        self.assertIn("deckcraft-update", smoke)
+        self.assertIn(r"HKCU:\Software\JeongEEE\Slide", smoke)
+        self.assertTrue((d / "create-update-baseline.ps1").is_file())
+        for f in ("test-auto-update.ps1", "create-update-baseline.ps1"):
+            text = (d / f).read_text(encoding="utf-8")
+            self.assertNotRegex(text, r"(?i)\bword")
+            self.assertNotIn("DECKCRAFT_", text)
+
+    def test_dmg_background_is_slide_with_korean_hint(self):
+        dmg = ROOT / "packaging/macos/dmg"
+        svg = (dmg / "background.svg").read_text(encoding="utf-8")
+        gen = (dmg / "generate.py").read_text(encoding="utf-8")
+        self.assertIn('VOLUME = "Slide"', gen)
+        self.assertIn('"Slide.app"', gen)
+        self.assertNotIn("DeckCraft", gen)
+        self.assertNotIn("<text", svg)  # outlined, so no fonts are needed to render it
+        # Three outlined groups before (title, English hint, bottom hint); now title + hint only.
+        self.assertEqual(len(re.findall(r'<path fill="#0b0b0c"[^>]*stroke="none"', svg)), 2)
+        self.assertNotIn('y1="335.5"', svg)  # the bottom rule sat under Finder's path/status bars
+
+
 if __name__ == "__main__":
     unittest.main()

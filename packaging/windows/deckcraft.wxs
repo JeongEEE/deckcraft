@@ -3,12 +3,12 @@
   <?ifndef HasCraftFontLicences ?>
   <?define HasCraftFontLicences=0 ?>
   <?endif?>
-  <Package Name="Slide" Manufacturer="JeongEEE" Version="$(var.Version)" UpgradeCode="1254CE28-A4BC-4E31-BA0A-DC5D959DA341" Scope="perUserOrMachine" Compressed="yes" Language="1033">
-    <SummaryInformation Description="Slide presentations and slide shows" Manufacturer="JeongEEE" />
+  <Package Name="Slide" Manufacturer="JeongEEE" Version="$(var.Version)" UpgradeCode="1254CE28-A4BC-4E31-BA0A-DC5D959DA341" Scope="perUserOrMachine" Compressed="yes" Language="1042" Codepage="949">
+    <SummaryInformation Codepage="949" Description="Slide 프레젠테이션 편집기" Manufacturer="JeongEEE" />
     <?include $(sys.SOURCEFILEDIR)install-policy.wxi?>
     <!-- Same-version upgrades let successive pre-releases of one X.Y.Z replace each other
          (MSI versions are numeric, so 1.2.3-rc.1 and 1.2.3-rc.2 are both 1.2.3). -->
-    <MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="A newer version of Slide is already installed." />
+    <MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="더 최신 버전의 Slide가 이미 설치되어 있습니다." />
     <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
 
     <Icon Id="DeckcraftIcon.ico" SourceFile="$(var.IconPath)" />
@@ -54,7 +54,7 @@
                pointing at the deleted file and lost its icon (#1114). The exe's path survives
                updates; the shortcut is not advertised, so it targets that path and its icon is the
                exe's own. The Icon above stays for ARPPRODUCTICON (Apps and features). -->
-          <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="Slide (JeongEEE)" Description="Slide presentations and slide shows" WorkingDirectory="INSTALLFOLDER" Advertise="no" />
+          <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="Slide (JeongEEE)" Description="Slide 프레젠테이션 편집기" WorkingDirectory="INSTALLFOLDER" Advertise="no" />
         </File>
 
         <!-- .deckcraft: DeckCraft's own format, an "Open with" candidate only. No <Extension>: it

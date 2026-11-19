@@ -119,8 +119,11 @@ if ($env:CRAFT_FONTS_DIR) {
 # ---- MSI ---------------------------------------------------------------------------------------
 $Msi = Join-Path $Dist "slide-$Version-windows-$Arch.msi"
 Invoke-Native 'WiX UI extension' { wix extension add -g WixToolset.UI.wixext/5.0.2 }
+# -culture ko-KR makes WixUI_InstallDir's stock dialogs Korean; en-US is the fallback for any string the
+# WixUI extension has no Korean text for, so the build never fails on a missing translation.
 Invoke-Native 'wix build' {
   wix build (Join-Path $PSScriptRoot 'deckcraft.wxs') -arch $Arch -ext WixToolset.UI.wixext `
+    -culture ko-KR -culture en-US `
     -d "Version=$MsiVersion" -d "BinDir=$Stage" -d "IconPath=$(Join-Path $Root 'assets\app-icon\deckcraft.ico')" `
     -d "DocsDir=$Docs" -d "HasCraftFontLicences=$HasCraftFontLicences" `
     -o $Msi
