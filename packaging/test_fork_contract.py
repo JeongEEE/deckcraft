@@ -122,6 +122,23 @@ class KoreanInstaller(unittest.TestCase):
         for t in texts:
             self.assertRegex(t, r"[\uac00-\ud7a3]", t)
 
+    def test_finish_page_offers_to_launch_slide(self):
+        root = wxs()
+        props = {p.attrib["Id"]: p.attrib["Value"] for p in root.iter(f"{WIX}Property")}
+        self.assertEqual(props["WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT"], "Slide 실행")
+        self.assertEqual(props["WIXUI_EXITDIALOGOPTIONALCHECKBOX"], "1")
+        self.assertEqual(props["WixShellExecTarget"], "[#DeckcraftExe]")
+        file = next(f for f in root.iter(f"{WIX}File") if f.attrib["Id"] == "DeckcraftExe")
+        self.assertTrue(file.attrib["Source"].endswith("slide.exe"))
+        action = next(a for a in root.iter(f"{WIX}CustomAction") if a.attrib["DllEntry"] == "WixShellExec")
+        publish = [p for p in root.iter(f"{WIX}Publish") if p.attrib.get("Dialog") == "ExitDialog"]
+        self.assertEqual([p.attrib["Value"] for p in publish], [action.attrib["Id"]])
+        self.assertIn("NOT Installed", publish[0].attrib["Condition"])
+        script = (ROOT / "packaging/windows/package.ps1").read_text(encoding="utf-8")
+        self.assertIn("-ext WixToolset.Util.wixext", script)
+        self.assertIn("wix extension add -g WixToolset.Util.wixext/5.0.2", script)
+        self.assertIn("Util", policy()["extensions"])
+
     def test_update_test_scripts_use_slide_values(self):
         d = ROOT / "packaging/windows"
         smoke = (d / "test-auto-update.ps1").read_text(encoding="utf-8")

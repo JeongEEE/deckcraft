@@ -12,7 +12,10 @@
   warning when no signing secrets are set).
 
   Needs: Rust (MSVC toolchain + the target), the Windows SDK (rc.exe, signtool.exe),
-  and WiX v5: dotnet tool install --global wix --version 5.0.2
+  and WiX v5 with its UI and Util extensions (installer dialogs, "Launch Slide" on finish):
+    dotnet tool install --global wix --version 5.0.2
+    wix extension add -g WixToolset.UI.wixext/5.0.2
+    wix extension add -g WixToolset.Util.wixext/5.0.2
 
 .EXAMPLE
   pwsh packaging/windows/package.ps1 -Arch x64
@@ -119,10 +122,11 @@ if ($env:CRAFT_FONTS_DIR) {
 # ---- MSI ---------------------------------------------------------------------------------------
 $Msi = Join-Path $Dist "slide-$Version-windows-$Arch.msi"
 Invoke-Native 'WiX UI extension' { wix extension add -g WixToolset.UI.wixext/5.0.2 }
+Invoke-Native 'WiX Util extension' { wix extension add -g WixToolset.Util.wixext/5.0.2 }
 # -culture ko-KR makes WixUI_InstallDir's stock dialogs Korean; en-US is the fallback for any string the
 # WixUI extension has no Korean text for, so the build never fails on a missing translation.
 Invoke-Native 'wix build' {
-  wix build (Join-Path $PSScriptRoot 'deckcraft.wxs') -arch $Arch -ext WixToolset.UI.wixext `
+  wix build (Join-Path $PSScriptRoot 'deckcraft.wxs') -arch $Arch -ext WixToolset.UI.wixext -ext WixToolset.Util.wixext `
     -culture ko-KR -culture en-US `
     -d "Version=$MsiVersion" -d "BinDir=$Stage" -d "IconPath=$(Join-Path $Root 'assets\app-icon\deckcraft.ico')" `
     -d "DocsDir=$Docs" -d "HasCraftFontLicences=$HasCraftFontLicences" `
