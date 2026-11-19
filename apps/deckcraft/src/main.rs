@@ -48,11 +48,13 @@ impl eframe::App for App {
     }
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         self.0.ui(ui);
+        // An update's helper waits for the new Slide's first frame before it calls the update done.
+        deckcraft_update::helper::acknowledge_startup();
     }
     fn on_exit(&mut self) {
         save_prefs(&self.0);
-        // The window is closing for good: a ready update's helper starts now and installs it once
-        // the process has exited.
+        // The window is closing for good: after Restart to Update (and its quit prompt), the
+        // update's helper starts now and installs it once the process has exited.
         self.0.start_pending_update();
         // macOS (#279): end the process here, before eframe tears the window down. AccessKit's
         // macOS adapter subclasses the window's content view and restores its class on teardown;
@@ -216,7 +218,9 @@ fn main() -> eframe::Result {
     // First, so every start-up record (and the engine's panic hook, installed with the first
     // Session) is captured; see `logging`.
     let logger = logging::install();
-    if let Some(done) = craft_update::self_update::finish(&deckcraft_ui_egui::UPDATE_APP, &std::env::args_os().skip(1).collect::<Vec<_>>()) {
+    // The update helper is a copy of this program started with `--slide-update-helper`: it installs
+    // the verified update once this Slide has exited, starts the new one and exits.
+    if let Some(done) = deckcraft_update::helper::finish(&std::env::args_os().skip(1).collect::<Vec<_>>()) {
         if let Err(e) = done {
             eprintln!("{} update helper failed: {e}", deckcraft_ui_egui::APP_NAME);
             std::process::exit(1);

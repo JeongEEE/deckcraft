@@ -76,13 +76,17 @@ impl SlideApp {
             // File-tab navigation and document-free shortcuts remain available.
             self.suspend_ime_reset(viewport);
             self.route_ime_controls_only(ctx, &events);
-            if self.palette.is_none() && self.dialog.as_ref().is_none_or(|d| !d.modal()) && ctx.memory(|m| m.focused().is_none()) {
+            if self.palette.is_none()
+                && self.dialog.as_ref().is_none_or(|d| !d.modal())
+                && !self.update_prompt_open()
+                && ctx.memory(|m| m.focused().is_none())
+            {
                 self.route_backstage_keys(events);
             }
             self.drain_requests();
             return;
         }
-        let modal = self.dialog.as_ref().is_some_and(|d| d.modal()) || self.palette.is_some();
+        let modal = self.dialog.as_ref().is_some_and(|d| d.modal()) || self.palette.is_some() || self.update_prompt_open();
         // While slide text is being edited, the text owns the keyboard (#93). Tab and the arrow
         // keys move egui's keyboard focus onto ordinary widgets (the window's drag handle, ribbon
         // buttons), and that stray focus would swallow every later key and end text entry. Let it

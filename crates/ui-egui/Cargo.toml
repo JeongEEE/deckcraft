@@ -28,6 +28,8 @@ web-time = { workspace = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 craft-update = { workspace = true }
+# The fork's signed updates (Slide releases on JeongEEE/deckcraft), which `updates_ui` drives.
+deckcraft-update = { workspace = true }
 
 [dev-dependencies]
 skrifa = { workspace = true }

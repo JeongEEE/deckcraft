@@ -19,6 +19,7 @@ pub(crate) fn trackpad_twist(app: &mut SlideApp, ctx: &egui::Context) {
         || app.backstage_open()
         || app.dialog.as_ref().is_some_and(|d| d.modal())
         || app.palette.is_some()
+        || app.update_prompt_open()
         || app.session.tool.dragging();
     let over = app.canvas_rect.is_some_and(|r| ctx.input(|i| i.pointer.hover_pos()).is_some_and(|p| r.contains(p)));
     let rotatable = app.session.active().is_some_and(|d| {

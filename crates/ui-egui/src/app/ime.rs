@@ -148,6 +148,7 @@ impl SlideApp {
             && ctx.memory(|m| m.focused().is_none())
             && self.dialog.as_ref().is_none_or(|d| !d.modal())
             && self.palette.is_none()
+            && !self.update_prompt_open()
             && self.backstage.is_none()
             && self.show.is_none()
             && self.opening.is_none()

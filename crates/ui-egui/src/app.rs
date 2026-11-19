@@ -138,12 +138,21 @@ impl SlideApp {
         updates_ui::enable(self);
     }
 
-    /// Start the helper of an update that is ready, so that it installs once the process has
-    /// exited. The desktop shell calls it in `on_exit`, which ends the process on macOS before the
-    /// app is dropped. Later calls do nothing.
+    /// Start the helper of an update that is ready, once Restart to Update has been chosen and the
+    /// quit prompt answered, so that it installs once the process has exited and reopens the
+    /// files. The desktop shell calls it in `on_exit`, which ends the process on macOS before the
+    /// app is dropped. A normal quit installs nothing, and later calls do nothing.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn start_pending_update(&mut self) {
         updates_ui::start_pending_update(self);
+    }
+
+    /// The update's restart prompt is up: like a modal dialog, the slide takes no keys under it.
+    pub(crate) fn update_prompt_open(&self) -> bool {
+        #[cfg(not(target_arch = "wasm32"))]
+        return self.updates_rt.modal;
+        #[cfg(target_arch = "wasm32")]
+        false
     }
 
     /// A message that must be seen wherever the user is: a toast, which also shows over the start

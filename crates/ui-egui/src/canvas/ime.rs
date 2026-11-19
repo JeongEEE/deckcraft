@@ -34,7 +34,12 @@ pub fn ime_area(app: &SlideApp, xf: Xf) -> Option<Rect> {
 /// has settled.
 pub(super) fn ime_output(app: &mut SlideApp, ui: &Ui, xf: Xf) {
     let ctx = ui.ctx();
-    if ctx.memory(|m| m.focused().is_some()) || app.dialog.as_ref().is_some_and(|d| d.modal()) || app.palette.is_some() || app.backstage_open() {
+    if ctx.memory(|m| m.focused().is_some())
+        || app.dialog.as_ref().is_some_and(|d| d.modal())
+        || app.palette.is_some()
+        || app.update_prompt_open()
+        || app.backstage_open()
+    {
         return;
     }
     let Some(r) = ime_area(app, xf) else { return };
