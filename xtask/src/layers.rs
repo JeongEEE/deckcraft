@@ -34,6 +34,8 @@ impl Class {
 /// prefix.
 pub const TABLE: &[(&str, Class)] = &[
     ("geom", Class::Layer(0)),
+    // Signed-update verification and installer for the Slide fork; native-only, no workspace deps.
+    ("update", Class::Layer(0)),
     // `media` (probe, decode, playback mixer) at L2. Containers, the Opus decoder and the video
     // decoders come from craft-libs (craft-media, craft-audio, craft-video).
     ("media", Class::Layer(2)),
