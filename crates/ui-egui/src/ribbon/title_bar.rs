@@ -28,6 +28,38 @@ pub(super) fn title_geometry(integrated: bool) -> (f32, f32, f32) {
     if integrated { (MAC_TITLE_BAR, MAC_CONTENT_LEFT, 22.0) } else { (TITLE_H, 10.0, 26.0) }
 }
 
+/// Moves the window while `drag` (a title-bar surface) is dragged.
+///
+/// On macOS `StartDrag` does nothing: winit's `performWindowDragWithEvent` gets the event AppKit is
+/// handling when eframe applies the command after the frame, not the press, and the winit fork
+/// keeps AppKit from moving the window by its title-bar band. So the window follows the pointer:
+/// the pressed point stays under it. Only on frames with a pointer event: after a move the last
+/// position is relative to where the window was, so reusing it would push the window on every
+/// repaint until release. Not `delta()`: it is window-relative, so it reads zero once the window
+/// kept pace with the pointer. The press point is kept from the drag start because egui forgets
+/// it on release.
+/// ponytail: no native snapping or Spaces drag; a winit drag that keeps the mouse-down event would give both.
+pub(super) fn drag_window(ui: &Ui, drag: &egui::Response) {
+    if !cfg!(target_os = "macos") {
+        if drag.drag_started() {
+            ui.ctx().send_viewport_cmd(egui::ViewportCommand::StartDrag);
+        }
+        return;
+    }
+    if drag.drag_started() {
+        let press = ui.input(|i| i.pointer.press_origin());
+        ui.data_mut(|d| d.insert_temp(drag.id, press));
+    }
+    let moved = ui.input(|i| i.events.iter().any(|e| matches!(e, egui::Event::PointerMoved(_))));
+    if (drag.dragged() || drag.drag_stopped()) && moved {
+        let press = ui.data(|d| d.get_temp::<Option<egui::Pos2>>(drag.id)).flatten();
+        let (outer, now) = ui.input(|i| (i.viewport().outer_rect, i.pointer.latest_pos()));
+        if let (Some(outer), Some(press), Some(now)) = (outer, press, now) {
+            ui.ctx().send_viewport_cmd(egui::ViewportCommand::OuterPosition(outer.min + (now - press)));
+        }
+    }
+}
+
 /// The window's title row: traffic-light space, quick access, centred title, actions.
 pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
@@ -38,9 +70,7 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
         let drag = ui.interact(rect, ui.scope_id().with("titledrag"), Sense::click_and_drag());
         // The drag surface is not a button: a full-width Button would be announced as one.
         drag.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Window, true, "Window title bar"));
-        if drag.drag_started() {
-            ui.ctx().send_viewport_cmd(egui::ViewportCommand::StartDrag);
-        }
+        drag_window(ui, &drag);
         if drag.double_clicked() {
             let max = ui.input(|i| i.viewport().maximized.unwrap_or(false));
             ui.ctx().send_viewport_cmd(egui::ViewportCommand::Maximized(!max));

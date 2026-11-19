@@ -1,0 +1,78 @@
+//! macOS: dragging the empty title bar moves the window by positioning it. `StartDrag` did
+//! nothing there, so the window could not be moved at all.
+#![cfg(target_os = "macos")]
+
+use deckcraft_engine::Session;
+use deckcraft_ui_egui::{Services, SlideApp};
+use egui::{Event, Modifiers, PointerButton, Pos2, ViewportCommand, ViewportId, pos2, vec2};
+
+type Harness = egui_kittest::Harness<'static, SlideApp>;
+
+fn harness() -> Harness {
+    let mut h = Harness::builder().with_size(vec2(1400.0, 900.0)).build_ui_state(
+        |ui, app: &mut SlideApp| {
+            app.logic(ui.ctx());
+            app.ui(ui);
+        },
+        SlideApp::new(Session::with_new(), Services::default()),
+    );
+    h.run_steps(6);
+    h
+}
+
+/// A window on the screen that goes where the app tells it, as macOS does.
+struct Window {
+    h: Harness,
+    at: Pos2,
+    moves: usize,
+    commands: Vec<ViewportCommand>,
+}
+
+impl Window {
+    /// One frame. The pointer is given on the screen; the app sees it relative to the window.
+    fn step(&mut self, pointer: Pos2, button: Option<bool>) {
+        let local = pointer - self.at.to_vec2();
+        let viewport = self.h.input_mut().viewports.entry(ViewportId::ROOT).or_default();
+        viewport.outer_rect = Some(egui::Rect::from_min_size(self.at, vec2(1400.0, 900.0)));
+        self.h.input_mut().events.push(Event::PointerMoved(local));
+        if let Some(pressed) = button {
+            self.h.input_mut().events.push(Event::PointerButton { pos: local, button: PointerButton::Primary, pressed, modifiers: Modifiers::NONE });
+        }
+        self.h.step();
+        let commands = self.h.output().viewport_output.get(&ViewportId::ROOT).map(|v| v.commands.clone()).unwrap_or_default();
+        for c in &commands {
+            if let ViewportCommand::OuterPosition(p) = c {
+                self.at = *p;
+                self.moves += 1;
+            }
+        }
+        self.commands.extend(commands);
+    }
+}
+
+#[test]
+fn dragging_the_empty_title_bar_moves_the_window_under_the_pointer() {
+    let mut w = Window { h: harness(), at: pos2(300.0, 200.0), moves: 0, commands: Vec::new() };
+    // Between the quick-access group and the centred title: nothing there but the bar.
+    let start = pos2(300.0 + 520.0, 200.0 + 16.0);
+    w.step(start, None);
+    w.step(start, Some(true));
+    // A steady drag, 10 px at a time: the window keeps pace, so the pointer stays put relative to it.
+    for i in 1..20 {
+        w.step(start + vec2(10.0, 0.0) * i as f32, None);
+    }
+    // The 20th move arrives with the release.
+    w.step(start + vec2(200.0, 0.0), Some(false));
+    assert!(!w.commands.contains(&ViewportCommand::StartDrag), "StartDrag does not move a macOS window: {:?}", w.commands);
+    assert_eq!(w.moves, 20, "every pointer move moves the window: {:?}", w.commands);
+    assert_eq!(w.at, pos2(500.0, 200.0), "exactly the dragged distance: {:?}", w.commands);
+    // Repaints without pointer input leave it there.
+    w.h.step();
+    w.h.step();
+    assert!(
+        !w.h.output()
+            .viewport_output
+            .get(&ViewportId::ROOT)
+            .is_some_and(|v| v.commands.iter().any(|c| matches!(c, ViewportCommand::OuterPosition(_))))
+    );
+}
