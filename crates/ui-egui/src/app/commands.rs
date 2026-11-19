@@ -282,6 +282,8 @@ impl SlideApp {
                 let d = p.get("id").and_then(Value::as_str).ok_or("missing `id`")?;
                 self.dialog = Some(dialogs::Dialog::new(d));
             }
+            // A control/MCP contract (`app.links` is in the MCP instructions and the CLI), so the keys,
+            // Discord included, stay; no screen shows them.
             "app.links" => {
                 use deckcraft_engine::links::{APP_PAGE, APPS, DISCORD, GITHUB, WEBSITE};
                 return Ok(json!({"discord": DISCORD, "website": WEBSITE, "apps": APPS, "appPage": APP_PAGE, "github": GITHUB}));

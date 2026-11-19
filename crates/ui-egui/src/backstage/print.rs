@@ -83,10 +83,10 @@ pub(super) fn print(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage) {
             ui.add_space(6.0);
             dim(
                 ui,
-                if app.services.pick_save.is_some() {
-                    "DeckCraft prints through a PDF: it opens in your PDF viewer, where you choose the printer."
+                &if app.services.pick_save.is_some() {
+                    format!("{} prints through a PDF: it opens in your PDF viewer, where you choose the printer.", crate::APP_NAME)
                 } else {
-                    "DeckCraft prints through a PDF: it downloads, ready to print from your browser or PDF viewer."
+                    format!("{} prints through a PDF: it downloads, ready to print from your browser or PDF viewer.", crate::APP_NAME)
                 },
             );
             ui.add_space(14.0);

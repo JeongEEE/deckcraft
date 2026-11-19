@@ -48,7 +48,7 @@ fn title(id: &str) -> &'static str {
         "paragraph" => "Paragraph",
         "tabs" => "Tabs",
         "font" => "Font",
-        "about" => "About DeckCraft",
+        "about" => "About Slide",
         "preferences" => "Preferences",
         "autocorrect" => "AutoCorrect",
         "gridOptions" => "Grid Options",
@@ -70,10 +70,10 @@ fn title(id: &str) -> &'static str {
         "smartart" => "Choose a Diagram Graphic",
         "bullets" => "Bullets and Numbering",
         "action" => "Action Settings",
-        "quit" => "DeckCraft",
+        "quit" => crate::APP_NAME,
         "themeColors" => "Create New Theme Colors",
         "themeFonts" => "Create New Theme Fonts",
-        _ => "DeckCraft",
+        _ => crate::APP_NAME,
     }
 }
 

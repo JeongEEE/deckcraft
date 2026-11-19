@@ -20,14 +20,13 @@ pub fn about(_app: &mut SlideApp, ui: &mut Ui) {
     ui.vertical_centered(|ui| {
         let (r, _) = ui.allocate_exact_size(vec2(64.0, 64.0), Sense::hover());
         paint_logo(ui.painter(), r);
-        ui.label(egui::RichText::new("DeckCraft").font(theme::bold(22.0)));
+        ui.label(egui::RichText::new(crate::APP_NAME).font(theme::bold(22.0)));
         ui.label(egui::RichText::new(version_line()).color(t.text_dim));
         ui.add_space(6.0);
         ui.label("Presentations and slide shows, rebuilt from scratch in pure Rust.");
         ui.label("An open-source, clean-room project. Not affiliated with Microsoft.");
         ui.add_space(6.0);
-        ui.hyperlink_to("Join our community on Discord", deckcraft_engine::links::DISCORD);
-        ui.hyperlink_to("getartcraft.com/apps/deckcraft", deckcraft_engine::links::APP_PAGE);
+        ui.label("Based on DeckCraft by the ArtCraft team.");
         ui.hyperlink_to("Source on GitHub", deckcraft_engine::links::GITHUB);
         ui.add_space(6.0);
         ui.label(egui::RichText::new("MIT OR Apache-2.0 · © 2026 ArtCraft Team and the DeckCraft contributors").size(11.0).color(t.text_faint));
@@ -77,6 +76,24 @@ mod about_credits_tests {
     fn tab_of(h: &Harness<'_, SlideApp>) -> String {
         let d = h.state().dialog.as_ref().expect("the About dialog is open");
         d.fields.get("tab").cloned().unwrap_or_else(|| "about".into())
+    }
+
+    /// The personal fork names itself Slide in the dialog title, and has no Discord or ArtCraft entry.
+    #[test]
+    fn about_dialog_is_titled_slide_without_community_links() {
+        let mut app = SlideApp::new(deckcraft_engine::Session::with_new(), Services::default());
+        app.dialog = Some(Dialog::new("about"));
+        let mut h = Harness::builder().with_size(egui::vec2(1440.0, 900.0)).build_ui_state(
+            |ui, app: &mut SlideApp| {
+                app.logic(ui.ctx());
+                app.ui(ui);
+            },
+            app,
+        );
+        h.run_steps(4);
+        assert!(h.query_by_label("About Slide").is_some());
+        assert!(h.query_by_label_contains("Discord").is_none());
+        assert!(h.query_by_label_contains("getartcraft").is_none());
     }
 
     /// The reported symptom (#843): in the real dialog the tabs stopped answering once Contributors

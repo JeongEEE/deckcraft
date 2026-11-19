@@ -1,3 +1,20 @@
+# Slide personal fork rules
+
+These rules implement the repository owner's fork workflow and take precedence over the
+upstream contribution workflow below for work in this fork.
+
+- `main` mirrors `upstream/main`; never commit personal changes or merge `my-custom` into it.
+- Develop, commit and push personal changes on `my-custom`. Stage only the task's explicit paths.
+- Upstream issue claims, upstream PR requirements and shared-CI-only policies apply when
+  contributing upstream. Do not post upstream issues/comments for personal fork work.
+- Keep app name `Slide`, maintainer `JeongEEE`, bundle id `io.github.jeongeee.slide`, updater
+  app id `slide` and updater repository `JeongEEE/deckcraft` independent from upstream. Cargo
+  package/crate names, command ids and `DECKCRAFT_*` environment variables remain unchanged.
+  The file format name "DeckCraft Presentation" and the built-in "DeckCraft" theme keep their names.
+- Maintain the Slide section in `MyProjectsWiki/wiki/` alongside architectural or operational
+  changes, then run its sync script.
+- Commit messages are Korean Conventional Commits, without generated/coauthor attribution.
+
 <!-- craft-house-rules:start core source=dde09ea31e2e457f5b4653a6e76f7cdf55944bdf sha256=540e6cea75d12d0710c3dca89658328e81e508ecef102446ca5bb95b7c0b92bb -->
 ## House rules
 

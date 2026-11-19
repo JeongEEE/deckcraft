@@ -6,6 +6,10 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 #![forbid(unsafe_code)]
 
+/// The name the app shows for itself (window titles, dialogs, status text). The personal fork is
+/// Slide; the file format name "DeckCraft Presentation" and the built-in "DeckCraft" theme keep theirs.
+pub const APP_NAME: &str = "Slide";
+
 /// DeckCraft as craft-update knows it, with its 128 px icon and accent colour: the update
 /// prompt shows both, and an AppImage's menu entry gets the icon.
 #[cfg(not(target_arch = "wasm32"))]
@@ -137,7 +141,7 @@ pub const UI_COMMANDS: &[(&str, &str, Option<&str>, &str)] = &[
         Some("Cmd+P"),
         "{layout?, perPage?, slides?, includeHidden?, frame?, paper?: letter|a4|legal|a3, orientation?: portrait|landscape}",
     ),
-    ("app.about", "About DeckCraft", None, "{}"),
+    ("app.about", "About Slide", None, "{}"),
     ("app.checkUpdates", "Check for Updates…", None, "{}"),
     ("app.palette", "Command Palette", Some("Cmd+Shift+P"), "{}"),
     ("app.preferences", "Preferences…", Some("Cmd+,"), "{}"),
