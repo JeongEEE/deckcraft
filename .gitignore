@@ -13,3 +13,4 @@ packaging/env.sh
 /build-flatpak/
 /.flatpak-builder/
 /.omc/
+/packaging/__pycache__/
