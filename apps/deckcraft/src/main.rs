@@ -1,6 +1,6 @@
 //! Slide desktop app (the personal fork of DeckCraft).
 //!
-//! Usage: `deckcraft [--control <port>] [--sample] [--show] [files…]`
+//! Usage: `slide [--control <port>] [--sample] [--show] [files…]`
 //! A PowerPoint Show (`.ppsx`) given last starts its slide show, as a double-click does in PowerPoint.
 //! `deckcraft --help` prints the flags and exits. `deckcraft --version` prints the version and exits.
 //!
@@ -95,6 +95,16 @@ fn settings_dir(
     }
 }
 
+/// AutoRecover files and the user dictionary live under Slide's folder, not upstream DeckCraft's
+/// (the engine's own defaults), so Slide never picks up or deletes the original's recovered work.
+fn recovery_dir_in(config: &std::path::Path) -> std::path::PathBuf {
+    config.join("Recovery")
+}
+
+fn user_dictionary_in(config: &std::path::Path) -> std::path::PathBuf {
+    config.join("Dictionaries").join("user.dic")
+}
+
 fn load_prefs(app: &mut SlideApp) {
     if std::env::var_os("DECKCRAFT_NO_PREFS").is_some() {
         return;
@@ -169,7 +179,7 @@ fn display_count(window: &winit::window::Window) -> Option<usize> {
 const APP_ID: &str = "io.github.jeongeee.slide";
 
 const USAGE: &str = "\
-Usage: deckcraft [--control PORT] [--sample] [--show] [FILE...]
+Usage: slide [--control PORT] [--sample] [--show] [FILE...]
 
   --control PORT  JSON control server on 127.0.0.1:PORT
   --sample        open the sample presentation
@@ -311,10 +321,13 @@ fn main() -> eframe::Result {
                 app.services.displays = Some(Box::new(move || display_count(&window)));
             }
             load_prefs(&mut app);
+            if let Some(dir) = config_dir() {
+                deckcraft_engine::spell::set_user_dictionary_path(user_dictionary_in(&dir));
+            }
             app.enable_update_checks();
             // AutoRecover: reopen what a previous run left unsaved, then keep it current.
             if std::env::var_os("DECKCRAFT_NO_RECOVERY").is_none() {
-                app.session.recovery_dir = deckcraft_engine::recovery::default_dir();
+                app.session.recovery_dir = config_dir().map(|d| recovery_dir_in(&d));
                 if let Ok(v) = app.session.execute("file.recovery.open", &serde_json::json!({}))
                     && let Some(n) = v.get("opened").and_then(|o| o.as_array()).map(Vec::len).filter(|n| *n > 0)
                 {
@@ -350,6 +363,24 @@ mod tests {
     use super::*;
 
     /// The fork keeps its settings, prefs and logs apart from upstream DeckCraft's.
+    #[test]
+    fn recovery_and_dictionary_stay_in_slides_folder() {
+        let p = |s: &str| Some(std::path::PathBuf::from(s));
+        let upstream = deckcraft_engine::recovery::default_dir();
+        for cfg in [
+            settings_dir(true, false, p("/Users/a"), None, None),
+            settings_dir(false, true, None, p("C:/Roaming"), None),
+            settings_dir(false, false, p("/home/a"), None, None),
+        ] {
+            let cfg = cfg.unwrap();
+            assert!(recovery_dir_in(&cfg).starts_with(&cfg) && recovery_dir_in(&cfg).ends_with("Recovery"));
+            assert!(user_dictionary_in(&cfg).starts_with(&cfg) && user_dictionary_in(&cfg).ends_with("Dictionaries/user.dic"));
+            assert_ne!(Some(recovery_dir_in(&cfg)), upstream);
+            assert!(!recovery_dir_in(&cfg).to_string_lossy().contains("DeckCraft"));
+            assert!(!user_dictionary_in(&cfg).to_string_lossy().contains("DeckCraft"));
+        }
+    }
+
     #[test]
     fn config_dir_is_slides_own() {
         use std::path::PathBuf;
