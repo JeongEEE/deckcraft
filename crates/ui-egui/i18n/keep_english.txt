@@ -5,3 +5,9 @@
 
 RRGGBB	the hex colour code's digit pattern (colour codes stay as written)
 Aa	sample letters drawn in an icon and the theme previews (icons/draw.rs, ribbon/design.rs), not wording
+I. II. III.	numbering scheme samples (Home › Numbering): the numerals show the style, not wording
+i. ii. iii.	numbering scheme sample, as above
+A. B. C.	numbering scheme sample, as above
+a) b) c)	numbering scheme sample, as above
+a. b. c.	numbering scheme sample, as above
+Abc	sample letters drawn on the Quick Styles tiles (ribbon/galleries.rs), not wording

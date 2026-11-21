@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
 use crate::SlideApp;
+use crate::i18n::t;
 use crate::icons::Icon;
 
 /// One toolbar button: a command, its parameters, and how it looks.
@@ -120,15 +121,35 @@ pub fn run_index(app: &mut SlideApp, index: usize) -> bool {
     true
 }
 
+/// A saved label in the interface language. Ribbon buttons save theirs on one line
+/// (`"Add\nAnimation"` as `"Add Animation"`), so a label without a row of its own is looked up
+/// with each space as the big button's line break, and shown on one line again.
+pub(crate) fn shown_label(label: &str) -> String {
+    let direct = t(label);
+    if direct != label {
+        return direct.to_string();
+    }
+    label
+        .match_indices(' ')
+        .find_map(|(at, _)| {
+            let broken = format!("{}\n{}", &label[..at], &label[at + 1..]);
+            let found = t(&broken);
+            (found != broken).then(|| found.replace('\n', " "))
+        })
+        .unwrap_or_else(|| label.to_string())
+}
+
 fn tip(q: &QatItem, index: usize, mac: bool) -> String {
     let sc =
         deckcraft_engine::find_command(&q.id).and_then(|c| c.shortcut).or_else(|| crate::UI_COMMANDS.iter().find(|c| c.0 == q.id).and_then(|c| c.2));
     let qat_sc = if !mac && index < 9 { Some(format!("Alt+{}", index + 1)) } else { None };
+    // The saved label is English; it is shown in the interface language.
+    let label = shown_label(&q.label);
     match (sc, qat_sc) {
-        (Some(s), Some(qsc)) => format!("{} ({}, {})", q.label, crate::ribbon::pretty_shortcut(s), qsc),
-        (Some(s), None) => format!("{} ({})", q.label, crate::ribbon::pretty_shortcut(s)),
-        (None, Some(qsc)) => format!("{} ({})", q.label, qsc),
-        (None, None) => q.label.clone(),
+        (Some(s), Some(qsc)) => format!("{} ({}, {})", label, crate::ribbon::pretty_shortcut(s), qsc),
+        (Some(s), None) => format!("{} ({})", label, crate::ribbon::pretty_shortcut(s)),
+        (None, Some(qsc)) => format!("{} ({})", label, qsc),
+        (None, None) => label,
     }
 }
 
@@ -144,7 +165,7 @@ pub fn show(app: &mut SlideApp, ui: &mut Ui) {
             run(app, q);
         }
         r.context_menu(|ui| {
-            if ui.button("Remove from Quick Access Toolbar").clicked() {
+            if ui.button(t("Remove from Quick Access Toolbar")).clicked() {
                 let _ = command(app, &json!({"remove": q.id, "params": q.params}));
                 ui.close();
             }
@@ -152,10 +173,10 @@ pub fn show(app: &mut SlideApp, ui: &mut Ui) {
     }
     let r = crate::widgets::icon_toggle(ui, Icon::ChevronDown, "Customize Quick Access Toolbar", true, false);
     egui::Popup::menu(&r).show(|ui| {
-        ui.label(egui::RichText::new("Customize Quick Access Toolbar").strong());
+        ui.label(egui::RichText::new(t("Customize Quick Access Toolbar")).strong());
         for c in common() {
             let mut on = app.ui.qat.iter().any(|q| q.same(&c.id, &Value::Null));
-            if ui.checkbox(&mut on, &c.label).changed() {
+            if ui.checkbox(&mut on, shown_label(&c.label)).changed() {
                 let key = if on { "add" } else { "remove" };
                 let _ = command(app, &json!({key: c.id}));
             }
@@ -165,14 +186,14 @@ pub fn show(app: &mut SlideApp, ui: &mut Ui) {
             ui.separator();
             for q in extra {
                 let mut on = true;
-                if ui.checkbox(&mut on, &q.label).changed() {
+                if ui.checkbox(&mut on, shown_label(&q.label)).changed() {
                     let _ = command(app, &json!({"remove": q.id, "params": q.params}));
                 }
             }
         }
         ui.separator();
-        ui.label(egui::RichText::new("Right-click any ribbon button to add it.").weak());
-        if ui.button("Reset to Defaults").clicked() {
+        ui.label(egui::RichText::new(t("Right-click any ribbon button to add it.")).weak());
+        if ui.button(t("Reset to Defaults")).clicked() {
             let _ = command(app, &json!({"reset": true}));
             ui.close();
         }
@@ -183,7 +204,8 @@ pub fn show(app: &mut SlideApp, ui: &mut Ui) {
 pub fn ribbon_menu(app: &mut SlideApp, r: &egui::Response, icon: Icon, label: &str, id: &str, p: &Value) {
     r.context_menu(|ui| {
         let has = app.ui.qat.iter().any(|q| q.same(id, p));
-        let text = if has { "Remove from Quick Access Toolbar" } else { "Add to Quick Access Toolbar" };
+        let text = t(if has { "Remove from Quick Access Toolbar" } else { "Add to Quick Access Toolbar" });
+        // `label` is saved in ui.json: it stays the English text, shown translated by `show`.
         if ui.button(text).clicked() {
             let label = label.replace('\n', " ");
             let key = if has { "remove" } else { "add" };

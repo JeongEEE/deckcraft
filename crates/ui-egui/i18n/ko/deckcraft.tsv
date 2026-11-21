@@ -77,3 +77,729 @@
 # Terms: Slide says 도형 for a Shape. This row overrides common.tsv's row (모양) on purpose;
 # craft-i18n looks the app catalog up before the shared one.
 	Shape	도형
+
+# Ribbon 1: Home, Insert, Draw, Design, Transitions, Animations, their galleries, the Quick
+# Access Toolbar and the title bar (ribbon/*.rs; command ids and saved values stay English)
+	Shapes	도형
+	Shape Effects	도형 효과
+	Colors	색
+	Paste and Match Formatting	대상 서식에 맞춰 붙여넣기
+	Paste Formatting	서식 붙여넣기
+	Paste Special…	선택하여 붙여넣기…
+	Format Painter (double-click to keep it on)	서식 복사 (두 번 클릭하면 계속 켜 둡니다)
+	New Slide	새 슬라이드
+	New\nSlide	새\n슬라이드
+	Section	구역
+	Duplicate Selected Slides	선택한 슬라이드 복제
+	Slides from Outline…	개요에서 슬라이드 만들기…
+	Reuse Slides…	슬라이드 다시 사용…
+	Reuse Slides (Keep Source Formatting)…	슬라이드 다시 사용 (원본 서식 유지)…
+	Choosing a presentation to reuse needs the desktop app	다시 사용할 프레젠테이션을 고르려면 데스크톱 앱이 필요합니다
+	Add Section	구역 추가
+	Remove All Sections	모든 구역 제거
+	{font} (Headings)	{font} (제목)
+	{font} (Body)	{font} (본문)
+	Rescan Installed Fonts	설치된 글꼴 다시 찾기
+	Clear All Formatting	모든 서식 지우기
+	Character Spacing	문자 간격
+	Very Tight	매우 좁게
+	Tight	좁게
+	Loose	넓게
+	Very Loose	매우 넓게
+	Sentence case.	문장 첫 글자를 대문자로.
+	Capitalize Each Word	단어 첫 글자를 대문자로
+	tOGGLE cASE	대/소문자 바꾸기
+	Text Highlight Color	텍스트 강조 색
+	Font Color	글꼴 색
+	Font…	글꼴…
+	Bullets	글머리 기호
+	{char}  Bullet	{char}  글머리 기호
+	Bullets and Numbering…	글머리 기호 및 번호 매기기…
+	Numbering	번호 매기기
+	Decrease List Level	목록 수준 줄이기
+	Increase List Level	목록 수준 늘리기
+	Line Spacing	줄 간격
+	Line Spacing Options…	줄 간격 옵션…
+	Tabs…	탭…
+paragraph	Columns	단
+@plural	{n} Column|{n} Columns	{n}단
+	More Columns…	단 설정…
+	Text Direction	텍스트 방향
+direction	Stacked	세로 쌓기
+	Rotate all text 90°	모든 텍스트 90° 회전
+	Rotate all text 270°	모든 텍스트 270° 회전
+	Convert to Diagram	다이어그램으로 변환
+	Paragraph…	단락…
+	Text Box	텍스트 상자
+	Quick\nStyles	빠른\n스타일
+	Shape Fill	도형 채우기
+	No Fill	채우기 없음
+	Shape Outline	도형 윤곽선
+	Picture	그림
+	Replace Fonts…	글꼴 바꾸기…
+	Selection\nPane	선택\n창
+	Design\nIdeas	디자인\n아이디어
+	Photo\nAlbum	사진\n앨범
+	Photo Album…	사진 앨범…
+	Photo Album options	사진 앨범 옵션
+	New Photo Album…	새 사진 앨범…
+	Edit Photo Album…	사진 앨범 편집…
+	Insert Table…	표 삽입…
+	Insert Table	표 삽입
+	{cols}x{rows} Table	{cols}x{rows} 표
+	Draw Table	표 그리기
+	Pictures	그림
+	Screenshot	스크린샷
+	Screenshot (not available yet)	스크린샷 (아직 지원하지 않음)
+	Icons	아이콘
+	Diagram	다이어그램
+	Chart	차트
+	Action	실행
+	Action Button: {kind}	실행 버튼: {kind}
+action	back	뒤로
+action	forward	앞으로
+action	beginning	처음
+action	end	끝
+action	home	홈
+action	information	정보
+action	return	돌아가기
+action	movie	동영상
+action	document	문서
+action	sound	소리
+action	help	도움말
+action	custom	사용자 지정
+	Action Settings…	실행 설정…
+	Text\nBox	텍스트\n상자
+	Header &\nFooter	머리글/\n바닥글
+	Decorative Text	장식 텍스트
+	Decorative Text style {n}	장식 텍스트 스타일 {n}
+	Date &\nTime	날짜 및\n시간
+	Slide\nNumber	슬라이드\n번호
+	Equation	수식
+	No icons match.	맞는 아이콘이 없습니다.
+	Search icons	아이콘 검색
+	Black Pen	검은색 펜
+	Red Pen	빨간색 펜
+	Blue Pen	파란색 펜
+	Highlighter	형광펜
+	Ink to\nShape	잉크를\n도형으로
+	Ink to Shape: turn drawn lines, rectangles, ovals and triangles into shapes	잉크를 도형으로: 손으로 그린 선, 사각형, 타원, 삼각형을 도형으로 바꿉니다
+	Ink to\nText	잉크를\n텍스트로
+	Ink to Text (coming soon)	잉크를 텍스트로 (준비 중)
+	Ink to\nMath	잉크를\n수식으로
+	Ink to Math (coming soon)	잉크를 수식으로 (준비 중)
+	Browse for Themes…	테마 찾아보기…
+	Customize Colors…	색 사용자 지정…
+	Customize Fonts…	글꼴 사용자 지정…
+	Background\nStyles	배경\n스타일
+	Style {n}	스타일 {n}
+	Reset Slide Background	슬라이드 배경 재설정
+	Slide\nSize	슬라이드\n크기
+	Standard (4:3)	표준 (4:3)
+	Widescreen (16:9)	와이드스크린 (16:9)
+	Page Setup…	페이지 설정…
+	Format\nBackground	배경\n서식
+	Play this slide's transition	이 슬라이드의 전환을 재생합니다
+	Subtle	은은한 효과
+	Exciting	화려한 효과
+	Dynamic Content	동적 콘텐츠
+	Effect\nOptions	효과\n옵션
+	Sound:	소리:
+	[No Sound]	[소리 없음]
+	[Stop Previous Sound]	[이전 소리 중지]
+	Other Sound…	다른 소리…
+	Choosing a sound file needs the desktop app	소리 파일을 고르려면 데스크톱 앱이 필요합니다
+	Loop Until Next Sound	다음 소리까지 반복
+	Duration:	길이:
+	On Mouse Click	마우스를 클릭할 때
+	After:	시간 경과 후:
+	After	시간 경과 후
+	Apply\nTo All	모두\n적용
+	Play this slide's animations on the canvas	이 슬라이드의 애니메이션을 캔버스에서 재생합니다
+	Entrance	나타내기
+	Emphasis	강조
+animation	Exit	끝내기
+animation	Motion	이동 경로
+	Motion Paths	이동 경로
+	By Paragraph	단락별로
+	As One Object	한 개체로
+	Add\nAnimation	애니메이션\n추가
+	Animation\nPane	애니메이션\n창
+	Trigger	트리거
+	On Click of… (none)	클릭할 개체… (없음)
+	On Click of {name}	{name} 클릭할 때
+	Animation\nPainter	애니메이션\n복사
+	Animation Painter (double-click to keep it on)	애니메이션 복사 (두 번 클릭하면 계속 켜 둡니다)
+	Start:	시작:
+	Start	시작
+	On Click	클릭할 때
+	With Previous	이전 효과와 함께
+	After Previous	이전 효과 다음에
+	Delay:	지연:
+	Delay	지연
+	No Outline	윤곽선 없음
+	Dashes	파선
+	Solid	실선
+	Round Dot	둥근 점선
+	Square Dot	사각 점선
+	Dash	파선
+	Dash Dot	파선-점
+	Long Dash	긴 파선
+	Long Dash Dot	긴 파선-점
+	Arrow at end	끝에 화살표
+	Arrow at start	시작에 화살표
+	Arrows at both ends	양쪽 끝에 화살표
+	Stealth end	끝에 뾰족한 화살표
+	Oval ends	양쪽 끝에 타원
+	No Shadow	그림자 없음
+	Outer	바깥쪽
+	Inner	안쪽
+	Reflection	반사
+	No Reflection	반사 없음
+	Half	절반
+	No Glow	광선 없음
+	{size} pt glow	{size} pt 광선
+	Soft Edges	부드러운 가장자리
+	No Soft Edges	부드러운 가장자리 없음
+	Bevel	입체 테두리
+bevel	none	없음
+bevel	circle	원형
+bevel	relaxedInset	완만하게 들어감
+bevel	cross	십자
+bevel	coolSlant	비스듬한 면
+bevel	angle	각진 면
+bevel	softRound	부드럽게 둥근 면
+bevel	convex	볼록
+bevel	slope	경사
+bevel	divot	오목
+bevel	riblet	잔물결
+bevel	hardEdge	날카로운 가장자리
+bevel	artDeco	아르데코
+	Format Shape…	도형 서식…
+	Start from Beginning	처음부터 시작
+	Remove from Quick Access Toolbar	빠른 실행 도구 모음에서 제거
+	Add to Quick Access Toolbar	빠른 실행 도구 모음에 추가
+	Customize Quick Access Toolbar	빠른 실행 도구 모음 사용자 지정
+	Right-click any ribbon button to add it.	리본의 버튼을 오른쪽 클릭하면 여기에 추가할 수 있습니다.
+	Reset to Defaults	기본값으로 재설정
+	Window title bar	창 제목 표시줄
+	{title} — Edited	{title} — 편집됨
+	Present	발표
+	Search commands (⇧⌘P)	명령 검색 (⇧⌘P)
+	Light/Dark appearance	밝은/어두운 화면
+	Scroll ribbon left	리본 왼쪽으로 스크롤
+	Scroll ribbon right	리본 오른쪽으로 스크롤
+chart	Line	꺾은선형
+chart	Pie	원형
+chart	Area	영역형
+chart	Doughnut	도넛형
+chart	Scatter	분산형
+chart	Bubble	거품형
+chart	Radar	방사형
+chart	Stock	주식형
+chart	Surface	표면형
+chart	Pareto	파레토
+chart	Box and Whisker	상자 수염
+chart	Waterfall	폭포
+	Funnel	깔때기형
+chart	Treemap	트리맵
+chart	Sunburst	선버스트
+chart	Map	지도
+chart	Combo	콤보
+	Clustered Column	묶은 세로 막대형
+	Stacked Column	누적 세로 막대형
+	100% Stacked Column	100% 누적 세로 막대형
+	Clustered Bar	묶은 가로 막대형
+	Stacked Bar	누적 가로 막대형
+	100% Stacked Bar	100% 누적 가로 막대형
+	Line with Markers	표식이 있는 꺾은선형
+	Stacked Line	누적 꺾은선형
+	Stacked Area	누적 영역형
+	Filled Radar	채워진 방사형
+
+# Ribbon 1 galleries: names from built-in data, shown translated (the data, the commands and
+# the document keep the English). Themes and their colour, font and effect schemes:
+	Berry	베리
+	Coral Reef	산호초
+	Crisp	선명
+	Ember	불씨
+	Forest	숲
+	Harbor	항구
+	Lift	들어올림
+	Meadow	초원
+	Neutron	중성자
+	Nocturne	야상곡
+	Ocean	바다
+	Plain	단순
+	Slate	슬레이트
+	Sunset	노을
+	Geometric	기하
+	Editorial	에디토리얼
+	Humanist	휴머니스트
+	Friendly	친근함
+	Neutral	중립
+	Office Compatible	오피스 호환
+
+# Transitions, their groups and Effect Options
+	Fade	페이드
+	Push	밀어내기
+	Wipe	닦아내기
+	Reveal	드러내기
+	Random Bars	무작위 막대
+	Uncover	걷어내기
+	Cover	덮기
+	Fall Over	넘어지기
+	Drape	커튼 내리기
+	Curtains	커튼
+	Wind	바람
+	Prestige	프레스티지
+	Fracture	깨뜨리기
+	Crush	구기기
+	Peel Off	벗기기
+	Page Curl	페이지 말아 넘기기
+	Airplane	비행기
+	Origami	종이접기
+	Dissolve	디졸브
+	Blinds	블라인드
+	Clock	시계
+	Ripple	물결
+	Honeycomb	벌집
+	Glitter	반짝이
+	Vortex	소용돌이
+	Shred	조각내기
+	Switch	바꾸기
+	Gallery	갤러리
+	Cube	정육면체
+	Doors	문
+	Box	상자
+	Comb	빗살
+	Pan	이동
+	Ferris Wheel	대관람차
+	Conveyor	컨베이어
+	Orbit	궤도
+	Fly Through	날아서 통과
+	Morph	모핑
+	Objects	개체
+	Smoothly	부드럽게
+	Through Black	검정을 통해
+	Smoothly From Left	왼쪽에서 부드럽게
+	Smoothly From Right	오른쪽에서 부드럽게
+	Through Black From Left	왼쪽에서 검정을 통해
+	Through Black From Right	오른쪽에서 검정을 통해
+	From Left	왼쪽에서
+	From Right	오른쪽에서
+	From Top	위에서
+	From Bottom	아래에서
+	From Top-Left	왼쪽 위에서
+	From Top-Right	오른쪽 위에서
+	From Bottom-Left	왼쪽 아래에서
+	From Bottom-Right	오른쪽 아래에서
+	To Left	왼쪽으로
+	To Right	오른쪽으로
+	To Top	위로
+	To Bottom	아래로
+	To Top-Left	왼쪽 위로
+	To Top-Right	오른쪽 위로
+	To Bottom-Left	왼쪽 아래로
+	To Bottom-Right	오른쪽 아래로
+	In	안으로
+	Out	밖으로
+	In with Bounce	안으로 튕기며
+	Out with Bounce	밖으로 튕기며
+	Horizontal In	가로 안쪽으로
+	Horizontal Out	가로 바깥쪽으로
+	Vertical In	세로 안쪽으로
+	Vertical Out	세로 바깥쪽으로
+	Left Up	왼쪽 위로
+	Right Up	오른쪽 위로
+	Left Down	왼쪽 아래로
+	Right Down	오른쪽 아래로
+	Across	가로로
+	Clockwise	시계 방향
+	Counterclockwise	시계 반대 방향
+	Single Left	한 장 왼쪽
+	Single Right	한 장 오른쪽
+	Double Left	두 장 왼쪽
+	Double Right	두 장 오른쪽
+	Particles In	입자 안으로
+	Particles Out	입자 밖으로
+	Strips In	가늘게 안으로
+	Strips Out	가늘게 밖으로
+	Hexagons From Left	왼쪽에서 육각형
+	Hexagons From Right	오른쪽에서 육각형
+	Hexagons From Top	위에서 육각형
+	Hexagons From Bottom	아래에서 육각형
+	Diamonds From Left	왼쪽에서 마름모
+	Diamonds From Right	오른쪽에서 마름모
+	Diamonds From Top	위에서 마름모
+	Diamonds From Bottom	아래에서 마름모
+	Zoom and Rotate	확대하며 회전
+	circle	원
+	diamond	마름모
+	plus	더하기
+
+# Animation effects and their options
+	Appear	나타나기
+	Disappear	사라지기
+	Fly In	날아오기
+	Fly Out	날아가기
+	Float In	떠오르기
+	Float Out	떠내려가기
+	Grow & Turn	커지며 회전
+	Shrink & Turn	작아지며 회전
+	Grow/Shrink	크게/작게
+	Bounce	바운스
+	Pulse	펄스
+	Color Pulse	색 펄스
+	Teeter	흔들기
+	Spin	회전하기
+	Wheel	바퀴
+	Strips	줄무늬
+	Swivel	돌리기
+	Bold Flash	굵게 깜박이기
+	Fill Color	채우기 색
+	Line Color	선 색
+	Object Color	개체 색
+	Complementary Color	보색
+	Peek In	살짝 들어오기
+	Peek Out	살짝 나가기
+	Rise Up	솟아오르기
+	Sink Down	가라앉기
+	Contract	줄어들기
+	Dissolve In	디졸브 인
+	Dissolve Out	디졸브 아웃
+	Box In	상자 안으로
+	Box Out	상자 밖으로
+	Circle In	원 안으로
+	Circle Out	원 밖으로
+	Diamond In	마름모 안으로
+	Diamond Out	마름모 밖으로
+	Plus In	더하기 안으로
+	Plus Out	더하기 밖으로
+	1 Spoke	살 1개
+	2 Spokes	살 2개
+	3 Spokes	살 3개
+	4 Spokes	살 4개
+	8 Spokes	살 8개
+	Custom Path	사용자 지정 경로
+	Arcs	호
+	Turns	회전 경로
+	Loops	고리
+	Bounce Left	왼쪽으로 튀기
+	Bounce Right	오른쪽으로 튀기
+	Decaying Wave	잦아드는 물결
+	Diagonal Down Right	오른쪽 아래 대각선
+	Diagonal Up Right	오른쪽 위 대각선
+	Heartbeat	심장 박동
+	Horizontal Figure 8	가로 8자
+	Vertical Figure 8	세로 8자
+	Loop de Loop	고리 돌기
+	Sine Wave	사인파
+	Spiral Left	왼쪽 나선
+	Spiral Right	오른쪽 나선
+	Spring	용수철
+	Stairs Down	계단 내려가기
+	Zigzag	지그재그
+	S Curve 1	S자 곡선 1
+	S Curve 2	S자 곡선 2
+	Swoosh	휙
+	4 Point Star	꼭짓점 4개 별
+	5 Point Star	꼭짓점 5개 별
+	6 Point Star	꼭짓점 6개 별
+	8 Point Star	꼭짓점 8개 별
+
+# Transition sounds
+	Chime	차임
+	Click	딸깍
+	Camera	카메라
+	Whoosh	휙 소리
+	Drum Roll	드럼 롤
+	Laser	레이저
+
+# Shapes: the gallery's groups and the preset shapes' names
+	Rectangles	사각형
+	Basic Shapes	기본 도형
+	Block Arrows	블록 화살표
+	Equation Shapes	수식 도형
+	Flowchart	순서도
+	Stars and Banners	별 및 현수막
+	Callouts	설명선
+	Action Buttons	실행 버튼
+	Freeform: Shape	자유형: 도형
+	Freeform: Scribble	자유형: 자유 곡선
+	Rectangle: Rounded Corners	사각형: 둥근 모서리
+	Rectangle: Single Corner Rounded	사각형: 한쪽 둥근 모서리
+	Rectangle: Single Corner Snipped	사각형: 한쪽 잘린 모서리
+	Rectangle: Diagonal Corners Rounded	사각형: 대각선 둥근 모서리
+	Rectangle: Diagonal Corners Snipped	사각형: 대각선 잘린 모서리
+	Rectangle: Top Corners Rounded	사각형: 위쪽 둥근 모서리
+	Rectangle: Top Corners Snipped	사각형: 위쪽 잘린 모서리
+	Rectangle: Top Corners One Rounded and One Snipped	사각형: 위쪽 둥근 모서리와 잘린 모서리
+	Isosceles Triangle	이등변 삼각형
+	Right Triangle	직각 삼각형
+	Parallelogram	평행 사변형
+	Trapezoid	사다리꼴
+	Trapezoid: Uneven Sides	사다리꼴: 길이가 다른 변
+	Regular Pentagon	정오각형
+	Heptagon	칠각형
+	Decagon	십각형
+	Dodecagon	십이각형
+	Pie	부채꼴
+	Chord	현
+	Teardrop	눈물 방울
+	Partial Circle	부분 원
+	Half Frame	반쪽 프레임
+	L-Shape	L자형
+	Diagonal Stripe	대각선 줄무늬
+	Plus	더하기
+	Plaque	액자
+	Cylinder	원통
+	Folded Corner	접힌 모서리
+	Donut	도넛
+	"Not Allowed" Symbol	"허용 안 됨" 기호
+	Block Arc	블록 호
+	Smiley Face	웃는 얼굴
+	Lightning Bolt	번개
+	Sun	해
+	Moon	달
+	Crescent Moon	초승달
+	Cloud	구름
+	Double Bracket	양쪽 대괄호
+	Double Brace	양쪽 중괄호
+	Left Bracket	왼쪽 대괄호
+	Right Bracket	오른쪽 대괄호
+	Left Brace	왼쪽 중괄호
+	Right Brace	오른쪽 중괄호
+	Curved Square	곡선 사각형
+	Bean	콩
+	Peanut	땅콩
+	Football	미식축구공
+	Spinner	회전체
+	Gear	톱니바퀴
+	Gear: 6 Teeth	톱니바퀴: 톱니 6개
+	Gear: 9 Teeth	톱니바퀴: 톱니 9개
+	Quarter Wedge	4분의 1 쐐기
+	Wedge	쐐기
+	Corner Tabs: Quarter Circles	모서리 탭: 4분원
+	Corner Tabs: Squares	모서리 탭: 정사각형
+	Corner Tabs: Triangles	모서리 탭: 삼각형
+	Chart Marker: Cross Lines	차트 표식: X자 선
+	Chart Marker: Plus Lines	차트 표식: 십자 선
+	Chart Marker: Star Lines	차트 표식: 별 선
+	Arrow: Right	화살표: 오른쪽
+	Arrow: Left	화살표: 왼쪽
+	Arrow: Up	화살표: 위쪽
+	Arrow: Down	화살표: 아래쪽
+	Arrow: Left-Right	화살표: 왼쪽/오른쪽
+	Arrow: Up-Down	화살표: 위쪽/아래쪽
+	Arrow: Quad	화살표: 네 방향
+	Arrow: Left-Right-Up	화살표: 왼쪽/오른쪽/위쪽
+	Arrow: Bent	화살표: 굽음
+	Arrow: U-Turn	화살표: U자형
+	Arrow: Left-Up	화살표: 왼쪽/위쪽
+	Arrow: Bent-Up	화살표: 위로 굽음
+	Arrow: Curved Right	화살표: 오른쪽으로 휨
+	Arrow: Curved Left	화살표: 왼쪽으로 휨
+	Arrow: Curved Up	화살표: 위로 휨
+	Arrow: Curved Down	화살표: 아래로 휨
+	Arrow: Striped Right	화살표: 줄무늬 오른쪽
+	Arrow: Notched Right	화살표: 홈 오른쪽
+	Arrow: Pentagon	화살표: 오각형
+	Arrow: Chevron	화살표: 갈매기형
+	Arrow: Circular	화살표: 원형
+	Arrow: Circular Counter-clockwise	화살표: 시계 반대 방향 원형
+	Arrow: Circular Two-headed	화살표: 양쪽 원형
+	Arrow: Swoosh	화살표: 휘어짐
+	Equals	등호
+	Not Equal	같지 않음 기호
+	Minus Sign	빼기 기호
+	Multiplication Sign	곱하기 기호
+	Division Sign	나누기 기호
+	Plus Sign	더하기 기호
+	Flowchart: Process	순서도: 처리
+	Flowchart: Alternate Process	순서도: 대체 처리
+	Flowchart: Decision	순서도: 판단
+	Flowchart: Data	순서도: 데이터
+	Flowchart: Predefined Process	순서도: 미리 정의된 처리
+	Flowchart: Internal Storage	순서도: 내부 저장소
+	Flowchart: Document	순서도: 문서
+	Flowchart: Multidocument	순서도: 여러 문서
+	Flowchart: Terminator	순서도: 단말
+	Flowchart: Preparation	순서도: 준비
+	Flowchart: Manual Input	순서도: 수동 입력
+	Flowchart: Manual Operation	순서도: 수동 연산
+	Flowchart: Connector	순서도: 연결자
+	Flowchart: Off-page Connector	순서도: 페이지 외부 연결자
+	Flowchart: Card	순서도: 카드
+	Flowchart: Punched Tape	순서도: 천공 테이프
+	Flowchart: Summing Junction	순서도: 합계 연결
+	Flowchart: Or	순서도: 논리합
+	Flowchart: Collate	순서도: 대조
+	Flowchart: Sort	순서도: 정렬
+	Flowchart: Extract	순서도: 추출
+	Flowchart: Merge	순서도: 병합
+	Flowchart: Stored Data	순서도: 저장 데이터
+	Flowchart: Delay	순서도: 지연
+	Flowchart: Sequential Access Storage	순서도: 순차적 액세스 저장소
+	Flowchart: Magnetic Disk	순서도: 자기 디스크
+	Flowchart: Direct Access Storage	순서도: 직접 액세스 저장소
+	Flowchart: Display	순서도: 표시
+	Flowchart: Offline Storage	순서도: 오프라인 저장소
+	Explosion: 8 Points	폭발: 꼭짓점 8개
+	Explosion: 14 Points	폭발: 꼭짓점 14개
+	Star: 4 Points	별: 꼭짓점 4개
+	Star: 5 Points	별: 꼭짓점 5개
+	Star: 6 Points	별: 꼭짓점 6개
+	Star: 7 Points	별: 꼭짓점 7개
+	Star: 8 Points	별: 꼭짓점 8개
+	Star: 10 Points	별: 꼭짓점 10개
+	Star: 12 Points	별: 꼭짓점 12개
+	Star: 16 Points	별: 꼭짓점 16개
+	Star: 24 Points	별: 꼭짓점 24개
+	Star: 32 Points	별: 꼭짓점 32개
+	Ribbon: Tilted Up	리본: 위로 기울어짐
+	Ribbon: Tilted Down	리본: 아래로 기울어짐
+	Ribbon: Curved and Tilted Up	리본: 위로 휘고 기울어짐
+	Ribbon: Curved and Tilted Down	리본: 아래로 휘고 기울어짐
+	Ribbon: Left-Right Fold	리본: 좌우 접힘
+	Scroll: Vertical	두루마리: 세로
+	Scroll: Horizontal	두루마리: 가로
+	Double Wave	이중 물결
+	Speech Bubble: Rectangle	말풍선: 사각형
+	Speech Bubble: Rectangle with Corners Rounded	말풍선: 모서리가 둥근 사각형
+	Speech Bubble: Oval	말풍선: 타원
+	Thought Bubble: Cloud	생각 풍선: 구름
+	Callout: Line	설명선: 선
+	Callout: Bent Line	설명선: 굽은 선
+	Callout: Double Bent Line	설명선: 두 번 굽은 선
+	Callout: Line with Accent Bar	설명선: 강조 막대가 있는 선
+	Callout: Bent Line with Accent Bar	설명선: 강조 막대가 있는 굽은 선
+	Callout: Double Bent Line with Accent Bar	설명선: 강조 막대가 있는 두 번 굽은 선
+	Callout: Line with No Border	설명선: 테두리 없는 선
+	Callout: Bent Line with No Border	설명선: 테두리 없는 굽은 선
+	Callout: Double Bent Line with No Border	설명선: 테두리 없는 두 번 굽은 선
+	Callout: Line with Border and Accent Bar	설명선: 테두리와 강조 막대가 있는 선
+	Callout: Bent Line with Border and Accent Bar	설명선: 테두리와 강조 막대가 있는 굽은 선
+	Callout: Double Bent Line with Border and Accent Bar	설명선: 테두리와 강조 막대가 있는 두 번 굽은 선
+	Callout: Right Arrow	설명선: 오른쪽 화살표
+	Callout: Left Arrow	설명선: 왼쪽 화살표
+	Callout: Up Arrow	설명선: 위쪽 화살표
+	Callout: Down Arrow	설명선: 아래쪽 화살표
+	Callout: Left-Right Arrow	설명선: 왼쪽/오른쪽 화살표
+	Callout: Up-Down Arrow	설명선: 위쪽/아래쪽 화살표
+	Callout: Quad Arrow	설명선: 네 방향 화살표
+	Action Button: Go Back or Previous	실행 버튼: 뒤로 또는 이전
+	Action Button: Go Forward or Next	실행 버튼: 앞으로 또는 다음
+	Action Button: Go to Beginning	실행 버튼: 처음으로
+	Action Button: Go to End	실행 버튼: 끝으로
+	Action Button: Go Home	실행 버튼: 홈으로
+	Action Button: Get Information	실행 버튼: 정보 보기
+	Action Button: Go Back	실행 버튼: 돌아가기
+	Action Button: Video	실행 버튼: 동영상
+	Action Button: Document	실행 버튼: 문서
+	Action Button: Sound	실행 버튼: 소리
+	Action Button: Help	실행 버튼: 도움말
+	Action Button: Custom	실행 버튼: 사용자 지정
+	Connector: Elbow	연결선: 꺾임
+	Connector: Elbow (one bend)	연결선: 꺾임 (한 번)
+	Connector: Curved	연결선: 곡선
+	Line: Rising	선: 오르막
+
+# Diagram layouts and their groups
+	Process	프로세스
+	Cycle	주기형
+	Hierarchy	계층 구조
+	Relationship	관계형
+	Matrix	행렬형
+	Basic Block List	기본 블록 목록
+	Vertical Bullet List	세로 글머리 기호 목록
+	Horizontal Bullet List	가로 글머리 기호 목록
+	Vertical Box List	세로 상자 목록
+	Table List	표 목록
+	Trapezoid List	사다리꼴 목록
+	Picture Caption List	그림 캡션 목록
+	Horizontal Picture List	가로 그림 목록
+	Vertical Picture List	세로 그림 목록
+	Basic Process	기본 프로세스
+	Accent Process	강조 프로세스
+	Basic Chevron Process	기본 갈매기형 프로세스
+	Continuous Block Process	연속 블록 프로세스
+	Step Up Process	계단식 상승 프로세스
+	Basic Bending Process	기본 굽은 프로세스
+	Vertical Process	세로 프로세스
+	Basic Timeline	기본 시간 표시 막대
+	Picture Accent Process	그림 강조 프로세스
+	Basic Cycle	기본 주기형
+	Text Cycle	텍스트 주기형
+	Block Cycle	블록 주기형
+	Continuous Cycle	연속 주기형
+	Segmented Cycle	분할 주기형
+	Multidirectional Cycle	다방향 주기형
+	Basic Pie	기본 원형
+	Organization Chart	조직도
+	Name and Title Organization Chart	이름 및 직함 조직도
+	Half Circle Organization Chart	반원 조직도
+	Horizontal Hierarchy	가로 계층 구조
+	Basic Venn	기본 벤형
+	Linear Venn	선형 벤형
+	Stacked Venn	누적 벤형
+	Basic Target	기본 과녁형
+	Nested Target	중첩 과녁형
+	Basic Radial	기본 방사형
+	Basic Matrix	기본 행렬형
+	Titled Matrix	제목 있는 행렬형
+	Grid Matrix	격자 행렬형
+	Cycle Matrix	주기 행렬형
+	Basic Pyramid	기본 피라미드형
+	Inverted Pyramid	역피라미드형
+	Segmented Pyramid	분할 피라미드형
+
+# Insert › Icons: the gallery's groups and the icons' names (deckcraft-engine icon_data.rs;
+# the search matches the id, the English name and these)
+	Marks	기호
+	People	사람
+	Communication	소통
+	Charts	차트
+	Places	장소
+	Media	미디어
+	Arrow up	위쪽 화살표
+	Arrow down	아래쪽 화살표
+	Arrow left	왼쪽 화살표
+	Arrow right	오른쪽 화살표
+	Chevron	갈매기표
+	Check	확인 표시
+	Minus	빼기
+	Flag	깃발
+	Bookmark	책갈피
+	Award	상장
+	Thumbs up	좋아요
+	Check circle	원 안 확인 표시
+	Users	사용자들
+	Account	계정
+	Hand	손
+	Calendar	달력
+	Hourglass	모래시계
+	Timer	타이머
+	Mail	메일
+	Phone	전화
+	Message	메시지
+	Bell	종
+	Megaphone	확성기
+	Mention	멘션
+	Column chart	세로 막대 차트
+	Bar chart	가로 막대 차트
+	Pie chart	원형 차트
+	Trend	추세
+	Idea	아이디어
+	Presentation	프레젠테이션
+	Attachment	첨부
+	Pin	핀
+	Globe	지구본
+	Building	건물
+	Compass	나침반
+	Briefcase	서류 가방
+	Clapperboard	슬레이트 보드
+	Music	음악
+	Alert	경고
+	Key	열쇠
+	Bolt	번개

@@ -75,6 +75,16 @@ fn counts_keep_their_english_digits() {
 }
 
 #[test]
+fn fmt_writes_what_format_wrote() {
+    // No direction isolates around right-to-left values: egui doesn't do bidi (Ruling 13).
+    for value in ["Paste", "שלום", "مرحبا.pptx"] {
+        assert_eq!(fmt("{name} options", &[("name", value)]), format!("{value} options"));
+        assert_eq!(fmt("{title} — Edited", &[("title", value)]), format!("{value} — Edited"));
+    }
+    assert!(!fmt("{a} {b}", &[("a", "עברית"), ("b", "1")]).chars().any(|c| ('\u{2066}'..='\u{2069}').contains(&c)));
+}
+
+#[test]
 fn the_language_is_per_thread() {
     set_current(resolve("ko"));
     let other = std::thread::spawn(current).join().unwrap();
@@ -195,4 +205,166 @@ fn candidate_scan_finds_interface_text_by_area() {
     if std::env::var_os("I18N_AUDIT_LIST").is_some() {
         eprintln!("{}", audit::problems(&src()).join("\n"));
     }
+}
+
+/// Every interface string of the first ribbon tabs (Home … Animations, the galleries, the Quick
+/// Access Toolbar and the title bar) has a Korean row or a reason to stay English, and egui's
+/// own calls look it up.
+#[test]
+fn korean_coverage_ribbon_1() {
+    let mut problems = Vec::new();
+    for file in ["home", "insert", "draw", "design", "transitions", "animations", "galleries", "qat", "title_bar"] {
+        problems.extend(audit::problems(&src().join("ribbon").join(format!("{file}.rs"))));
+    }
+    assert!(problems.is_empty(), "no Korean row (deckcraft.tsv) or keep_english.txt entry, or not wrapped in t():\n{}", problems.join("\n"));
+}
+
+/// The names the first ribbon tabs show from built-in data (themes and their colour, font and
+/// effect schemes, transitions, animations and their options, sounds, shapes, diagram layouts,
+/// chart types, Insert › Icons' groups and names) have Korean rows. The data and what the document stores stay English; only the
+/// display is looked up.
+#[test]
+fn korean_gallery_names() {
+    use deckcraft_model::anim::{ANIMATIONS, TRANSITIONS, transition_option_label};
+    use deckcraft_model::theme;
+    let mut names: BTreeSet<String> = BTreeSet::new();
+    let builtin = theme::builtin_themes();
+    for th in &builtin {
+        names.insert(th.name.clone());
+    }
+    names.extend(theme::builtin_color_schemes().into_iter().map(|c| c.name));
+    names.extend(theme::builtin_font_schemes().into_iter().map(|f| f.name));
+    names.extend(theme::builtin_format_schemes().into_iter().map(|f| f.name));
+    for &(kind, name, category, _, options) in TRANSITIONS {
+        names.extend([name.to_string(), category.to_string()]);
+        names.extend(options.iter().map(|o| transition_option_label(kind, o)));
+    }
+    for &(effect, name, _, _, _, options) in ANIMATIONS {
+        names.insert(name.to_string());
+        names.extend(options.iter().map(|o| crate::ribbon::animation_option_label(effect, o)));
+    }
+    for icon in deckcraft_engine::icons::icons() {
+        names.extend([icon.category.to_string(), icon.label.to_string()]);
+    }
+    names.extend(deckcraft_engine::sounds::BUILTIN.iter().map(|(_, l)| l.to_string()));
+    names.extend(deckcraft_engine::tools::FREEFORM_TOOLS.iter().map(|(_, l)| l.to_string()));
+    names.extend(deckcraft_geom::preset::Category::ALL.iter().map(|c| c.label().to_string()));
+    names.extend(deckcraft_geom::preset::CATALOG.iter().map(|p| p.label.to_string()));
+    names.extend(deckcraft_engine::cmd::smartart::LAYOUTS.iter().map(|(_, l)| l.to_string()));
+    let ko = I18N.from_code("ko").unwrap();
+    let charts: Vec<&str> = crate::ribbon::chart_menu_types().into_iter().flatten().map(|k| k.label()).collect();
+    names.extend(charts.iter().filter(|l| I18N.get(ko, "chart", l).is_none()).map(|l| l.to_string()));
+    let keep = audit::keep_english();
+    // Kept in every language: the built-in theme's name and the font schemes named after fonts.
+    let named = ["DeckCraft", "Inter", "Times / Arial"];
+    let missing: Vec<&String> = names.iter().filter(|n| !has_ko(n) && !keep.contains(*n) && !named.contains(&n.as_str())).collect();
+    assert!(
+        missing.is_empty(),
+        "{} gallery names without a Korean row:\n{}",
+        missing.len(),
+        missing.iter().map(|n| format!("\t{n}\t")).collect::<Vec<_>>().join("\n")
+    );
+}
+
+/// The whole app with a new presentation, drawn in Korean. A build without craft-fonts has no
+/// Hangul face, so missing glyphs draw as boxes; the tests check names, not glyphs.
+fn korean_harness() -> egui_kittest::Harness<'static, crate::SlideApp> {
+    let app = crate::SlideApp::new(deckcraft_engine::Session::with_new(), crate::Services::default());
+    let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_ui_state(
+        |ui, app: &mut crate::SlideApp| {
+            app.logic(ui.ctx());
+            app.ui(ui);
+        },
+        app,
+    );
+    h.ctx.set_missing_glyph_policy(egui::MissingGlyphPolicy::Tofu);
+    h.state_mut().ui.language = "ko".into();
+    // The app keeps asking for frames, so step instead of run().
+    h.run_steps(3);
+    h
+}
+
+/// Clicking a ribbon tab by its Korean name saves its English id, and a ribbon button added to
+/// the Quick Access Toolbar from Korean saves its command and English label.
+#[test]
+fn tab_id_stays_english_in_korean() {
+    use egui_kittest::kittest::Queryable;
+    let mut h = korean_harness();
+    h.get_by_role_and_label(egui::accesskit::Role::Button, "삽입").click();
+    h.run_steps(3);
+    assert_eq!(h.state().ui.tab, "Insert");
+    h.get_by_role_and_label(egui::accesskit::Role::Button, "수식").click_secondary();
+    h.run_steps(3);
+    h.get_by_label("빠른 실행 도구 모음에 추가").click();
+    h.run_steps(3);
+    let added = h.state().ui.qat.last().cloned().unwrap();
+    assert_eq!((added.id.as_str(), added.label.as_str()), ("app.dialog", "Equation"), "ui.json keeps the command and the English label");
+    assert_eq!(added.params, serde_json::json!({"id": "equation"}));
+    // The toolbar's tooltip adds the shortcut (and Alt+N off the Mac), so match the start.
+    assert!(h.query_all_by_label_contains("수식").count() >= 2, "the toolbar shows the added button in Korean");
+}
+
+/// A ribbon button's tooltip (its label and shortcut, made by `ribbon::tip`) is in Korean.
+#[test]
+fn ribbon_tooltips_are_korean() {
+    use egui_kittest::kittest::Queryable;
+    let mut h = korean_harness();
+    h.get_by_role_and_label(egui::accesskit::Role::Button, "잘라내기").hover();
+    h.run_steps(5);
+    let shortcut = crate::ribbon::pretty_shortcut(deckcraft_engine::find_command("edit.cut").and_then(|c| c.shortcut).unwrap());
+    assert!(h.query_by_label(&format!("잘라내기 ({shortcut})")).is_some(), "the Cut button's tooltip is translated");
+    assert!(h.query_by_label_contains("Cut (").is_none());
+}
+
+/// Ribbon buttons save their label on one line in the Quick Access Toolbar ("Add Animation");
+/// the toolbar still shows it translated. Every two-line ribbon label with a Korean row, in every
+/// ribbon file (later tabs included), goes through the toolbar's display.
+#[test]
+fn qat_shows_one_line_ribbon_labels_in_korean() {
+    let mut found = audit::candidates(&src().join("ribbon"));
+    found.extend(audit::candidates(&src().join("ribbon.rs")));
+    let two_line: BTreeSet<String> = found.into_iter().map(|c| c.text.replace("\\n", "\n")).filter(|t| t.contains('\n')).collect();
+    assert!(two_line.contains("Add\nAnimation"), "{two_line:?}");
+    set_current(resolve("ko"));
+    let wrong: Vec<String> = two_line
+        .iter()
+        .filter(|l| has_ko(l))
+        .filter_map(|l| {
+            let saved = l.replace('\n', " ");
+            let want = t(l).replace('\n', " ");
+            let got = crate::qat::shown_label(&saved);
+            (got != want).then(|| format!("{saved:?}: {got:?}, want {want:?}"))
+        })
+        .collect();
+    set_current(craft_i18n::Lang::EN);
+    assert!(wrong.is_empty(), "{}", wrong.join("\n"));
+    assert_eq!(crate::qat::shown_label("Add Animation"), "Add Animation", "English stays as saved");
+}
+
+/// The Sound box shows a built-in sound's name translated; a file the user chose keeps its name.
+#[test]
+fn transition_sound_names_show_translated() {
+    set_current(resolve("ko"));
+    assert_eq!(crate::ribbon::sound_name("Chime.wav"), t("Chime"));
+    assert_ne!(crate::ribbon::sound_name("Chime.wav"), "Chime");
+    assert_eq!(crate::ribbon::sound_name("my applause.wav"), "my applause");
+    assert_eq!(crate::ribbon::sound_name("Chime.mp3"), "Chime.mp3");
+    set_current(craft_i18n::Lang::EN);
+    assert_eq!(crate::ribbon::sound_name("Chime.wav"), "Chime");
+}
+
+/// Insert › Icons' search finds an icon by its id, its English name and its Korean name.
+#[test]
+fn icon_search_matches_english_and_korean_names() {
+    let icons = deckcraft_engine::icons::icons();
+    let found = |q: &str| icons.iter().filter(|i| crate::ribbon::icon_matches(i, q)).map(|i| i.name).collect::<Vec<_>>();
+    set_current(resolve("ko"));
+    let korean = t("Calendar").to_lowercase();
+    assert_ne!(korean, "calendar");
+    for q in ["calendar", korean.as_str()] {
+        assert!(found(q).contains(&"calendar"), "{q:?} finds the calendar icon: {:?}", found(q));
+    }
+    assert!(found("arrow-up").contains(&"arrow-up"), "and by id");
+    set_current(craft_i18n::Lang::EN);
+    assert!(found(&korean).is_empty(), "English doesn't match Korean names");
 }

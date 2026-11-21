@@ -1,3 +1,5 @@
+use crate::i18n::{fmt, t};
+
 use super::{
     Align2, Color32, CornerRadius, Icon, Rect, Sense, SlideApp, Stroke, Tokens, Ui, big, big_button, enabled, group, json, pos2, run, scheme,
     small_button, theme, vec2, widgets,
@@ -36,7 +38,14 @@ pub(super) fn design(app: &mut SlideApp, ui: &mut Ui) {
     if let Some(th) = app.session.active().and_then(|d| d.doc.masters.first().map(|m| m.theme.clone())) {
         let variants = deckcraft_model::theme::theme_variants(&th);
         let tiles: Vec<deckcraft_model::Theme> = variants.iter().map(|c| deckcraft_model::Theme { colors: c.clone(), ..th.clone() }).collect();
-        let names: Vec<String> = variants.iter().map(|c| c.name.clone()).collect();
+        // Shown translated: "Ocean 2" is the theme's name and a number.
+        let names: Vec<String> = variants
+            .iter()
+            .map(|c| match c.name.rsplit_once(' ') {
+                Some((name, n)) if n.parse::<u32>().is_ok() => format!("{} {n}", t(name)),
+                _ => t(&c.name).to_string(),
+            })
+            .collect();
         let sel = variants.iter().position(|c| c.colors == th.colors.colors);
         group(ui, |ui| {
             if let Some(i) = widgets::gallery(
@@ -57,7 +66,7 @@ pub(super) fn design(app: &mut SlideApp, ui: &mut Ui) {
     }
     group(ui, |ui| {
         let r = big_button(ui, Icon::Colors, "Colors", true);
-        r.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, "Colors"));
+        r.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, t("Colors")));
         egui::Popup::menu(&r).width(240.0).show(|ui| {
             for cs in deckcraft_model::theme::builtin_color_schemes() {
                 ui.horizontal(|ui| {
@@ -70,7 +79,7 @@ pub(super) fn design(app: &mut SlideApp, ui: &mut Ui) {
                             theme::to_color32(*c),
                         );
                     }
-                    p.text(rect.min + vec2(104.0, 10.0), Align2::LEFT_CENTER, &cs.name, theme::font(12.0), Tokens::get(ui.ctx()).text);
+                    p.text(rect.min + vec2(104.0, 10.0), Align2::LEFT_CENTER, t(&cs.name), theme::font(12.0), Tokens::get(ui.ctx()).text);
                     if resp.clicked() {
                         run(app, "design.colors", json!({"name": cs.name}));
                         ui.close();
@@ -78,30 +87,30 @@ pub(super) fn design(app: &mut SlideApp, ui: &mut Ui) {
                 });
             }
             ui.separator();
-            if ui.button("Customize Colors…").clicked() {
+            if ui.button(t("Customize Colors…")).clicked() {
                 run(app, "design.colors", json!({}));
                 ui.close();
             }
         });
         let r = big_button(ui, Icon::Fonts, "Fonts", true);
-        r.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, "Fonts"));
+        r.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, t("Fonts")));
         egui::Popup::menu(&r).width(220.0).show(|ui| {
             for fs in deckcraft_model::theme::builtin_font_schemes() {
-                if ui.button(format!("{}\n   {} / {}", fs.name, fs.major.latin, fs.minor.latin)).clicked() {
+                if ui.button(format!("{}\n   {} / {}", t(&fs.name), fs.major.latin, fs.minor.latin)).clicked() {
                     run(app, "design.fonts", json!({"name": fs.name}));
                 }
             }
             ui.separator();
-            if ui.button("Customize Fonts…").clicked() {
+            if ui.button(t("Customize Fonts…")).clicked() {
                 run(app, "design.fonts", json!({}));
                 ui.close();
             }
         });
         let r = big_button(ui, Icon::ShapeEffects, "Effects", true);
-        r.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, "Effects"));
+        r.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, t("Effects")));
         egui::Popup::menu(&r).width(180.0).show(|ui| {
             for fs in deckcraft_model::theme::builtin_format_schemes() {
-                if ui.button(&fs.name).clicked() {
+                if ui.button(t(&fs.name)).clicked() {
                     run(app, "design.effects", json!({"name": fs.name}));
                     ui.close();
                 }
@@ -126,7 +135,7 @@ pub(super) fn design(app: &mut SlideApp, ui: &mut Ui) {
                     };
                     let (rect, resp) = ui.allocate_exact_size(vec2(48.0, 28.0), Sense::click());
                     ui.painter().rect(rect, CornerRadius::same(2), shade, Stroke::new(1.0, Tokens::get(ui.ctx()).border), egui::StrokeKind::Inside);
-                    if resp.on_hover_text(format!("Style {i}")).clicked() {
+                    if resp.on_hover_text(fmt(t("Style {n}"), &[("n", &i.to_string())])).clicked() {
                         run(app, "design.background", json!({"style": i, "all": true}));
                         ui.close();
                     }
@@ -135,7 +144,7 @@ pub(super) fn design(app: &mut SlideApp, ui: &mut Ui) {
                     }
                 }
             });
-            if ui.button("Reset Slide Background").clicked() {
+            if ui.button(t("Reset Slide Background")).clicked() {
                 run(app, "design.background", json!({"reset": true}));
             }
         });
@@ -143,13 +152,13 @@ pub(super) fn design(app: &mut SlideApp, ui: &mut Ui) {
     group(ui, |ui| {
         let r = big_button(ui, Icon::SlideSize, "Slide\nSize", true);
         egui::Popup::menu(&r).show(|ui| {
-            if ui.button("Standard (4:3)").clicked() {
+            if ui.button(t("Standard (4:3)")).clicked() {
                 run(app, "design.slideSize", json!({"preset": "standard"}));
             }
-            if ui.button("Widescreen (16:9)").clicked() {
+            if ui.button(t("Widescreen (16:9)")).clicked() {
                 run(app, "design.slideSize", json!({"preset": "widescreen"}));
             }
-            if ui.button("Page Setup…").clicked() {
+            if ui.button(t("Page Setup…")).clicked() {
                 app.dialog = Some(crate::dialogs::Dialog::new("slideSize"));
             }
         });

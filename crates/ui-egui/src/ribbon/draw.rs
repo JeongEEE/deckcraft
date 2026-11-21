@@ -1,3 +1,5 @@
+use crate::i18n::t;
+
 use super::{Icon, SlideApp, Ui, big_button, big_button_ex, group, json, run};
 
 // ---------- Draw ----------
@@ -33,13 +35,13 @@ pub(super) fn draw(app: &mut SlideApp, ui: &mut Ui) {
     group(ui, |ui| {
         let has_ink = app.session.doc().is_ok_and(|d| d.shapes().iter().any(|s| matches!(s.kind, deckcraft_model::ShapeKind::Ink { .. })));
         let r = big_button(ui, Icon::InkToShape, "Ink to\nShape", has_ink);
-        if r.on_hover_text("Ink to Shape: turn drawn lines, rectangles, ovals and triangles into shapes").clicked() {
+        if r.on_hover_text(t("Ink to Shape: turn drawn lines, rectangles, ovals and triangles into shapes")).clicked() {
             app.session.set_tool(ToolKind::Select);
             run(app, "draw.inkToShape", json!({}));
         }
         let r = big_button(ui, Icon::InkToText, "Ink to\nText", false);
-        let _ = r.on_hover_text("Ink to Text (coming soon)");
+        let _ = r.on_hover_text(t("Ink to Text (coming soon)"));
         let r = big_button(ui, Icon::InkToMath, "Ink to\nMath", false);
-        let _ = r.on_hover_text("Ink to Math (coming soon)");
+        let _ = r.on_hover_text(t("Ink to Math (coming soon)"));
     });
 }

@@ -18,14 +18,13 @@
 //!
 //! - [`t`]: a string in the current language. [`tc`]: worded for a context (a tight spot).
 //! - [`tn`]: a count's wording (`{n} slide|{n} slides`).
-//! - [`fmt`]: fill `{name}` placeholders after a lookup; translators may reorder them.
+//! - [`fmt`]: fill `{name}` placeholders after a lookup; translators may reorder them. No
+//!   direction isolates.
 
 use std::cell::Cell;
 use std::sync::{LazyLock, OnceLock};
 
 use craft_i18n::{I18n, Lang};
-
-pub use craft_i18n::fmt;
 
 /// The embedded catalogs: (locale, shared catalog, Slide's catalog).
 static EMBEDDED: [(&str, &str, &str); 1] = [("ko", include_str!("../i18n/ko/common.tsv"), include_str!("../i18n/ko/deckcraft.tsv"))];
@@ -104,6 +103,14 @@ pub fn tc<'a>(context: &str, s: &'a str) -> &'a str {
 /// `format!` wrote it before, so the English text is unchanged.
 pub fn tn(n: u64, one: &str, other: &str) -> String {
     I18N.trn_plain(current(), n, one, other)
+}
+
+/// Fill `{name}` placeholders in `template` (after a lookup; translators may reorder them).
+/// Without direction isolates (U+2066–U+2069), unlike `craft_i18n::fmt`: egui lays text out
+/// left to right without bidi, so the marks would only change the English text (and could draw
+/// as boxes). The text is what `format!` wrote before.
+pub fn fmt(template: &str, args: &[(&str, &str)]) -> String {
+    craft_i18n::fmt_plain(template, args)
 }
 
 /// Whether the Korean catalogs have a plain row for `s`.

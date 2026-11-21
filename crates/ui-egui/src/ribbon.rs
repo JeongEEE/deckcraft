@@ -32,6 +32,8 @@ mod title_bar;
 mod transitions;
 mod view;
 
+#[cfg(test)]
+pub(crate) use animations::animation_option_label;
 use animations::animations;
 pub use animations::paint_anim_tile;
 #[cfg(test)]
@@ -46,6 +48,8 @@ pub use home::font_families;
 use home::home;
 use insert::insert;
 pub use insert::table_grid_picker;
+#[cfg(test)]
+pub(crate) use insert::{chart_menu_types, icon_matches};
 use masters::{handout_master, notes_master, slide_master};
 use picture_format::picture_format;
 use playback::playback;
@@ -59,6 +63,8 @@ pub use title_bar::{MAC_CONTENT_LEFT, MAC_TITLE_BAR, TITLE_H, title_bar};
 #[cfg(test)]
 use title_bar::{MAC_LIGHT, MAC_LIGHT_PITCH, MAC_LIGHTS_LEFT, title_geometry};
 pub use transitions::paint_transition_tile;
+#[cfg(test)]
+pub(crate) use transitions::sound_name;
 #[cfg(test)]
 use transitions::transition_effect_rows;
 use transitions::transitions;
@@ -150,7 +156,7 @@ pub fn show(app: &mut SlideApp, ui: &mut Ui) {
                 ui.painter().rect_filled(r.shrink2(vec2(2.0, 2.0)), CornerRadius::same(4), t.hover);
             }
             ui.painter().text(r.center(), Align2::CENTER_CENTER, file, theme::font(13.0), t.text);
-            if resp.on_hover_text("File (Alt+F)").clicked() {
+            if resp.on_hover_text(format!("{file} (Alt+F)")).clicked() {
                 app.open_backstage(crate::backstage::Page::Home);
             }
             x += w + 2.0;
@@ -297,6 +303,7 @@ pub(super) fn spare_room(ctx: &egui::Context, tab: &str) -> Option<f32> {
 
 /// A chevron over a ribbon edge that scrolls it; `true` on the frame it is clicked.
 fn edge_cue(ui: &mut Ui, rect: Rect, glyph: &str, hint: &str, t: &Tokens) -> bool {
+    let hint = crate::i18n::t(hint);
     let resp = ui.interact(rect, ui.scope_id().with(glyph), Sense::click()).on_hover_text(hint);
     resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, hint));
     let ink = if resp.hovered() { t.text } else { t.text_dim };
@@ -311,7 +318,7 @@ fn big(app: &mut SlideApp, ui: &mut Ui, icon: Icon, label: &str, id: &str, p: Va
     let en = enabled(app, id);
     let r = big_button(ui, icon, label, en);
     if id == "insert.dateTime" {
-        let name = label.replace('\n', " ");
+        let name = crate::i18n::t(label).replace('\n', " ");
         r.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, en, &name));
     }
     let r = r.on_hover_text(tip(id, label));
@@ -337,7 +344,9 @@ fn toggle(app: &mut SlideApp, ui: &mut Ui, icon: Icon, label: &str, id: &str, on
     }
 }
 
+/// A ribbon button's tooltip: its label in the interface language, then the shortcut.
 fn tip(id: &str, label: &str) -> String {
+    let label = crate::i18n::t(label);
     let sc = deckcraft_engine::find_command(id).and_then(|c| c.shortcut).or_else(|| crate::UI_COMMANDS.iter().find(|c| c.0 == id).and_then(|c| c.2));
     match sc {
         Some(s) => format!("{label} ({})", pretty_shortcut(s)),

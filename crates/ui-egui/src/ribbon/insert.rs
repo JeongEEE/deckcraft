@@ -1,3 +1,5 @@
+use crate::i18n::{fmt, t, tc};
+
 use super::galleries::{Fl, kurbo_flatten, shapes_gallery};
 use super::home::layout_menu;
 use super::view::zoom_menu;
@@ -11,10 +13,10 @@ fn photo_album_button(app: &mut SlideApp, ui: &mut Ui) {
     let en = enabled(app, "insert.photoAlbum");
     let (main, arrow) = big_button_ex(ui, Icon::Picture, "Photo\nAlbum", en, true, false);
     let _ = main.clone().on_hover_text(tip("insert.photoAlbum", "Photo Album…"));
-    main.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, en, "Photo Album…"));
+    main.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, en, t("Photo Album…")));
     if let Some(a) = &arrow {
-        let _ = a.clone().on_hover_text("Photo Album options");
-        a.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, en, "Photo Album options"));
+        let _ = a.clone().on_hover_text(t("Photo Album options"));
+        a.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, en, t("Photo Album options")));
     }
     if main.clicked() {
         run(app, "insert.photoAlbum", json!({}));
@@ -47,11 +49,11 @@ pub(super) fn insert(app: &mut SlideApp, ui: &mut Ui) {
                 ui.close();
             }
             ui.separator();
-            if ui.button("Insert Table…").clicked() {
+            if ui.button(t("Insert Table…")).clicked() {
                 app.dialog = Some(crate::dialogs::Dialog::new("table"));
                 ui.close();
             }
-            if ui.button("Draw Table").clicked() {
+            if ui.button(t("Draw Table")).clicked() {
                 app.session.set_tool(deckcraft_engine::ToolKind::Shape { preset: deckcraft_engine::tools::DRAW_TABLE.into() });
                 ui.close();
             }
@@ -61,7 +63,7 @@ pub(super) fn insert(app: &mut SlideApp, ui: &mut Ui) {
         big(app, ui, Icon::Picture, "Pictures", "app.insertPictureDialog", json!({}));
         photo_album_button(app, ui);
         let r = big_button(ui, Icon::Screenshot, "Screenshot", false);
-        let _ = r.on_hover_text("Screenshot (not available yet)");
+        let _ = r.on_hover_text(t("Screenshot (not available yet)"));
     });
     group(ui, |ui| {
         let r = big_button(ui, Icon::Shapes, "Shapes", enabled(app, "shape.insert"));
@@ -80,7 +82,7 @@ pub(super) fn insert(app: &mut SlideApp, ui: &mut Ui) {
                     ui.separator();
                 }
                 if let Some(k) = k
-                    && ui.button(k.label()).clicked()
+                    && ui.button(tc("chart", k.label())).clicked()
                 {
                     run(app, "insert.chart", json!({"type": format!("{k:?}")}));
                 }
@@ -94,13 +96,14 @@ pub(super) fn insert(app: &mut SlideApp, ui: &mut Ui) {
         let r = big_button(ui, Icon::Action, "Action", enabled(app, "insert.actionButton"));
         egui::Popup::menu(&r).show(|ui| {
             for k in ["back", "forward", "beginning", "end", "home", "information", "return", "movie", "document", "sound", "help", "custom"] {
-                if ui.button(format!("Action Button: {k}")).clicked() {
+                // `k` is the command's kind id; only its display is looked up.
+                if ui.button(fmt(t("Action Button: {kind}"), &[("kind", tc("action", k))])).clicked() {
                     run(app, "insert.actionButton", json!({"kind": k}));
                 }
             }
             ui.separator();
             let has_sel = app.session.active().is_some_and(|s| !s.selection.shapes.is_empty());
-            if ui.add_enabled(has_sel, egui::Button::new("Action Settings…")).clicked() {
+            if ui.add_enabled(has_sel, egui::Button::new(t("Action Settings…"))).clicked() {
                 app.dialog = Some(crate::dialogs::Dialog::new("action"));
             }
         });
@@ -114,7 +117,7 @@ pub(super) fn insert(app: &mut SlideApp, ui: &mut Ui) {
         let r = big_button(ui, Icon::WordArt, "Decorative Text", enabled(app, "insert.wordArt"));
         egui::Popup::menu(&r).show(|ui| {
             for i in 0..6 {
-                if ui.button(format!("Decorative Text style {}", i + 1)).clicked() {
+                if ui.button(fmt(t("Decorative Text style {n}"), &[("n", &(i + 1).to_string())])).clicked() {
                     run(app, "insert.wordArt", json!({"style": i}));
                 }
             }
@@ -138,7 +141,11 @@ pub fn table_grid_picker(ui: &mut Ui) -> Option<(usize, usize)> {
     let id = ui.scope_id().with("tgrid");
     let mut hover: (usize, usize) = ui.data_mut(|d| d.get_temp(id).unwrap_or((0, 0)));
     let cell = 16.0;
-    let label = if hover.0 > 0 { format!("{}x{} Table", hover.1, hover.0) } else { "Insert Table".into() };
+    let label = if hover.0 > 0 {
+        fmt(crate::i18n::t("{cols}x{rows} Table"), &[("cols", &hover.1.to_string()), ("rows", &hover.0.to_string())])
+    } else {
+        crate::i18n::t("Insert Table").into()
+    };
     ui.label(label);
     let (rect, resp) = ui.allocate_exact_size(vec2(10.0 * (cell + 2.0), 8.0 * (cell + 2.0)), Sense::click());
     if let Some(p) = resp.hover_pos() {
@@ -171,7 +178,7 @@ fn render_icon_categories(app: &mut SlideApp, ui: &mut Ui, icons: &[deckcraft_en
         }
     }
     for cat in cats {
-        ui.label(egui::RichText::new(cat).small().strong());
+        ui.label(egui::RichText::new(t(cat)).small().strong());
         ui.horizontal_wrapped(|ui| {
             for icon in icons.iter().filter(|i| i.category == cat) {
                 icon_cell(app, ui, icon, color, hover);
@@ -184,15 +191,21 @@ fn render_filtered_icons(app: &mut SlideApp, ui: &mut Ui, icons: &[deckcraft_eng
     let mut n = 0;
     ui.horizontal_wrapped(|ui| {
         for icon in icons {
-            if icon.name.contains(q) || icon.label.to_lowercase().contains(q) {
+            if icon_matches(icon, q) {
                 icon_cell(app, ui, icon, color, hover);
                 n += 1;
             }
         }
     });
     if n == 0 {
-        ui.label("No icons match.");
+        ui.label(t("No icons match."));
     }
+}
+
+/// Whether the icon search `q` (trimmed, lower case) finds `icon`: by its id, its English name or
+/// its name in the interface language.
+pub(crate) fn icon_matches(icon: &deckcraft_engine::icons::Icon, q: &str) -> bool {
+    icon.name.contains(q) || icon.label.to_lowercase().contains(q) || t(icon.label).to_lowercase().contains(q)
 }
 
 /// Lucide stroke icons (Insert › Icons). Search filters the gallery; a click inserts the outline.
@@ -201,7 +214,7 @@ fn icon_library(app: &mut SlideApp, ui: &mut Ui) {
     let (color, hover) = (t.text, t.hover);
     let id = ui.scope_id().with("icon-query");
     let mut query = ui.data_mut(|d| d.get_temp::<String>(id).unwrap_or_default());
-    ui.add(egui::TextEdit::singleline(&mut query).hint_text("Search icons").desired_width(ui.available_width()));
+    ui.add(egui::TextEdit::singleline(&mut query).hint_text(crate::i18n::t("Search icons")).desired_width(ui.available_width()));
     let q = query.trim().to_lowercase();
     ui.data_mut(|d| d.insert_temp(id, query));
     let icons = deckcraft_engine::icons::icons();
@@ -220,7 +233,7 @@ fn icon_cell(app: &mut SlideApp, ui: &mut Ui, icon: &deckcraft_engine::icons::Ic
         ui.painter().rect_filled(r, CornerRadius::same(4), hover);
     }
     paint_icon(ui.painter(), r.shrink(6.0), icon, color);
-    if resp.on_hover_text(icon.label).clicked() {
+    if resp.on_hover_text(t(icon.label)).clicked() {
         let _ = app.run("insert.icon", json!({"name": icon.name}));
         ui.close();
     }
@@ -265,7 +278,7 @@ fn paint_icon(p: &egui::Painter, r: Rect, icon: &deckcraft_engine::icons::Icon, 
 
 /// The chart types in the Insert Chart and Change Chart Type menus: the main ones, a separator
 /// (`None`), then the Office 2016 types not already listed.
-pub(super) fn chart_menu_types() -> Vec<Option<deckcraft_model::chart::ChartType>> {
+pub(crate) fn chart_menu_types() -> Vec<Option<deckcraft_model::chart::ChartType>> {
     use deckcraft_model::chart::ChartType;
     let mut v: Vec<Option<ChartType>> = ChartType::MAIN.iter().copied().map(Some).collect();
     v.push(None);
