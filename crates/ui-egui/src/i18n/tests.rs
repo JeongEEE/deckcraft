@@ -434,3 +434,156 @@ fn change_chart_type_menu_uses_chart_names() {
     assert_eq!(tc("chart", "Pie"), "원형");
     assert!(h.query_by_label(t("Pie")).is_none(), "not the shape's name");
 }
+
+/// Every engine command's name and the ribbon tab and group (or menu) it lives in, and every UI
+/// command's name (the command palette lists both), have Korean rows. The ids and params stay
+/// English; only the display is looked up.
+#[test]
+fn korean_coverage_command_labels() {
+    let mut names: BTreeSet<&str> = BTreeSet::new();
+    for c in deckcraft_engine::cmd::command_specs() {
+        names.insert(c.label);
+        names.extend(c.menu.iter().copied());
+    }
+    names.extend(crate::UI_COMMANDS.iter().map(|c| c.1));
+    assert!(names.len() > 300, "{} names", names.len());
+    let keep = audit::keep_english();
+    let missing: Vec<&&str> = names.iter().filter(|n| !has_ko(n) && !keep.iter().any(|k| k == **n)).collect();
+    assert!(
+        missing.is_empty(),
+        "{} command names without a Korean row:\n{}",
+        missing.len(),
+        missing.iter().map(|n| format!("\t{}\t", n.replace('\n', "\\n"))).collect::<Vec<_>>().join("\n")
+    );
+}
+
+/// The reasons the engine's `enabled` checks give ("nothing selected"), read from its source, have
+/// Korean rows; a `format!` reason by its template with `{0}`, `{1}` for the values. They reach
+/// the screen inside "command `…` is not available right now: …" in the status bar, which has a
+/// template row too.
+#[test]
+fn korean_coverage_disabled_reasons() {
+    let reasons = engine_disabled_reasons();
+    for expected in ["nothing selected", "no presentation open", "open View ▸ Notes Master first"] {
+        assert!(reasons.contains(expected), "the scan finds {expected:?}: {reasons:?}");
+    }
+    // What the checks say with no presentation open and with a new one is among what the scan found.
+    for session in [deckcraft_engine::Session::new(), deckcraft_engine::Session::with_new()] {
+        for c in deckcraft_engine::cmd::command_specs() {
+            if let Err(reason) = (c.enabled)(&session) {
+                assert!(reasons.contains(&reason), "{}: the scan misses {reason:?}", c.id);
+            }
+        }
+    }
+    let mut missing: Vec<&String> = reasons.iter().filter(|r| !has_ko(r)).collect();
+    let wrapper = "command `{0}` is not available right now: {1}".to_string();
+    if !has_ko(&wrapper) {
+        missing.push(&wrapper);
+    }
+    assert!(
+        missing.is_empty(),
+        "{} disabled reasons without a Korean row:\n{}",
+        missing.len(),
+        missing.iter().map(|n| format!("\t{n}\t")).collect::<Vec<_>>().join("\n")
+    );
+}
+
+/// The engine's `enabled` functions (`fn …(s: &Session) -> std::result::Result<(), String>`) in
+/// `cmd.rs` and `cmd/**.rs`, and the strings they return: literals and the `&str` consts they
+/// name (`Err(NOTHING_SELECTED.into())`), `format!`'s `{}` numbered `{0}`, `{1}`.
+fn engine_disabled_reasons() -> BTreeSet<String> {
+    let engine = Path::new(env!("CARGO_MANIFEST_DIR")).join("../engine/src");
+    let mut files = vec![engine.join("cmd.rs")];
+    let mut dirs = vec![engine.join("cmd")];
+    while let Some(dir) = dirs.pop() {
+        for e in std::fs::read_dir(dir).unwrap() {
+            let p = e.unwrap().path();
+            if p.is_dir() {
+                dirs.push(p);
+            } else if p.extension().is_some_and(|x| x == "rs") {
+                files.push(p);
+            }
+        }
+    }
+    let sources: Vec<String> = files.iter().map(|f| std::fs::read_to_string(f).unwrap()).collect();
+    let mut consts: BTreeMap<String, String> = BTreeMap::new();
+    for src in &sources {
+        for line in src.lines() {
+            let Some((_, rest)) = line.split_once("const ") else { continue };
+            let Some((name, value)) = rest.split_once(": &str = \"") else { continue };
+            if let Some(value) = value.strip_suffix("\";") {
+                consts.insert(name.trim().to_string(), value.to_string());
+            }
+        }
+    }
+    let mut out = BTreeSet::new();
+    for src in &sources {
+        let mut lines = src.lines();
+        while let Some(line) = lines.next() {
+            if !(line.contains("fn ") && line.contains(": &Session) -> std::result::Result<(), String>")) {
+                continue;
+            }
+            let mut body = line.to_string();
+            if !line.trim_end().ends_with('}') {
+                for l in lines.by_ref() {
+                    body.push('\n');
+                    body.push_str(l);
+                    if l == "}" {
+                        break;
+                    }
+                }
+            }
+            let body = body.split_once('{').map(|(_, b)| b).unwrap_or_default();
+            for (i, piece) in body.split('"').enumerate() {
+                if i % 2 == 1 {
+                    let mut n = 0;
+                    let mut template = String::new();
+                    let mut rest = piece;
+                    while let Some((before, after)) = rest.split_once("{}") {
+                        template.push_str(&format!("{before}{{{n}}}"));
+                        n += 1;
+                        rest = after;
+                    }
+                    template.push_str(rest);
+                    out.insert(template);
+                }
+            }
+            for (name, value) in &consts {
+                if body.contains(&format!("{name}.into()")) || body.contains(&format!("{name}.to_string()")) {
+                    out.insert(value.clone());
+                }
+            }
+        }
+    }
+    out
+}
+
+/// The command palette's and the menu tree's own wording has Korean rows and is looked up.
+#[test]
+fn korean_coverage_menus() {
+    let problems = audit::problems(&src().join("menus.rs"));
+    assert!(problems.is_empty(), "no Korean row (deckcraft.tsv) or keep_english.txt entry, or not wrapped in t():\n{}", problems.join("\n"));
+}
+
+/// In Korean the command palette finds a command by its Korean name and by its English name, and
+/// lists it under the Korean one; it still runs the command's id.
+#[test]
+fn command_search_matches_korean_and_english() {
+    use egui_kittest::kittest::Queryable;
+    let session = deckcraft_engine::Session::with_new();
+    let ids = |q: &str| crate::menus::palette_items(&session, &q.to_lowercase()).into_iter().map(|(id, ..)| id).collect::<Vec<_>>();
+    set_current(resolve("ko"));
+    let korean = t("New Slide").to_string();
+    assert_ne!(korean, "New Slide");
+    for q in ["New Slide", korean.as_str()] {
+        assert!(ids(q).contains(&"slide.new".to_string()), "{q:?} finds slide.new: {:?}", ids(q));
+    }
+    set_current(craft_i18n::Lang::EN);
+    assert!(!ids(&korean).contains(&"slide.new".to_string()), "English doesn't match Korean names");
+
+    let mut h = korean_harness();
+    h.state_mut().palette = Some(("command palette".into(), 0));
+    h.run_steps(3);
+    assert!(h.query_by_label(t("Command Palette")).is_some(), "the palette lists its entries in Korean");
+    assert!(h.query_by_label("Command Palette").is_none());
+}
