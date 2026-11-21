@@ -262,6 +262,8 @@ fn main() -> eframe::Result {
             }
         }
     }
+    // `auto` (the default interface language) follows the system's preferred languages.
+    deckcraft_ui_egui::i18n::detect_system_lang();
     let mut options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_title(deckcraft_ui_egui::APP_NAME)

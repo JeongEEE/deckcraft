@@ -5,6 +5,7 @@ use deckcraft_color::{ColorScheme, Rgba, SchemeSlot};
 use deckcraft_model::ColorRef;
 use egui::{Align2, Color32, CornerRadius, Rect, Response, Sense, Stroke, Ui, Vec2, pos2, vec2};
 
+use crate::i18n::{self, fmt, t};
 use crate::icons::{self, Icon};
 use crate::theme::{self, Tokens};
 
@@ -49,6 +50,7 @@ fn big_button_width(text_w: f32, split: bool) -> f32 {
 /// response). Like Office's split buttons, the icon and the label text run the main command; only
 /// the chevron at the end of the label row opens the menu.
 pub fn big_button_ex(ui: &mut Ui, icon: Icon, label: &str, enabled: bool, split: bool, selected: bool) -> (Response, Option<Response>) {
+    let label = t(label);
     let t = Tokens::get(ui.ctx());
     let font = theme::font(11.0);
     let lines: Vec<&str> = wrap_label(label);
@@ -65,7 +67,7 @@ pub fn big_button_ex(ui: &mut Ui, icon: Icon, label: &str, enabled: bool, split:
     let main_resp = resp.clone();
     let arrow_resp = arrow_rect.map(|r| ui.interact(r, resp.id.with("arrow"), if enabled { Sense::click() } else { Sense::hover() }));
     if split && let Some(a) = &arrow_resp {
-        a.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, enabled, format!("{spoken} options")));
+        a.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, enabled, options_name(&spoken)));
     }
     if let Some(c) = bg(ui, &main_resp, selected, &t) {
         painter.rect_filled(rect, CornerRadius::same(4), c);
@@ -92,6 +94,11 @@ pub fn big_button_ex(ui: &mut Ui, icon: Icon, label: &str, enabled: bool, split:
         chevron(&painter, pos2(rect.max.x - 7.0, chevron_y), 3.0, col);
     }
     (if split { main_resp } else { resp }, arrow_resp)
+}
+
+/// The accessible name of a control's options chevron: "Paste options".
+fn options_name(name: &str) -> String {
+    fmt(t("{name} options"), &[("name", name)])
 }
 
 fn wrap_label(label: &str) -> Vec<&str> {
@@ -148,6 +155,7 @@ pub fn small_button_named(
     selected: bool,
     split: bool,
 ) -> (Response, Option<Response>) {
+    let (label, name) = (t(label), t(name));
     let t = Tokens::get(ui.ctx());
     let font = theme::font(12.0);
     let tw = if label.is_empty() { 0.0 } else { ui.fonts_mut(|f| f.layout_no_wrap(label.to_string(), font.clone(), t.text).size().x) + 5.0 };
@@ -172,7 +180,7 @@ pub fn small_button_named(
     if split {
         main_resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, enabled, name));
         if let Some(a) = &arrow_resp {
-            a.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, enabled, format!("{name} options")));
+            a.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, enabled, options_name(name)));
         }
     }
     if let Some(c) = bg(ui, &main_resp, selected, &t) {
@@ -244,6 +252,7 @@ fn split_popup_id(main: &Response) -> egui::Id {
 /// A menu choice ticked in the icon column (Align to Slide…), its text lined up with the
 /// [`small_button`] items around it.
 pub fn check_item(ui: &mut Ui, label: &str, enabled: bool, on: bool) -> Response {
+    let label = t(label);
     let t = Tokens::get(ui.ctx());
     let font = theme::font(12.0);
     let tw = ui.fonts_mut(|f| f.layout_no_wrap(label.to_string(), font.clone(), t.text).size().x) + 5.0;
@@ -262,6 +271,7 @@ pub fn check_item(ui: &mut Ui, label: &str, enabled: bool, on: bool) -> Response
 
 /// A square icon toggle (B, I, U, alignment…).
 pub fn icon_toggle(ui: &mut Ui, icon: Icon, tip: &str, enabled: bool, on: bool) -> Response {
+    let tip = t(tip);
     let t = Tokens::get(ui.ctx());
     let (rect, resp) = ui.allocate_exact_size(vec2(24.0, 22.0), if enabled { Sense::click() } else { Sense::hover() });
     let painter = ui.painter_at(rect);
@@ -276,6 +286,7 @@ pub fn icon_toggle(ui: &mut Ui, icon: Icon, tip: &str, enabled: bool, on: bool) 
 
 /// Icon with a colour bar under it and a dropdown arrow (Font Color, Highlight, Shape Fill…).
 pub fn color_split(ui: &mut Ui, icon: Icon, tip: &str, color: Color32, enabled: bool) -> (Response, Response) {
+    let tip = t(tip);
     let t = Tokens::get(ui.ctx());
     let (rect, resp) = ui.allocate_exact_size(vec2(34.0, 22.0), Sense::hover());
     let main = ui.interact(Rect::from_min_size(rect.min, vec2(23.0, 22.0)), resp.id.with("m"), if enabled { Sense::click() } else { Sense::hover() });
@@ -285,7 +296,7 @@ pub fn color_split(ui: &mut Ui, icon: Icon, tip: &str, color: Color32, enabled: 
         resp.id.with("a"),
         if enabled { Sense::click() } else { Sense::hover() },
     );
-    arrow.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, enabled, format!("{tip} options")));
+    arrow.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, enabled, options_name(tip)));
     let painter = ui.painter_at(rect);
     if let Some(c) = bg(ui, &main, false, &t) {
         painter.rect_filled(main.rect, CornerRadius::same(4), c);
@@ -333,6 +344,9 @@ pub fn rows<R>(ui: &mut Ui, add: impl FnOnce(&mut Ui) -> R) -> R {
 /// `label` is what assistive technology calls it ("Font", "Start"); `current` is exposed as its
 /// value, so an empty box is still announced by its purpose and never by an internal key (#1956).
 pub fn dropdown(ui: &mut Ui, label: &str, current: &str, width: f32, enabled: bool, add_items: impl FnOnce(&mut Ui)) -> Response {
+    // `current` is translated for display only (a built-in layout name, "Automatic"); a font
+    // name or a size has no row and shows as it is.
+    let (label, current) = (t(label), t(current));
     let t = Tokens::get(ui.ctx());
     let (rect, resp) = ui.allocate_exact_size(vec2(width, 22.0), if enabled { Sense::click() } else { Sense::hover() });
     let painter = ui.painter_at(rect);
@@ -388,7 +402,7 @@ pub fn color_grid(ui: &mut Ui, scheme: &ColorScheme, none_label: Option<&str>) -
     let t = Tokens::get(ui.ctx());
     let mut out = None;
     ui.set_min_width(220.0);
-    ui.label(egui::RichText::new("Theme Colors").font(theme::bold(12.0)));
+    ui.label(egui::RichText::new(i18n::t("Theme Colors")).font(theme::bold(12.0)));
     let slots = [
         SchemeSlot::Lt1,
         SchemeSlot::Dk1,
@@ -402,6 +416,7 @@ pub fn color_grid(ui: &mut Ui, scheme: &ColorScheme, none_label: Option<&str>) -
         SchemeSlot::Accent6,
     ];
     let cell = 18.0;
+    // Colour names (`Accent 1`, `Lighter 80%`, `Dark Red`) are craft-drawingml's English.
     let sw = |ui: &mut Ui, c: Rgba, tip: &str| -> bool {
         let (r, resp) = ui.allocate_exact_size(vec2(cell, cell), Sense::click());
         ui.painter().rect(
@@ -411,7 +426,7 @@ pub fn color_grid(ui: &mut Ui, scheme: &ColorScheme, none_label: Option<&str>) -
             Stroke::new(if resp.hovered() { 2.0 } else { 1.0 }, if resp.hovered() { t.accent } else { t.border }),
             egui::StrokeKind::Inside,
         );
-        resp.on_hover_text(tip).clicked()
+        resp.on_hover_text(i18n::t(tip)).clicked()
     };
     egui::Grid::new("theme_colors").spacing(vec2(3.0, 1.0)).show(ui, |ui| {
         for slot in slots {
@@ -450,7 +465,7 @@ pub fn color_grid(ui: &mut Ui, scheme: &ColorScheme, none_label: Option<&str>) -
         }
     });
     ui.add_space(4.0);
-    ui.label(egui::RichText::new("Standard Colors").font(theme::bold(12.0)));
+    ui.label(egui::RichText::new(i18n::t("Standard Colors")).font(theme::bold(12.0)));
     ui.horizontal(|ui| {
         ui.spacing_mut().item_spacing.x = 3.0;
         for (c, name) in deckcraft_color::STANDARD_COLORS {
@@ -461,7 +476,7 @@ pub fn color_grid(ui: &mut Ui, scheme: &ColorScheme, none_label: Option<&str>) -
     });
     ui.separator();
     if let Some(n) = none_label
-        && ui.button(n).clicked()
+        && ui.button(i18n::t(n)).clicked()
     {
         out = Some(None);
     }
@@ -469,7 +484,7 @@ pub fn color_grid(ui: &mut Ui, scheme: &ColorScheme, none_label: Option<&str>) -
     let id = ui.scope_id().with("hex");
     let mut hex: String = ui.data_mut(|d| d.get_temp::<String>(id).unwrap_or_default());
     ui.horizontal(|ui| {
-        ui.label("More Colors… #");
+        ui.label(i18n::t("More Colors… #"));
         let r = ui.add(egui::TextEdit::singleline(&mut hex).desired_width(70.0).hint_text("RRGGBB"));
         if r.lost_focus()
             && ui.input(|i| i.key_pressed(egui::Key::Enter))
@@ -479,7 +494,7 @@ pub fn color_grid(ui: &mut Ui, scheme: &ColorScheme, none_label: Option<&str>) -
         }
     });
     ui.data_mut(|d| d.insert_temp(id, hex));
-    if ui.button("Eyedropper").on_hover_text("Click the slide to take the colour under the pointer").clicked() {
+    if ui.button(i18n::t("Eyedropper")).on_hover_text(i18n::t("Click the slide to take the colour under the pointer")).clicked() {
         crate::eyedropper::request(ui.ctx());
         ui.close();
     }
@@ -511,7 +526,7 @@ pub fn gallery(
         if sel {
             painter.rect_stroke(rect.expand(1.0), CornerRadius::same(4), Stroke::new(1.5, t.accent), egui::StrokeKind::Inside);
         }
-        if resp.on_hover_text(tip(i)).clicked() {
+        if resp.on_hover_text(i18n::t(&tip(i))).clicked() {
             clicked = Some(i);
         }
     }
@@ -521,13 +536,17 @@ pub fn gallery(
 /// A number field with up/down steppers, named by the visible label of its row. Returns the new
 /// value when committed.
 pub fn spinner(ui: &mut Ui, id: &str, label: &str, value: f64, step: f64, suffix: &str, width: f32) -> Option<f64> {
+    // `id` keys the draft and the steppers; only the spoken names are translated.
+    let label = t(label);
     let t = Tokens::get(ui.ctx());
     let key = ui.scope_id().with(id);
     let mut text: String = ui.data_mut(|d| d.get_temp::<String>(key)).unwrap_or_else(|| fmt_num(value, suffix));
     let mut out = None;
     ui.horizontal(|ui| {
         ui.spacing_mut().item_spacing.x = 0.0;
-        let r = ui.add(egui::TextEdit::singleline(&mut text).desired_width(width).font(theme::font(12.0))).accessible_name(format!("{label} value"));
+        let r = ui
+            .add(egui::TextEdit::singleline(&mut text).desired_width(width).font(theme::font(12.0)))
+            .accessible_name(fmt(i18n::t("{label} value"), &[("label", label)]));
         if r.has_focus() {
             ui.data_mut(|d| d.insert_temp(key, text.clone()));
         } else {
@@ -541,9 +560,9 @@ pub fn spinner(ui: &mut Ui, id: &str, label: &str, value: f64, step: f64, suffix
         }
         let (rect, _) = ui.allocate_exact_size(vec2(12.0, 22.0), Sense::hover());
         let up = ui.interact(Rect::from_min_max(rect.min, pos2(rect.max.x, rect.center().y)), key.with("up"), Sense::click());
-        up.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, format!("Increase {label}")));
+        up.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, fmt(i18n::t("Increase {label}"), &[("label", label)])));
         let down = ui.interact(Rect::from_min_max(pos2(rect.min.x, rect.center().y), rect.max), key.with("dn"), Sense::click());
-        down.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, format!("Decrease {label}")));
+        down.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, fmt(i18n::t("Decrease {label}"), &[("label", label)])));
         let p = ui.painter();
         let c = rect.center();
         p.line_segment([pos2(c.x - 3.0, c.y - 3.0), pos2(c.x, c.y - 6.0)], Stroke::new(1.0, t.text_dim));
@@ -577,6 +596,7 @@ pub fn text_draft(stored: Option<(String, String)>, current: &str) -> String {
 
 /// Section header inside panes.
 pub fn section(ui: &mut Ui, title: &str, open: bool) -> bool {
+    let title = t(title);
     let t = Tokens::get(ui.ctx());
     let (rect, resp) = ui.allocate_exact_size(vec2(ui.available_width(), 26.0), Sense::click());
     let p = ui.painter();
@@ -593,10 +613,11 @@ pub fn section(ui: &mut Ui, title: &str, open: bool) -> bool {
 
 /// A button with an optional label and a painted dropdown chevron (the UI font has no ▾).
 pub fn drop_button(ui: &mut Ui, label: &str, size: egui::Vec2, enabled: bool) -> egui::Response {
+    let label = t(label);
     let t = Tokens::get(ui.ctx());
     let r = ui
         .add_enabled(enabled, egui::Button::new(if label.is_empty() { String::new() } else { format!("{label}   ") }).min_size(size))
-        .on_hover_text(if label.is_empty() { "Options" } else { label });
+        .on_hover_text(if label.is_empty() { i18n::t("Options") } else { label });
     let col = if enabled { t.text_dim } else { t.text_faint };
     chevron(ui.painter(), egui::pos2(r.rect.max.x - 8.0, r.rect.center().y), 3.0, col);
     r
@@ -766,6 +787,27 @@ mod tests {
         let empty = harness.get_by_role_and_label(Role::ComboBox, "Start");
         assert_eq!(empty.value(), None, "nothing shown, no value");
         assert!(harness.query_by_label("astart").is_none() && harness.query_by_label("start").is_none(), "no internal key is announced");
+    }
+
+    /// In Korean the shared widgets draw and name their controls in Korean; the callers still pass
+    /// English, which stays the lookup key.
+    #[test]
+    fn the_shared_widgets_translate_their_labels_in_korean() {
+        let mut harness = egui_kittest::Harness::builder().with_size(vec2(500.0, 200.0)).build_ui(|ui| {
+            crate::i18n::set_current(crate::i18n::resolve("ko"));
+            // Names are checked, not glyphs: a build without craft-fonts has no Hangul face.
+            ui.ctx().set_missing_glyph_policy(egui::MissingGlyphPolicy::Tofu);
+            theme::install_fonts(ui.ctx());
+            let _ = big_button_ex(ui, Icon::Paste, "Paste", true, true, false);
+            dropdown(ui, "Font size", "Automatic", 120.0, true, |_| {});
+        });
+        harness.run();
+        assert!(harness.query_by_role_and_label(Role::Button, "붙여넣기").is_some());
+        assert!(harness.query_by_role_and_label(Role::Button, "붙여넣기 옵션").is_some());
+        assert!(harness.query_by_role_and_label(Role::Button, "Paste").is_none());
+        let combo = harness.get_by_role_and_label(Role::ComboBox, "글꼴 크기");
+        assert_eq!(combo.value().as_deref(), Some("자동"));
+        crate::i18n::set_current(crate::i18n::resolve("en"));
     }
 
     /// #32: clicking the "More Colors" hex field closed the colour menu before anything could be

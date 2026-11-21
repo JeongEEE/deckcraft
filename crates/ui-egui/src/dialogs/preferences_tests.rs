@@ -144,3 +144,28 @@ fn options_close_button_restores_the_settings() {
     assert_eq!(h.state().session.prefs.smart_guides, was, "the close button restores the setting");
     assert!(h.state().dialog.is_none(), "and the dialog closes");
 }
+
+/// Options › Language switches the interface from the next frame, the saved tab stays its
+/// English id, and cancelling puts the language back.
+#[test]
+fn the_language_setting_switches_the_interface_and_cancel_restores_it() {
+    let mut h = harness();
+    // Names are checked, not glyphs: a build without craft-fonts has no Hangul face.
+    h.ctx.set_missing_glyph_policy(egui::MissingGlyphPolicy::Tofu);
+    assert_eq!(h.state().ui.language, crate::i18n::AUTO);
+    open_options(&mut h);
+    h.get_by_role_and_label(egui::accesskit::Role::ComboBox, "Language").click();
+    h.run_steps(2);
+    h.get_by_label("한국어").click();
+    h.run_steps(3);
+    assert_eq!(h.state().ui.language, "ko");
+    assert!(h.query_all_by_label("홈").next().is_some(), "the Home tab is drawn in Korean");
+    assert!(h.query_all_by_label("언어").next().is_some(), "and so is the Language dropdown");
+    assert_eq!(h.state().ui.tab, "Home", "the saved tab keeps its English id");
+
+    // Esc cancels like the Cancel button (whose label a later change translates).
+    h.key_press(egui::Key::Escape);
+    h.run_steps(3);
+    assert_eq!(h.state().ui.language, crate::i18n::AUTO, "Cancel restores the language");
+    assert!(h.query_all_by_label("Home").next().is_some(), "and the interface is English again");
+}

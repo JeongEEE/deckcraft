@@ -35,6 +35,8 @@ ArtCraft logos and wordmarks are excluded from this personal fork (Slide); the o
 | `crates/render/tests/fixtures/make_colr_font.py` | DeckCraft contributors | this repository | MIT OR Apache-2.0 | Regenerates the COLR test font |
 | `crates/format/tests/golden/deck.deckcraft` | DeckCraft contributors | a synthetic deck (placeholder bytes, no images or text from elsewhere) written by `crates/format/src/golden_tests.rs` with `DECKCRAFT_BLESS_GOLDEN=1` | CC0-1.0 | Native format golden bytes |
 | Lucide icon paths in `crates/engine/src/icon_data.rs` (Insert › Icons) | Lucide Contributors; Feather icons by Cole Bemis | https://github.com/lucide-icons/lucide/tree/440a1e1dfb1e712505308da46bead3c28b1f1398/icons (release 1.56.0, 2026-10-13) | ISC; MIT for the Feather-derived icons named in that commit's LICENSE | Stroke icons inserted as shapes |
+| `crates/ui-egui/i18n/ko/common.tsv` | craft-i18n contributors | https://github.com/storytold/craft-i18n/blob/b5b2805795f3d98b8fef4484db75db0cefbdc630/locales/ko/common.tsv (copied unmodified apart from a source note at the top) | MIT OR Apache-2.0 | Korean interface wording shared by the Craft apps |
+| `crates/ui-egui/i18n/ko/deckcraft.tsv`, `crates/ui-egui/i18n/keep_english.txt` | Slide contributors | this repository | MIT OR Apache-2.0 | Slide's own Korean interface wording, and the interface text that stays English |
 
 ## Bundled through dependencies
 

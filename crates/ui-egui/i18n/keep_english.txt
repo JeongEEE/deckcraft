@@ -1,0 +1,7 @@
+# Interface text that stays English in every interface language, one per line:
+#   <English text> <TAB> <why it stays English>
+# Escapes: \n for a line break. `korean_coverage_*` tests skip these strings; `keep_english_entries_are_still_in_source`
+# fails when an entry is no longer interface text in src/ (delete the line then).
+
+RRGGBB	the hex colour code's digit pattern (colour codes stay as written)
+Aa	sample letters drawn in an icon and the theme previews (icons/draw.rs, ribbon/design.rs), not wording

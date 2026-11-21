@@ -120,11 +120,11 @@ fn contextual(app: &SlideApp) -> Vec<&'static str> {
 // This is an existing saved/control-channel key, not the displayed label.
 const DIAGRAM_TAB_ID: &str = "SmartArt Design";
 
-fn tab_label(id: &str) -> &str {
+pub(crate) fn tab_label(id: &str) -> &str {
     if id == DIAGRAM_TAB_ID { "Diagram Design" } else { id }
 }
 
-const TABS: [&str; 10] = ["Home", "Insert", "Draw", "Design", "Transitions", "Animations", "Slide Show", "Record", "Review", "View"];
+pub(crate) const TABS: [&str; 10] = ["Home", "Insert", "Draw", "Design", "Transitions", "Animations", "Slide Show", "Record", "Review", "View"];
 
 /// Tab row and the ribbon card.
 pub fn show(app: &mut SlideApp, ui: &mut Ui) {
@@ -141,14 +141,15 @@ pub fn show(app: &mut SlideApp, ui: &mut Ui) {
         let mut x = rect.min.x + 12.0;
         let y = rect.min.y + 2.0;
         {
-            let w = ui.fonts_mut(|f| f.layout_no_wrap("File".to_string(), theme::font(13.0), t.text).size().x) + 18.0;
+            let file = crate::i18n::t("File");
+            let w = ui.fonts_mut(|f| f.layout_no_wrap(file.to_string(), theme::font(13.0), t.text).size().x) + 18.0;
             let r = Rect::from_min_size(pos2(x, y), vec2(w, 24.0));
             let resp = ui.interact(r, ui.scope_id().with("tab_file"), Sense::click());
-            resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, "File"));
+            resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, file));
             if resp.hovered() {
                 ui.painter().rect_filled(r.shrink2(vec2(2.0, 2.0)), CornerRadius::same(4), t.hover);
             }
-            ui.painter().text(r.center(), Align2::CENTER_CENTER, "File", theme::font(13.0), t.text);
+            ui.painter().text(r.center(), Align2::CENTER_CENTER, file, theme::font(13.0), t.text);
             if resp.on_hover_text("File (Alt+F)").clicked() {
                 app.open_backstage(crate::backstage::Page::Home);
             }
@@ -156,7 +157,8 @@ pub fn show(app: &mut SlideApp, ui: &mut Ui) {
         }
         let all: Vec<(&str, bool)> = TABS.iter().map(|s| (*s, false)).chain(ctx_tabs.iter().map(|s| (*s, true))).collect();
         for (name, contextual) in all {
-            let label = tab_label(name);
+            // Shown translated; `name` stays the tab's id (`app.ui.tab`, the egui id, ui.json).
+            let label = crate::i18n::t(tab_label(name));
             let font = theme::font(13.0);
             let w = ui.fonts_mut(|f| f.layout_no_wrap(label.to_string(), font.clone(), t.text).size().x) + 18.0;
             let r = Rect::from_min_size(pos2(x, y), vec2(w, 24.0));

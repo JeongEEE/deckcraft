@@ -1,0 +1,79 @@
+# 한국어 (ko) interface catalog for Slide (the JeongEEE/deckcraft fork of DeckCraft).
+# Columns, separated by a TAB:  context <TAB> English source text <TAB> translation
+#   context  usually empty. `@plural`, `@id` and `@msg` mean something to the apps; any other
+#            word is a label that tells apart two meanings of the same English.
+#   escapes  \n  \t  \\  inside a column. `{name}` placeholders must appear in both columns (in any
+#            order), and a trailing "…" in one needs one in the other.
+#   @plural  English `one|other`; the translation lists this language's plural forms, `|`-separated.
+#   Lines starting with # and blank lines are ignored. A missing entry shows in English.
+#
+# Clean room: every entry was written from the plain meaning of the English text in ordinary
+# computing vocabulary. No other product's localisation, string table or translated UI was
+# consulted or copied; add entries the same way.
+#
+# Slide 포크 한국어 목록: Slide's own rows, over the shared ko/common.tsv. Same format and keys as
+# craft-i18n's locales/<locale>/deckcraft.tsv (the English source text).
+
+# Shared ribbon widgets (widgets.rs)
+	{name} options	{name} 옵션
+	{label} value	{label} 값
+	Increase {label}	{label} 늘리기
+	Decrease {label}	{label} 줄이기
+	Theme Colors	테마 색
+	Standard Colors	표준 색
+	More Colors… #	색 더 보기… #
+	Click the slide to take the colour under the pointer	슬라이드를 클릭하면 포인터 아래의 색을 가져옵니다
+
+# Colour names in the colour menus (craft-drawingml's English)
+	Text/Background - Dark 1	텍스트/배경 - 어둡게 1
+	Text/Background - Light 1	텍스트/배경 - 밝게 1
+	Text/Background - Dark 2	텍스트/배경 - 어둡게 2
+	Text/Background - Light 2	텍스트/배경 - 밝게 2
+	Accent 1	강조 1
+	Accent 2	강조 2
+	Accent 3	강조 3
+	Accent 4	강조 4
+	Accent 5	강조 5
+	Accent 6	강조 6
+	Hyperlink	하이퍼링크
+	Followed Hyperlink	열어 본 하이퍼링크
+	Lighter 90%	90% 더 밝게
+	Lighter 80%	80% 더 밝게
+	Lighter 75%	75% 더 밝게
+	Lighter 60%	60% 더 밝게
+	Lighter 50%	50% 더 밝게
+	Lighter 40%	40% 더 밝게
+	Lighter 25%	25% 더 밝게
+	Lighter 10%	10% 더 밝게
+	Darker 5%	5% 더 어둡게
+	Darker 15%	15% 더 어둡게
+	Darker 25%	25% 더 어둡게
+	Darker 35%	35% 더 어둡게
+	Darker 50%	50% 더 어둡게
+	Dark Red	진한 빨강
+	Light Green	연한 초록
+	Dark Blue	진한 파랑
+
+# Ribbon tabs (ribbon.rs; the tab id saved in ui.json stays English)
+	Design	디자인
+	Transitions	전환
+	Animations	애니메이션
+	Slide Show	슬라이드 쇼
+	Record	녹화
+	Handout Master	유인물 마스터
+	Notes Master	노트 마스터
+	Slide Master	슬라이드 마스터
+	Shape Format	도형 서식
+	Picture Format	그림 서식
+	Table Design	표 디자인
+	Diagram Design	다이어그램 디자인
+	Chart Design	차트 디자인
+	Playback	재생
+
+# Preferences › Language ("한국어" and "English" are the languages' own names)
+	Automatic (system)	자동(시스템)
+	English	English
+
+# Terms: Slide says 도형 for a Shape. This row overrides common.tsv's row (모양) on purpose;
+# craft-i18n looks the app catalog up before the shared one.
+	Shape	도형

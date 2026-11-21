@@ -11,7 +11,7 @@ use super::hyperlink::{hyperlink_command, hyperlink_seed_of, hyperlink_should_ap
 use super::language::selected_language;
 use super::paragraph::paragraph_dialog;
 use super::photo_album::photo_album_dialog;
-use super::preferences::{preferences_snapshot, restore_preferences};
+use super::preferences::{self, preferences_snapshot, restore_preferences};
 use super::size_position::size_position_dialog;
 use super::slide_size::{put_slide_dim, slide_dim_points, unit_abbr};
 use super::tabs::tabs_dialog;
@@ -1375,6 +1375,7 @@ fn dlg_preferences(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog) -> bool {
         }
         d.fields.remove("uiScale");
     }
+    preferences::language_row(app, ui);
     // PowerPoint takes the unit from the system's measurement setting; DeckCraft asks here.
     ui.horizontal(|ui| {
         ui.label("Measurement units:");

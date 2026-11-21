@@ -21,6 +21,8 @@ deckcraft-media = { workspace = true }
 egui = { workspace = true, features = ["default_fonts", "monochrome_emoji_fonts"] }
 egui_extras = { workspace = true }
 craft-ui = { workspace = true }
+# Interface translations (`src/i18n.rs`); the rev craft-ui already brings in.
+craft-i18n = { git = "https://github.com/storytold/craft-libs", rev = "63196e66f3033a6623eb629af95a104d26986725" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 log = { workspace = true }
