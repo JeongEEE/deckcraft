@@ -52,6 +52,9 @@ fn korean_pref_translates_common_rows() {
     assert!(is_korean());
     assert_eq!(t("Cancel"), "취소");
     assert_eq!(t("Shape"), "도형", "deckcraft.tsv's term wins over common.tsv's 모양");
+    for (en, ko) in [("Comment", "댓글"), ("Align", "정렬"), ("Center", "가운데"), ("3-D", "3차원")] {
+        assert_eq!(t(en), ko, "Slide's term for {en:?} wins over common.tsv's (Ruling 15)");
+    }
     set_current(resolve("en"));
     assert!(!is_korean());
     assert_eq!(t("Cancel"), "Cancel");
@@ -367,4 +370,67 @@ fn icon_search_matches_english_and_korean_names() {
     assert!(found("arrow-up").contains(&"arrow-up"), "and by id");
     set_current(craft_i18n::Lang::EN);
     assert!(found(&korean).is_empty(), "English doesn't match Korean names");
+}
+
+/// Every interface string of the remaining ribbon tabs (Slide Show, Review, View) and the
+/// contextual tabs (Shape/Picture Format, Table, Chart, SmartArt, Masters, Playback, Arrange),
+/// plus `ribbon.rs`, has a Korean row or a reason to stay English, and egui's own calls look it up.
+#[test]
+fn korean_coverage_ribbon_2() {
+    let mut problems = audit::problems(&src().join("ribbon.rs"));
+    for file in ["slide_show", "review", "view", "shape_format", "picture_format", "table", "chart", "smartart", "masters", "playback", "arrange"] {
+        problems.extend(audit::problems(&src().join("ribbon").join(format!("{file}.rs"))));
+    }
+    assert!(problems.is_empty(), "no Korean row (deckcraft.tsv) or keep_english.txt entry, or not wrapped in t():\n{}", problems.join("\n"));
+}
+
+/// The whole ribbon: every non-test file under `src/ribbon/` and `ribbon.rs`.
+#[test]
+fn korean_coverage_ribbon_all() {
+    let mut problems = audit::problems(&src().join("ribbon.rs"));
+    let mut files: Vec<PathBuf> = std::fs::read_dir(src().join("ribbon")).unwrap().map(|e| e.unwrap().path()).collect();
+    files.sort();
+    for file in files.iter().filter(|f| f.extension().is_some_and(|e| e == "rs") && !f.to_string_lossy().ends_with("_tests.rs")) {
+        problems.extend(audit::problems(file));
+    }
+    assert!(problems.is_empty(), "no Korean row (deckcraft.tsv) or keep_english.txt entry, or not wrapped in t():\n{}", problems.join("\n"));
+}
+
+/// The names the contextual tabs show from built-in data (text warps, merge operations, artistic
+/// effects, recolour presets, picture styles, table styles, SmartArt colours and styles) have
+/// Korean rows. The commands and the document keep the English ids.
+#[test]
+fn korean_contextual_gallery_names() {
+    use deckcraft_engine::cmd::{artistic, merge, picture_style, recolor, smartart};
+    let mut names: BTreeSet<String> = BTreeSet::new();
+    names.extend(deckcraft_geom::warp::CATALOG.iter().map(|p| p.label.to_string()));
+    names.extend(merge::OPS.iter().map(|(_, l)| l.to_string()));
+    names.extend(artistic::EFFECTS.iter().map(|(_, l)| l.to_string()));
+    names.extend(recolor::presets().into_iter().map(|(_, l)| l));
+    names.extend(picture_style::STYLES.iter().map(|(_, l)| l.to_string()));
+    names.extend(deckcraft_model::table::table_styles().into_iter().map(|(_, l)| l));
+    names.extend(smartart::COLORS.iter().chain(smartart::STYLES.iter()).map(|(_, l)| l.to_string()));
+    let missing: Vec<&String> = names.iter().filter(|n| !has_ko(n)).collect();
+    assert!(
+        missing.is_empty(),
+        "{} gallery names without a Korean row:\n{}",
+        missing.len(),
+        missing.iter().map(|n| format!("\t{n}\t")).collect::<Vec<_>>().join("\n")
+    );
+}
+
+/// Chart Design › Change Chart Type names the chart types in their chart sense: a pie chart is
+/// 원형, not the pie shape's 부채꼴.
+#[test]
+fn change_chart_type_menu_uses_chart_names() {
+    use egui_kittest::kittest::Queryable;
+    let mut h = korean_harness();
+    h.state_mut().run("insert.chart", serde_json::json!({"type": "Pie"})).unwrap();
+    h.state_mut().ui.tab = "Chart Design".into();
+    h.run_steps(3);
+    h.get_by_label_contains("차트 종류").click();
+    h.run_steps(3);
+    assert!(h.query_by_label(tc("chart", "Pie")).is_some(), "the menu lists the pie chart");
+    assert_eq!(tc("chart", "Pie"), "원형");
+    assert!(h.query_by_label(t("Pie")).is_none(), "not the shape's name");
 }

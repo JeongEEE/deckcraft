@@ -1,6 +1,7 @@
 use super::arrange::arrange_group;
 use super::galleries::smartart_gallery;
 use super::{Icon, SlideApp, Ui, Value, big_button, group, json, rows, run, small_button, small_button_ex, widgets};
+use crate::i18n::t;
 
 /// SmartArt Design: Create Graphic (Text Pane, Add Shape, Promote, Demote, Remove) and Layouts.
 pub(super) fn smartart_design(app: &mut SlideApp, ui: &mut Ui) {
@@ -12,7 +13,7 @@ pub(super) fn smartart_design(app: &mut SlideApp, ui: &mut Ui) {
     };
     let at = row.min(n.saturating_sub(1));
     group(ui, |ui| {
-        if big_button(ui, Icon::SmartArt, "Text\nPane", gid.is_some()).on_hover_text("Type and organise the diagram's text").clicked() {
+        if big_button(ui, Icon::SmartArt, "Text\nPane", gid.is_some()).on_hover_text(t("Type and organise the diagram's text")).clicked() {
             run(app, "view.pane", json!({"pane": "smartart", "toggle": true}));
         }
         rows(ui, |ui| {
@@ -26,7 +27,7 @@ pub(super) fn smartart_design(app: &mut SlideApp, ui: &mut Ui) {
                         ("Add Shape Below", "below"),
                         ("Add Assistant", "assistant"),
                     ] {
-                        if ui.button(label).clicked() {
+                        if ui.button(t(label)).clicked() {
                             let index = if n == 0 { Value::Null } else { json!(at) };
                             run(app, "smartArt.addNode", json!({"id": gid, "index": index, "position": pos}));
                         }
@@ -42,7 +43,7 @@ pub(super) fn smartart_design(app: &mut SlideApp, ui: &mut Ui) {
         });
         let pictures = kind.starts_with("picture");
         if small_button(ui, Icon::Picture, "Insert Picture", pictures && n > 0, false)
-            .on_hover_text("Put a picture in the selected node's picture placeholder")
+            .on_hover_text(t("Put a picture in the selected node's picture placeholder"))
             .clicked()
         {
             run(app, "app.smartArtPictureDialog", json!({"id": gid, "index": at}));
@@ -59,10 +60,10 @@ pub(super) fn smartart_design(app: &mut SlideApp, ui: &mut Ui) {
         let (main, arrow) = small_button_ex(ui, Icon::Layout, "Convert", gid.is_some(), false, true);
         if let Some(arrow) = arrow {
             widgets::split_menu(&main, &arrow, |ui| {
-                if ui.button("Convert to Text").clicked() {
+                if ui.button(t("Convert to Text")).clicked() {
                     run(app, "smartArt.toText", json!({"id": gid}));
                 }
-                if ui.button("Convert to Shapes").clicked() {
+                if ui.button(t("Convert to Shapes")).clicked() {
                     run(app, "smartArt.toShapes", json!({"id": gid}));
                 }
             });
@@ -77,7 +78,7 @@ pub(super) fn smartart_design(app: &mut SlideApp, ui: &mut Ui) {
                         ui.separator();
                     }
                     let on = colors == k || (colors.is_empty() && k == "colorful");
-                    if ui.selectable_label(on, label).clicked() {
+                    if ui.selectable_label(on, t(label)).clicked() {
                         run(app, "smartArt.colors", json!({"id": gid, "colors": k}));
                     }
                 }
@@ -89,10 +90,10 @@ pub(super) fn smartart_design(app: &mut SlideApp, ui: &mut Ui) {
                 for (k, label) in deckcraft_engine::cmd::smartart::STYLES {
                     if k == "polished" {
                         ui.separator();
-                        ui.label("3-D");
+                        ui.label(t("3-D"));
                     }
                     let on = style == k || (style.is_empty() && k == "flat");
-                    if ui.selectable_label(on, label).clicked() {
+                    if ui.selectable_label(on, t(label)).clicked() {
                         run(app, "smartArt.style", json!({"id": gid, "style": k}));
                     }
                 }

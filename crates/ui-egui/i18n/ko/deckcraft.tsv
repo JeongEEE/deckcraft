@@ -77,6 +77,16 @@
 # Terms: Slide says 도형 for a Shape. This row overrides common.tsv's row (모양) on purpose;
 # craft-i18n looks the app catalog up before the shared one.
 	Shape	도형
+# Terms (Ruling 15), also over common.tsv on purpose: a Comment is 댓글 as the Comments pane is,
+# Align is 정렬 (Align Left 왼쪽 정렬), and the alignment Center is 가운데 (common's 중앙).
+	Comment	댓글
+	Align	정렬
+	Align Text	텍스트 정렬
+	Alignment:	정렬:
+	Center	가운데
+	3-D	3차원
+# Shape Effects › Shadow's centred shadow (common's 가운데 맞춤 reads as alignment).
+	Centered	가운데
 
 # Ribbon 1: Home, Insert, Draw, Design, Transitions, Animations, their galleries, the Quick
 # Access Toolbar and the title bar (ribbon/*.rs; command ids and saved values stay English)
@@ -803,3 +813,346 @@ chart	Combo	콤보
 	Alert	경고
 	Key	열쇠
 	Bolt	번개
+
+# Ribbon 2: Slide Show, Record, Review, View and the contextual tabs (Shape Format, Picture
+# Format, Table Design and Layout, Chart Design, SmartArt Design, the masters, Playback, Arrange)
+# (ribbon/*.rs; command ids and saved values stay English)
+	Play from\nStart	처음부터\n재생
+	Play from\nCurrent Slide	현재 슬라이드부터\n재생
+	Presenter\nView	발표자\n보기
+	Custom\nShow	사용자 지정\n쇼
+	Set Up\nSlide Show	슬라이드 쇼\n설정
+	Hide\nSlide	슬라이드\n숨기기
+	Rehearse\nTimings	예행\n연습
+	Recording narration needs audio capture (coming soon)	내레이션 녹음에는 오디오 캡처가 필요합니다(곧 지원)
+	Use Timings	시간 설정 사용
+	Play Narrations	내레이션 재생
+	Show Media Controls	미디어 컨트롤 표시
+	Cameo	카메오
+	Camera capture is not available yet	카메라 캡처는 아직 지원하지 않습니다
+	From\nBeginning	처음부터\n녹화
+	From\nCurrent Slide	현재 슬라이드부터\n녹화
+	Learn\nMore	자세히\n알아보기
+	Thesaurus	동의어 사전
+	Check\nAccessibility	접근성\n검사
+	Translation needs a language model (not bundled)	번역에는 언어 모델이 필요합니다(포함되지 않음)
+	Accept\nAll	모두\n수락
+	End\nReview	검토\n끝내기
+	New\nComment	새\n댓글
+	Show\nComments	댓글\n표시
+	Outline\nView	개요\n보기
+	Slide\nSorter	슬라이드\n정렬
+	Notes\nPage	노트\n페이지
+	Reading\nView	읽기용\n보기
+	Slide\nMaster	슬라이드\n마스터
+	Handout\nMaster	유인물\n마스터
+	Notes\nMaster	노트\n마스터
+	Gridlines	격자선
+	Grid\nOptions	격자\n옵션
+	Notes	노트
+	Fit to\nWindow	창에\n맞춤
+	New\nWindow	새\n창
+	Open another window on this presentation	이 프레젠테이션을 새 창에서 엽니다
+	Dark\nMode	어두운\n모드
+	Slide Zoom	슬라이드 확대/축소
+	Section Zoom	구역 확대/축소
+	Summary Zoom	요약 확대/축소
+	The presentation has no sections. Add one with Home › Section.	프레젠테이션에 구역이 없습니다. 홈 › 구역에서 추가하세요.
+	No slides.	슬라이드가 없습니다.
+	Follow Path	경로 따르기
+	No Transform	변형 없음
+	Edit\nShape	도형\n편집
+	Change Shape	도형 변경
+	Edit Points	점 편집
+	Merge\nShapes	도형\n병합
+	Merge Shapes	도형 병합
+	Shape\nStyles	도형\n스타일
+	Gradient…	그레이디언트…
+	Text Fill	텍스트 채우기
+	Text Outline	텍스트 윤곽선
+	Text Effects	텍스트 효과
+	Alt\nText	대체\n텍스트
+	Format\nPane	서식\n창
+	Smooth Corners	부드러운 모서리
+	For rectangles and rounded rectangles	직사각형과 둥근 사각형에만 쓸 수 있습니다
+	Remove\nBackground	배경\n제거
+	Remove More (looser)	더 많이 제거(느슨하게)
+	Remove Less (tighter)	더 적게 제거(엄격하게)
+	Corrections	보정
+	Brightness {value}%	밝기 {value}%
+	Contrast {value}%	대비 {value}%
+	Saturation {value}%	채도 {value}%
+	Recolor	다시 칠하기
+	Set Transparent Color	투명한 색 설정
+	Click a colour in the picture to make it transparent	그림에서 투명하게 만들 색을 클릭하세요
+	Artistic\nEffects	꾸밈\n효과
+	Change Picture	그림 바꾸기
+	Reset Picture	그림 원래대로
+	Compress Pictures	그림 압축
+	More Picture Styles	그림 스타일 더 보기
+	Picture Border	그림 테두리
+	Reset Style	스타일 원래대로
+	Remove the picture style	그림 스타일을 없앱니다
+	Crop to Shape	도형에 맞춰 자르기
+	Crop 10% each side	각 변 10% 자르기
+	Crop 20% each side	각 변 20% 자르기
+	Reset Crop	자르기 원래대로
+	Compression options	압축 옵션
+	Apply only to this picture	이 그림에만 적용
+	Delete cropped areas of pictures	그림의 잘린 부분 삭제
+	HD (330 ppi): good quality for high-definition displays	HD (330 ppi): 고해상도 화면에 알맞은 좋은 품질
+	Print (220 ppi): excellent quality on most printers and screens	인쇄 (220 ppi): 대부분의 프린터와 화면에서 뛰어난 품질
+	Web (150 ppi): good for web pages and projectors	웹 (150 ppi): 웹 페이지와 프로젝터에 알맞음
+	E-mail (96 ppi): minimise document size for sharing	전자 메일 (96 ppi): 공유용으로 문서 크기를 최소화
+	Compress	압축
+	Pictures are already at or below that resolution	그림이 이미 그 해상도 이하입니다
+	Compressed {n} picture(s): {before} KB → {after} KB	그림 {n}개 압축: {before} KB → {after} KB
+	Header Row	머리글 행
+	First Column	첫째 열
+	Total Row	요약 행
+	Last Column	마지막 열
+	Banded Rows	줄무늬 행
+	Banded Columns	줄무늬 열
+	Shading	음영
+	No Border	테두리 없음
+	All Borders	모든 테두리
+	Outside Borders	바깥쪽 테두리
+	Inside Borders	안쪽 테두리
+	Top Border	위쪽 테두리
+	Bottom Border	아래쪽 테두리
+	Left Border	왼쪽 테두리
+	Right Border	오른쪽 테두리
+	Inside Horizontal Border	안쪽 가로 테두리
+	Inside Vertical Border	안쪽 세로 테두리
+	Diagonal Down Border	아래쪽 대각선 테두리
+	Diagonal Up Border	위쪽 대각선 테두리
+	Pen Weight	펜 두께
+	Pen Style	펜 스타일
+	Pen Color	펜 색
+	Table Eraser	표 지우개
+	Delete Columns	열 삭제
+	Delete Rows	행 삭제
+	Delete Table	표 삭제
+	Insert\nAbove	위에\n삽입
+	Insert\nBelow	아래에\n삽입
+	Insert\nLeft	왼쪽에\n삽입
+	Insert\nRight	오른쪽에\n삽입
+	Merge\nCells	셀\n병합
+	Split\nCells	셀\n분할
+	Distribute Rows	행 높이를 같게
+	Distribute Columns	열 너비를 같게
+	align text to the top of the cell	텍스트를 셀 위쪽에 맞춥니다
+	align text to the center of the cell	텍스트를 셀 가운데에 맞춥니다
+	align text to the bottom of the cell	텍스트를 셀 아래쪽에 맞춥니다
+	Cell Margins	셀 여백
+	Narrow	좁게
+	Wide	넓게
+	Change\nChart Type	차트 종류\n변경
+	Edit\nData	데이터\n편집
+	Text\nPane	텍스트\n창
+	Type and organise the diagram's text	다이어그램의 텍스트를 입력하고 정리합니다
+	Add Shape	도형 추가
+	Add Shape After	뒤에 도형 추가
+	Add Shape Before	앞에 도형 추가
+	Add Shape Above	위에 도형 추가
+	Add Shape Below	아래에 도형 추가
+	Add Assistant	보조자 추가
+	Promote	수준 올리기
+	Demote	수준 내리기
+	Insert Picture	그림 삽입
+	Put a picture in the selected node's picture placeholder	선택한 노드의 그림 개체 틀에 그림을 넣습니다
+	Layouts	레이아웃
+	Convert to Text	텍스트로 변환
+	Convert to Shapes	도형으로 변환
+	Change Colors	색 변경
+	Diagram Styles	다이어그램 스타일
+	Insert\nLayout	레이아웃\n삽입
+	Footers	바닥글
+	Insert\nPlaceholder	개체 틀\n삽입
+	Content	콘텐츠
+	Themes	테마
+	Close\nMaster View	마스터 보기\n닫기
+	Header	머리글
+	Slide Image	슬라이드 이미지
+	Footer	바닥글
+	Date	날짜
+	Body	본문
+	Page Number	페이지 번호
+	Slides Per\nPage: {n}	페이지당\n슬라이드: {n}
+@plural	{n} Slide|{n} Slides	슬라이드 {n}장
+	Trim	구간 자르기
+	Start Automatically	자동으로 시작
+	Play Across Slides	여러 슬라이드에서 재생
+	Loop until Stopped	멈출 때까지 반복
+	Hide During Show	쇼 중에 숨기기
+	Rewind after Playing	재생 후 되감기
+	Play Full Screen	전체 화면 재생
+	Volume	볼륨
+	Mute	음소거
+	Order Objects	개체 순서
+	Group Objects	개체 그룹
+	Regroup	다시 그룹
+	Position Objects	개체 위치
+	Rotate Right 90°	오른쪽으로 90° 회전
+	Rotate Left 90°	왼쪽으로 90° 회전
+	Selection Pane…	선택 창…
+	Align Center	가운데 정렬
+	Align Top	위쪽 정렬
+	Align Middle	중간 정렬
+	Align Bottom	아래쪽 정렬
+	Distribute Horizontally	가로 간격을 같게
+	Distribute Vertically	세로 간격을 같게
+	Align to Slide	슬라이드에 정렬
+	Align Selected Objects	선택한 개체끼리 정렬
+	Bring\nForward	앞으로\n가져오기
+	Send\nBackward	뒤로\n보내기
+	Size and Position…	크기 및 위치…
+
+# Ribbon 2 galleries: names from built-in data, shown translated (the commands and the document
+# keep the English ids). Text Effects › Transform:
+	Arch Up	위쪽 아치
+	Arch Down	아래쪽 아치
+	Arch Up Pour	위쪽 아치 채우기
+	Arch Down Pour	아래쪽 아치 채우기
+	Circle Pour	원 채우기
+	Button	버튼
+	Button Pour	버튼 채우기
+	Curve Up	위쪽 곡선
+	Curve Down	아래쪽 곡선
+	Can Up	위쪽 원통
+	Can Down	아래쪽 원통
+	Wave 1	물결 1
+	Wave 2	물결 2
+	Wave 4	물결 4
+	Double Wave 1	이중 물결 1
+	Inflate Top	위쪽 볼록하게
+	Inflate Bottom	아래쪽 볼록하게
+	Deflate	오목하게
+	Deflate Top	위쪽 오목하게
+	Deflate Bottom	아래쪽 오목하게
+	Deflate Inflate	오목 볼록
+	Deflate Inflate Deflate	오목 볼록 오목
+	Fade Right	오른쪽 페이드
+	Fade Left	왼쪽 페이드
+	Fade Up	위쪽 페이드
+	Fade Down	아래쪽 페이드
+	Slant Up	위로 기울기
+	Slant Down	아래로 기울기
+	Cascade Up	위로 계단식
+	Cascade Down	아래로 계단식
+	Ring Inside	안쪽 고리
+	Ring Outside	바깥쪽 고리
+	Inverted Triangle	역삼각형
+	Inverted Chevron	역갈매기표
+# Merge Shapes and Artistic Effects
+	Fragment	조각
+	Pencil Grayscale	연필 회색조
+	Line Drawing	선 그림
+	Film Grain	필름 입자
+	Cutout	오려내기
+	Glow Edges	빛나는 가장자리
+# Picture Format › Color › Recolor
+	No Recolor	다시 칠하지 않음
+	Sepia	세피아
+	Washout	희미하게
+	Black and White: 25%	흑백: 25%
+	Black and White: 50%	흑백: 50%
+	Black and White: 75%	흑백: 75%
+	Text color 2 Dark	텍스트 색 2 어둡게
+	Accent color 1 Dark	강조 색 1 어둡게
+	Accent color 2 Dark	강조 색 2 어둡게
+	Accent color 3 Dark	강조 색 3 어둡게
+	Accent color 4 Dark	강조 색 4 어둡게
+	Accent color 5 Dark	강조 색 5 어둡게
+	Accent color 6 Dark	강조 색 6 어둡게
+	Text color 2 Light	텍스트 색 2 밝게
+	Accent color 1 Light	강조 색 1 밝게
+	Accent color 2 Light	강조 색 2 밝게
+	Accent color 3 Light	강조 색 3 밝게
+	Accent color 4 Light	강조 색 4 밝게
+	Accent color 5 Light	강조 색 5 밝게
+	Accent color 6 Light	강조 색 6 밝게
+# Picture Styles
+	Simple Frame, White	단순 프레임, 흰색
+	Beveled Matte, White	입체 매트, 흰색
+	Metal Frame	금속 프레임
+	Drop Shadow Rectangle	그림자 사각형
+	Rounded Diagonal Corner, White	둥근 대각선 모서리, 흰색
+	Snip Diagonal Corner, White	잘린 대각선 모서리, 흰색
+	Moderate Frame, White	중간 프레임, 흰색
+	Rotated, White	회전, 흰색
+	Perspective Shadow, White	원근 그림자, 흰색
+	Soft Edge Rectangle	부드러운 가장자리 사각형
+	Double Frame, Black	이중 프레임, 검정
+	Thick Matte, Black	두꺼운 매트, 검정
+	Simple Frame, Black	단순 프레임, 검정
+	Beveled Oval, Black	입체 타원, 검정
+	Compound Frame, Black	겹 프레임, 검정
+	Center Shadow Rectangle	가운데 그림자 사각형
+	Soft Edge Oval	부드러운 가장자리 타원
+	Reflected Rounded Rectangle	반사된 둥근 사각형
+	Reflected Bevel, White	반사된 입체, 흰색
+	Metal Rounded Rectangle	금속 둥근 사각형
+	Moderate Frame, Black	중간 프레임, 검정
+	Bevel Rectangle	입체 사각형
+	Bevel Perspective	입체 원근
+	Metal Oval	금속 타원
+# Table Styles
+	No Style, No Grid	스타일 없음, 격자 없음
+	No Style, Table Grid	스타일 없음, 표 격자
+	Light Style 1	밝은 스타일 1
+	Light Style 1 - Accent 1	밝은 스타일 1 - 강조 1
+	Light Style 1 - Accent 2	밝은 스타일 1 - 강조 2
+	Light Style 1 - Accent 3	밝은 스타일 1 - 강조 3
+	Light Style 1 - Accent 4	밝은 스타일 1 - 강조 4
+	Light Style 1 - Accent 5	밝은 스타일 1 - 강조 5
+	Light Style 1 - Accent 6	밝은 스타일 1 - 강조 6
+	Light Style 2	밝은 스타일 2
+	Light Style 2 - Accent 1	밝은 스타일 2 - 강조 1
+	Light Style 2 - Accent 2	밝은 스타일 2 - 강조 2
+	Light Style 2 - Accent 3	밝은 스타일 2 - 강조 3
+	Light Style 2 - Accent 4	밝은 스타일 2 - 강조 4
+	Light Style 2 - Accent 5	밝은 스타일 2 - 강조 5
+	Light Style 2 - Accent 6	밝은 스타일 2 - 강조 6
+	Medium Style 2	보통 스타일 2
+	Medium Style 2 - Accent 1	보통 스타일 2 - 강조 1
+	Medium Style 2 - Accent 2	보통 스타일 2 - 강조 2
+	Medium Style 2 - Accent 3	보통 스타일 2 - 강조 3
+	Medium Style 2 - Accent 4	보통 스타일 2 - 강조 4
+	Medium Style 2 - Accent 5	보통 스타일 2 - 강조 5
+	Medium Style 2 - Accent 6	보통 스타일 2 - 강조 6
+	Medium Style 4	보통 스타일 4
+	Medium Style 4 - Accent 1	보통 스타일 4 - 강조 1
+	Medium Style 4 - Accent 2	보통 스타일 4 - 강조 2
+	Medium Style 4 - Accent 3	보통 스타일 4 - 강조 3
+	Medium Style 4 - Accent 4	보통 스타일 4 - 강조 4
+	Medium Style 4 - Accent 5	보통 스타일 4 - 강조 5
+	Medium Style 4 - Accent 6	보통 스타일 4 - 강조 6
+	Dark Style 1	어두운 스타일 1
+	Dark Style 1 - Accent 1	어두운 스타일 1 - 강조 1
+	Dark Style 1 - Accent 2	어두운 스타일 1 - 강조 2
+	Dark Style 1 - Accent 3	어두운 스타일 1 - 강조 3
+	Dark Style 1 - Accent 4	어두운 스타일 1 - 강조 4
+	Dark Style 1 - Accent 5	어두운 스타일 1 - 강조 5
+	Dark Style 1 - Accent 6	어두운 스타일 1 - 강조 6
+# SmartArt Design › Change Colors and Diagram Styles
+	Colorful	다양한 색
+	Colorful Range - Accent Colors 2 to 3	다양한 색 범위 - 강조 색 2~3
+	Colorful Range - Accent Colors 3 to 4	다양한 색 범위 - 강조 색 3~4
+	Colorful Range - Accent Colors 4 to 5	다양한 색 범위 - 강조 색 4~5
+	Colorful Range - Accent Colors 5 to 6	다양한 색 범위 - 강조 색 5~6
+	Gradient Range - Accent 1	그레이디언트 범위 - 강조 1
+	Gradient Range - Accent 2	그레이디언트 범위 - 강조 2
+	Gradient Range - Accent 3	그레이디언트 범위 - 강조 3
+	Gradient Range - Accent 4	그레이디언트 범위 - 강조 4
+	Gradient Range - Accent 5	그레이디언트 범위 - 강조 5
+	Gradient Range - Accent 6	그레이디언트 범위 - 강조 6
+	Simple Fill	단순 채우기
+	Subtle Effect	은은한 효과
+	Intense Effect	강한 효과
+	White Outline	흰색 윤곽선
+	Polished	광택
+	Inset	안쪽
+	Cartoon	만화
+	Powder	파우더
+	Brick Scene	벽돌 장면
