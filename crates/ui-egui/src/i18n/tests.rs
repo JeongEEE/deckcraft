@@ -587,3 +587,69 @@ fn command_search_matches_korean_and_english() {
     assert!(h.query_by_label(t("Command Palette")).is_some(), "the palette lists its entries in Korean");
     assert!(h.query_by_label("Command Palette").is_none());
 }
+
+/// Dialogs 1: the shared dialog helpers and title map (`dialogs.rs`) and the dialogs from About
+/// to Language.
+#[test]
+fn korean_coverage_dialogs_1() {
+    let mut problems = audit::problems(&src().join("dialogs.rs"));
+    for file in [
+        "about",
+        "alt_text",
+        "body",
+        "columns",
+        "credits",
+        "date_time",
+        "equation",
+        "export",
+        "find",
+        "font",
+        "grid_options",
+        "hyperlink",
+        "language",
+    ] {
+        problems.extend(audit::problems(&src().join("dialogs").join(format!("{file}.rs"))));
+    }
+    assert!(problems.is_empty(), "no Korean row (deckcraft.tsv) or keep_english.txt entry, or not wrapped in t():\n{}", problems.join("\n"));
+}
+
+/// The Font dialog opened in Korean has a Korean title and OK / Cancel buttons.
+#[test]
+fn font_dialog_is_korean() {
+    use egui_kittest::kittest::Queryable;
+    let mut h = korean_harness();
+    // The ribbon's Font group says 글꼴 too: the dialog adds its title and its Font field.
+    let before = h.query_all_by_label(t("Font")).count();
+    h.state_mut().dialog = Some(crate::dialogs::Dialog::new("font"));
+    h.run_steps(3);
+    assert_eq!(t("Font"), "글꼴");
+    assert!(h.query_all_by_label(t("Font")).count() >= before + 2, "the title and the Font field are Korean");
+    for en in ["OK", "Cancel"] {
+        assert_ne!(t(en), en, "{en:?} has a Korean row");
+        assert!(h.query_by_role_and_label(egui::accesskit::Role::Button, t(en)).is_some(), "the dialog shows {:?} for {en:?}", t(en));
+    }
+    assert!(h.query_by_label("Font").is_none() && h.query_by_label("Cancel").is_none(), "no English title or button");
+    assert_eq!(h.state().dialog.as_ref().map(|d| d.id.as_str()), Some("font"));
+}
+
+/// Names the dialogs show from outside `src/` and translate where they draw them: the Slide Size
+/// presets (deckcraft-model; the dialog keeps the English name as its field value) and the
+/// Accessibility Checker's fixed issues (deckcraft-engine `review.accessibility`).
+#[test]
+fn korean_dialog_data_names() {
+    let mut names: Vec<&str> = deckcraft_model::defaults::SLIDE_SIZES.iter().map(|(n, _, _)| *n).collect();
+    names.extend(["Missing slide title", "Missing alternative text"]);
+    let missing: Vec<&&str> = names.iter().filter(|n| !has_ko(n)).collect();
+    assert!(missing.is_empty(), "no Korean row: {missing:?}");
+}
+
+/// Dialog titles are translated, except where the title is the app's name (Quit, unknown dialogs).
+#[test]
+fn dialog_titles_keep_the_app_name() {
+    set_current(resolve("ko"));
+    assert_eq!(crate::dialogs::shown_title("font"), "글꼴");
+    assert_eq!(crate::dialogs::shown_title("quit"), crate::APP_NAME);
+    assert_eq!(crate::dialogs::shown_title("zz-no-such-dialog"), crate::APP_NAME);
+    set_current(craft_i18n::Lang::EN);
+    assert_eq!(crate::dialogs::shown_title("font"), "Font");
+}

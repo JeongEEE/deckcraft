@@ -1406,3 +1406,261 @@ chart	Combo	콤보
 	open View ▸ Handout Master first	먼저 보기 ▸ 유인물 마스터를 여세요
 	open View ▸ Notes Master first	먼저 보기 ▸ 노트 마스터를 여세요
 	command `{0}` is not available right now: {1}	지금은 `{0}` 명령을 쓸 수 없습니다: {1}
+
+# Dialogs 1: dialog titles, the shared dialog helpers (dialogs.rs) and the dialogs from About to
+# Language (dialogs/*.rs, dialogs/body.rs). Field values, command params and saved names stay English.
+	Size and Position	크기 및 위치
+	Header and Footer	머리글/바닥글
+	Insert Hyperlink	하이퍼링크 삽입
+	Set Up Slide Show	슬라이드 쇼 설정
+	Slides from Outline	개요에서 슬라이드 만들기
+	Reuse Slides	슬라이드 다시 사용
+	AutoCorrect	자동 고침
+	Grid Options	격자 옵션
+	Photo Album	사진 앨범
+	Replace Font	글꼴 바꾸기
+	Accessibility Checker	접근성 검사
+	Custom Shows	사용자 지정 쇼
+	Chart Data	차트 데이터
+	Trim Media	미디어 구간 자르기
+	Choose a Diagram Graphic	다이어그램 그래픽 선택
+	Bullets and Numbering	글머리 기호 및 번호 매기기
+	Create New Theme Colors	새 테마 색 만들기
+	Create New Theme Fonts	새 테마 글꼴 만들기
+	“{id}” is not available yet.	“{id}”은(는) 아직 사용할 수 없습니다.
+# Insert Table, Slide Size, Header and Footer
+	Number of columns:	열 개수:
+	Number of rows:	행 개수:
+	Slides sized for:	슬라이드 크기:
+	Width ({unit}):	너비 ({unit}):
+	Height ({unit}):	높이 ({unit}):
+	Maximize content (else ensure fit)	내용 최대화 (아니면 크기에 맞춤)
+	On-screen Show (16:10)	화면 슬라이드 쇼 (16:10)
+	Letter Paper (8.5x11 in)	레터 용지 (8.5x11 in)
+	Ledger Paper (11x17 in)	레저 용지 (11x17 in)
+	A3 Paper (297x420 mm)	A3 용지 (297x420 mm)
+	A4 Paper (210x297 mm)	A4 용지 (210x297 mm)
+	B4 (ISO) Paper (250x353 mm)	B4 (ISO) 용지 (250x353 mm)
+	B5 (ISO) Paper (176x250 mm)	B5 (ISO) 용지 (176x250 mm)
+	35mm Slides	35mm 슬라이드
+	Overhead	오버헤드
+	Banner	배너
+	Widescreen (13.333x7.5 in)	와이드스크린 (13.333x7.5 in)
+	Square (1:1)	정사각형 (1:1)
+	Portrait (9:16)	세로 (9:16)
+	Date and time	날짜 및 시간
+	Fixed date (empty = update automatically):	고정 날짜 (비우면 자동 업데이트):
+	Slide number	슬라이드 번호
+	Footer text:	바닥글 텍스트:
+date	Format:	형식:
+	Don't show on title slide	제목 슬라이드에는 표시 안 함
+	Apply to All	모두 적용
+# Insert Hyperlink, Set Up Slide Show
+	Web Page or File	웹 페이지 또는 파일
+	This Document	현재 문서
+	Email Address	전자 메일 주소
+	Email address:	전자 메일 주소:
+	Address:	주소:
+	ScreenTip:	화면 설명:
+	Show type	쇼 형식
+	Presented by a speaker (full screen)	발표자가 진행 (전체 화면)
+	Browsed by an individual (window)	개인이 탐색 (창)
+	Browsed at a kiosk (full screen)	키오스크에서 탐색 (전체 화면)
+	Loop continuously until 'Esc'	'Esc'를 누를 때까지 계속 반복
+	Show without narration	내레이션 없이 쇼 진행
+	Show without animation	애니메이션 없이 쇼 진행
+	Use timings, if present	시간 설정이 있으면 사용
+	Keep mouse cursor visible	마우스 커서 계속 표시
+	All slides	모든 슬라이드
+# Saving before closing or quitting
+	Do you want to save the changes you made to “{name}”?	“{name}”의 변경 내용을 저장하시겠습니까?
+	Do you want to save the changes you made to {n} presentations?	프레젠테이션 {n}개의 변경 내용을 저장하시겠습니까?
+# New Comment, Bullets and Numbering, Action Settings, Alt Text, Slides from Outline
+	Post	게시
+	Bulleted	글머리 기호
+	Numbered	번호 매기기
+	Custom character:	사용자 지정 문자:
+	Size (% of text):	크기 (텍스트의 %):
+	Remove bullets and numbering	글머리 기호와 번호 매기기 제거
+	Mouse Click	마우스 클릭
+	Mouse Over	마우스 오버
+	Action on click	클릭할 때 실행
+	Action on mouse over	마우스를 올릴 때 실행
+	Hyperlink to:	하이퍼링크 대상:
+	Last Slide Viewed	마지막으로 본 슬라이드
+	Custom Show…	사용자 지정 쇼…
+	Slide…	슬라이드…
+	URL…	URL…
+	This presentation has no custom shows (Slide Show ▸ Custom Slide Show).	이 프레젠테이션에는 사용자 지정 쇼가 없습니다 (슬라이드 쇼 ▸ 사용자 지정 슬라이드 쇼).
+	Run program:	프로그램 실행:
+	Program:	프로그램:
+	Play the shape's media	도형의 미디어 재생
+	Highlight click	클릭할 때 강조
+	How would you describe this object and its context to someone who is blind or has low vision?	앞을 보지 못하거나 시력이 낮은 사람에게 이 개체와 그 맥락을 어떻게 설명하시겠습니까?
+	Alt text	대체 텍스트
+	Mark as decorative	장식용으로 표시
+	Paste or type an outline. Unindented lines become slide titles; tab-indented lines become bullets.	개요를 붙여 넣거나 입력하세요. 들여쓰지 않은 줄은 슬라이드 제목이, 탭으로 들여쓴 줄은 글머리 기호 항목이 됩니다.
+document	Outline	개요
+# Reuse Slides, Rename, Export
+	Insert slides from {name} after the current slide:	{name}의 슬라이드를 현재 슬라이드 뒤에 삽입:
+	Select None	모두 선택 해제
+	{n}  (no title)	{n}  (제목 없음)
+	Keep source formatting	원본 서식 유지
+	Tick at least one slide to insert	삽입할 슬라이드를 하나 이상 선택하세요
+	Export the presentation as:	프레젠테이션 내보내기 형식:
+	PDF document (.pdf)	PDF 문서 (.pdf)
+	PNG images (current slide)	PNG 이미지 (현재 슬라이드)
+	PNG images (all slides)	PNG 이미지 (모든 슬라이드)
+	JPEG image (current slide)	JPEG 이미지 (현재 슬라이드)
+	JPEG images (all slides)	JPEG 이미지 (모든 슬라이드)
+	PowerPoint Presentation (.pptx)	PowerPoint 프레젠테이션 (.pptx)
+	Outline (.txt)	개요 (.txt)
+	Animated GIF (.gif)	애니메이션 GIF (.gif)
+	Outline/RTF (.rtf)	개요/RTF (.rtf)
+	Print layout:	인쇄 모양:
+	Full Page Slides	전체 페이지 슬라이드
+	Notes Pages	노트 페이지
+	Handouts (1 slide per page)	유인물 (페이지당 슬라이드 1개)
+	Handouts (2 slides per page)	유인물 (페이지당 슬라이드 2개)
+	Handouts (3 slides per page)	유인물 (페이지당 슬라이드 3개)
+	Handouts (4 slides per page)	유인물 (페이지당 슬라이드 4개)
+	Handouts (6 slides per page)	유인물 (페이지당 슬라이드 6개)
+	Handouts (9 slides per page)	유인물 (페이지당 슬라이드 9개)
+	Include hidden slides	숨긴 슬라이드 포함
+	Transparent background	투명한 배경
+	Leave the slide background out: only what is on the slide is drawn	슬라이드 배경을 빼고 슬라이드 위의 내용만 그립니다
+	Small (640 px wide)	작게 (너비 640 px)
+	Medium (960 px wide)	보통 (너비 960 px)
+	Large (1280 px wide)	크게 (너비 1280 px)
+	Extra Large (1920 px wide)	매우 크게 (너비 1920 px)
+	Custom width	사용자 지정 너비
+	Width (pixels):	너비 (픽셀):
+	Seconds per slide:	슬라이드당 초:
+	From slide:	시작 슬라이드:
+	To slide:	끝 슬라이드:
+	Loop forever	계속 반복
+# Replace Font, Symbol, Equation, Paste Special
+	With:	다음으로:
+	Font name	글꼴 이름
+	“{from}” isn't used explicitly.	“{from}”은(는) 직접 지정되어 쓰인 곳이 없습니다.
+	Replaced “{from}” with “{to}”.	“{from}”을(를) “{to}”(으)로 바꿨습니다.
+	Click a symbol to insert it at the insertion point.	기호를 클릭하면 삽입 지점에 넣습니다.
+	Currency	통화
+	Math	수학
+	Greek	그리스 문자
+	Type an equation in linear form (e.g. a^2+b^2=c^2, x=(-b±√(b^2-4ac))/2a).	수식을 한 줄 형식으로 입력하세요 (예: a^2+b^2=c^2, x=(-b±√(b^2-4ac))/2a).
+	As:	붙여넣기 형식:
+	Use Destination Theme	대상 테마 사용
+	Keep Source Formatting	원본 서식 유지
+	Picture (PNG)	그림 (PNG)
+	Keep Text Only	텍스트만 유지
+# Spelling, Accessibility Checker
+	Dictionary: {name}	사전: {name}
+	No {lang} dictionary is installed, so only common misspellings are found. Put a Hunspell .aff/.dic pair in {folder}.	{lang} 사전이 설치되어 있지 않아 흔한 철자 오류만 찾습니다. {folder}에 Hunspell .aff/.dic 파일 한 쌍을 넣으세요.
+	a dictionaries folder	사전 폴더
+	The spelling check is complete. No issues found.	맞춤법 검사를 마쳤습니다. 문제가 없습니다.
+	Slide {n}: “{word}”	슬라이드 {n}: “{word}”
+	Go to	이동
+	Repeated word	반복된 단어
+	Delete Repeated Word	반복된 단어 삭제
+	Change to:	바꿀 단어:
+	Click to change this one; Shift-click to change all	클릭하면 이 단어만, Shift를 누른 채 클릭하면 모두 바꿉니다
+	No accessibility issues found. People with disabilities should not have difficulty reading this document.	접근성 문제가 없습니다. 장애가 있는 사람도 이 문서를 읽는 데 어려움이 없을 것입니다.
+	Slide {n}: {issue}	슬라이드 {n}: {issue}
+	Missing slide title	슬라이드 제목 없음
+	Missing alternative text	대체 텍스트 없음
+# Language
+	Selected text	선택한 텍스트
+	Whole presentation	프레젠테이션 전체
+	Mark all text in the presentation as:	프레젠테이션의 모든 텍스트를 다음 언어로 표시:
+	Mark selected text as:	선택한 텍스트를 다음 언어로 표시:
+	{name}  (dictionary)	{name}  (사전)
+	Spelling is checked for languages marked (dictionary).	(사전) 표시가 있는 언어만 맞춤법을 검사합니다.
+	Do not check spelling or grammar	맞춤법 및 문법 검사 안 함
+# Custom Shows, Chart Data, Trim Media, SmartArt
+show	Show	쇼 시작
+	{name} ({n} slides)	{name} (슬라이드 {n}개)
+	New show name:	새 쇼 이름:
+	Slides (e.g. 1,3,5):	슬라이드 (예: 1,3,5):
+	Select a chart first.	먼저 차트를 선택하세요.
+	Edit the data: first row = series names, first column = categories.	데이터를 편집하세요. 첫 행은 계열 이름, 첫 열은 항목입니다.
+	Chart cell	차트 셀
+	+ Row	+ 행
+	+ Series	+ 계열
+	Start time (s):	시작 시간 (초):
+	End trim (s):	끝 자르기 (초):
+	Fade in (s):	페이드 인 (초):
+	Fade out (s):	페이드 아웃 (초):
+	Pick a graphic; type one item per line.	그래픽을 고르고 항목을 한 줄에 하나씩 입력하세요.
+	Basic List	기본 목록
+	Diagram items	다이어그램 항목
+# About, Contributors and Models (the copyright and licence line stays English: keep_english.txt)
+	Presentations and slide shows, rebuilt from scratch in pure Rust.	프레젠테이션과 슬라이드 쇼를 순수 Rust로 처음부터 다시 만들었습니다.
+	An open-source, clean-room project. Not affiliated with Microsoft.	오픈 소스 클린룸 프로젝트입니다. Microsoft와는 관계가 없습니다.
+	Based on DeckCraft by the ArtCraft team.	ArtCraft 팀의 DeckCraft를 바탕으로 합니다.
+	Source on GitHub	GitHub의 소스 코드
+	Grab bag	모아 보기
+	{n} contributors · {commits} commits	기여자 {n}명 · 커밋 {commits}개
+	No contributor data was built into this copy.	이 빌드에는 기여자 정보가 들어 있지 않습니다.
+	No model credits were built into this copy.	이 빌드에는 모델 정보가 들어 있지 않습니다.
+	@{login}: {prs} PRs, {commits} commits, +{added} / −{deleted} lines (Δ {delta}), +{binary_added} / −{binary_deleted} binary assets, {first} – {last}	@{login}: PR {prs}개, 커밋 {commits}개, 줄 +{added} / −{deleted} (Δ {delta}), 바이너리 에셋 +{binary_added} / −{binary_deleted}, {first} – {last}
+# AutoCorrect, Preferences
+	Correct TWo INitial CApitals	처음 두 글자가 대문자이면 고치기
+	Capitalize first letter of sentences	문장의 첫 글자를 대문자로
+	Capitalize names of days	요일 이름의 첫 글자를 대문자로
+	Correct accidental use of cAPS LOCK key	Caps Lock 키를 잘못 켜고 입력한 글자 고치기
+	Replace fractions (1/2) with fraction characters (½)	분수(1/2)를 분수 문자(½)로 바꾸기
+	Ordinals (1st) with superscript	서수(1st)를 위 첨자로
+	Automatic bulleted and numbered lists	글머리 기호 및 번호 목록 자동 만들기
+	Replace text as you type	입력할 때 텍스트 바꾸기
+	With	다음으로
+	Dark appearance	어두운 모양
+	Interface size:	화면 크기:
+	Interface size	화면 크기
+	Measurement units:	측정 단위:
+	Show smart guides	스마트 안내선 표시
+	Snap objects to grid	개체를 격자에 맞추기
+	Replace straight quotes with smart quotes	곧은 따옴표를 둥근 따옴표로 바꾸기
+	AutoCorrect as you type	입력할 때 자동 고침
+	AutoCorrect Options…	자동 고침 옵션…
+	Your name (comments):	내 이름 (댓글):
+# Columns, Date and Time
+	Number:	개수:
+	Spacing (in):	간격 (in):
+	Number must be a whole number from 1 to 16	개수는 1에서 16 사이의 정수여야 합니다
+	Spacing must be from 0 to 22 inches	간격은 0에서 22인치 사이여야 합니다
+	Available formats:	사용 가능한 형식:
+	English (United States)	영어 (미국)
+	English (United Kingdom)	영어 (영국)
+	French (France)	프랑스어 (프랑스)
+	Swedish	스웨덴어
+	Month names and AM/PM are listed for English. Other languages list the numeric date and 24-hour time.	월 이름과 AM/PM은 영어에서만 나옵니다. 다른 언어는 숫자 날짜와 24시간제 시간만 보여 줍니다.
+	Update automatically	자동으로 업데이트
+# Find and Replace
+	Find what:	찾을 내용:
+	Replace with:	바꿀 내용:
+	Match case	대/소문자 구분
+	Find whole words only	단어 단위로만 찾기
+	Replace All	모두 바꾸기
+	Replaced {n} occurrence(s).	{n}개를 바꿨습니다.
+	{app} can't find “{text}”.	{app}에서 “{text}”을(를) 찾을 수 없습니다.
+	Match {n} of {total} on slide {slide}.	{total}개 중 {n}번째, 슬라이드 {slide}.
+	Match {n} of {total} on slide {slide} (notes).	{total}개 중 {n}번째, 슬라이드 {slide} (노트).
+# Font
+	Single	한 줄
+	Double	두 줄
+	Heavy	굵은 선
+	Wavy	물결선
+	Small caps	작은 대문자
+	All caps	모두 대문자
+	Very tight	매우 좁게
+	Very loose	매우 넓게
+	Choose a font	글꼴을 선택하세요
+	Font size must be a number	글꼴 크기는 숫자여야 합니다
+	Character spacing must be a number	문자 간격은 숫자여야 합니다
+# Grid Options
+	Snap	맞춤
+	Snap objects to other objects	개체를 다른 개체에 맞추기
+	Spacing (pt):	간격 (pt):
+	Display grid on screen	화면에 격자 표시
+	Display drawing guides on screen	화면에 그리기 안내선 표시
