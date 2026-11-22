@@ -9,6 +9,7 @@ use egui::{Align2, Color32, CornerRadius, Rect, Role, Sense, Stroke, Ui, WidgetI
 use serde_json::json;
 
 use crate::SlideApp;
+use crate::i18n;
 use crate::theme::{self, Tokens};
 
 /// A slide drag in the thumbnail pane or the Slide Sorter.
@@ -168,32 +169,32 @@ fn list(app: &mut SlideApp, ui: &mut Ui) {
                 t.text_dim,
             );
             resp.context_menu(|ui| {
-                if ui.button("Rename Section…").clicked() {
+                if ui.button(i18n::t("Rename Section…")).clicked() {
                     let mut d = crate::dialogs::Dialog::new("renameSection");
                     d.params = json!({"index": si, "name": sec.name});
                     app.dialog = Some(d);
                     ui.close();
                 }
-                if ui.button("Remove Section").clicked() {
+                if ui.button(i18n::t("Remove Section")).clicked() {
                     let _ = app.run("section.remove", json!({"index": si}));
                     ui.close();
                 }
-                if ui.button("Remove Section & Slides").clicked() {
+                if ui.button(i18n::t("Remove Section & Slides")).clicked() {
                     let _ = app.run("section.remove", json!({"index": si, "slides": true}));
                     ui.close();
                 }
-                if ui.button("Move Section Up").clicked() {
+                if ui.button(i18n::t("Move Section Up")).clicked() {
                     let _ = app.run("section.move", json!({"index": si, "to": si.saturating_sub(1)}));
                     ui.close();
                 }
-                if ui.button("Move Section Down").clicked() {
+                if ui.button(i18n::t("Move Section Down")).clicked() {
                     let _ = app.run("section.move", json!({"index": si, "to": si + 1}));
                     ui.close();
                 }
             });
         }
         let (row, resp) = ui.allocate_exact_size(vec2(width, th + 16.0), Sense::click_and_drag());
-        let label = format!("Slide {}", i + 1);
+        let label = i18n::fmt(i18n::tc("number", "Slide {n}"), &[("n", &(i + 1).to_string())]);
         resp.widget_info(|| WidgetInfo::labeled(Role::Button, true, &label));
         let img = crate::textures::device_pixel_rect(Rect::from_min_size(pos2(row.min.x + 30.0, row.min.y + 6.0), vec2(tw, th)), ppp);
         rects.push((i, row));
@@ -295,7 +296,7 @@ fn list(app: &mut SlideApp, ui: &mut Ui) {
     // Click on empty space below: new slide prompt.
     let (r, resp) = ui.allocate_exact_size(vec2(width, 40.0), Sense::click());
     if resp.hovered() {
-        ui.painter().text(r.center(), Align2::CENTER_CENTER, "+ New Slide", theme::font(12.0), t.text_faint);
+        ui.painter().text(r.center(), Align2::CENTER_CENTER, i18n::t("+ New Slide"), theme::font(12.0), t.text_faint);
     }
     if resp.clicked() {
         let _ = app.run("slide.new", json!({}));
@@ -311,52 +312,53 @@ pub fn slide_menu(app: &mut SlideApp, ui: &mut Ui, i: usize) {
         ("Copy", "edit.copy", json!({"scope": "slides"})),
         ("Paste", "edit.paste", json!({"scope": "slides"})),
     ] {
-        if ui.button(l).clicked() {
+        if ui.button(i18n::t(l)).clicked() {
             let _ = app.run(id, p);
             ui.close();
         }
     }
     ui.separator();
-    if ui.button("New Slide").clicked() {
+    if ui.button(i18n::t("New Slide")).clicked() {
         let _ = app.run("slide.new", json!({}));
         ui.close();
     }
-    if ui.button("Duplicate Slide").clicked() {
+    if ui.button(i18n::t("Duplicate Slide")).clicked() {
         let _ = app.run("slide.duplicate", json!({}));
         ui.close();
     }
-    if ui.button("Delete Slide").clicked() {
+    if ui.button(i18n::t("Delete Slide")).clicked() {
         let _ = app.run("slide.delete", json!({}));
         ui.close();
     }
     ui.separator();
-    if ui.button("Add Section").clicked() {
+    if ui.button(i18n::t("Add Section")).clicked() {
         let _ = app.run("section.add", json!({"at": i}));
         ui.close();
     }
-    ui.menu_button("Layout", |ui| {
+    ui.menu_button(i18n::t("Layout"), |ui| {
         let layouts: Vec<(String, u32)> = app
             .session
             .active()
             .and_then(|d| d.doc.masters.first().map(|m| m.layouts.iter().map(|l| (l.name.clone(), l.id.0)).collect()))
             .unwrap_or_default();
         for (n, id) in layouts {
-            if ui.button(n).clicked() {
+            // Shown translated; the command takes the layout's id and the document keeps its name.
+            if ui.button(i18n::tc("layout", &n)).clicked() {
                 let _ = app.run("slide.layout", json!({"layout": id}));
                 ui.close();
             }
         }
     });
-    if ui.button("Reset Slide").clicked() {
+    if ui.button(i18n::t("Reset Slide")).clicked() {
         let _ = app.run("slide.reset", json!({}));
         ui.close();
     }
-    if ui.button("Format Background…").clicked() {
+    if ui.button(i18n::t("Format Background…")).clicked() {
         let _ = app.run("view.pane", json!({"pane": "background"}));
         ui.close();
     }
     let hidden = app.session.active().and_then(|d| d.doc.slides.get(i).map(|s| s.hidden)).unwrap_or(false);
-    if ui.button(if hidden { "Show Slide" } else { "Hide Slide" }).clicked() {
+    if ui.button(i18n::t(if hidden { "Show Slide" } else { "Hide Slide" })).clicked() {
         let _ = app.run("slide.hide", json!({"index": i}));
         ui.close();
     }
@@ -409,8 +411,9 @@ fn master_list(app: &mut SlideApp, ui: &mut Ui) {
                     egui::StrokeKind::Outside,
                 );
                 let name = match li {
-                    Some(l) => m.layouts.get(l).map(|x| x.name.clone()).unwrap_or_default(),
-                    None => format!("{} Slide Master", m.name),
+                    // Shown translated; the document keeps the names.
+                    Some(l) => m.layouts.get(l).map(|x| i18n::tc("layout", &x.name).to_string()).unwrap_or_default(),
+                    None => i18n::fmt(i18n::t("{name} Slide Master"), &[("name", &m.name)]),
                 };
                 let resp = resp.on_hover_text(name);
                 if resp.clicked() {

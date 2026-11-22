@@ -1,42 +1,45 @@
 use super::{Align2, Color32, CornerRadius, Sense, SlideApp, Stroke, Tokens, Ui, Value, json, run, theme, vec2};
+use crate::i18n::{self, fmt};
 
 /// Review › Compare: the revised copy's slide-level changes; click to go there, Accept to take it,
 /// Reject to drop it.
 pub(super) fn revisions(app: &mut SlideApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     let Ok(v) = app.session.execute("review.revisions", &json!({})) else {
-        ui.label(egui::RichText::new("Compare this presentation with a revised copy from Review › Compare.").color(t.text_dim));
+        ui.label(egui::RichText::new(i18n::t("Compare this presentation with a revised copy from Review › Compare.")).color(t.text_dim));
         return;
     };
     let changes = v["changes"].as_array().cloned().unwrap_or_default();
-    ui.label(egui::RichText::new(format!("Compared with {}", v["name"].as_str().unwrap_or("?"))).color(t.text_dim));
+    ui.label(egui::RichText::new(fmt(i18n::t("Compared with {name}"), &[("name", v["name"].as_str().unwrap_or("?"))])).color(t.text_dim));
     if v["byPosition"].as_bool() == Some(true) {
-        ui.label(egui::RichText::new("Not a copy of this presentation: slides are matched by position.").size(11.0).color(t.text_faint));
+        ui.label(egui::RichText::new(i18n::t("Not a copy of this presentation: slides are matched by position.")).size(11.0).color(t.text_faint));
     }
     ui.add_space(4.0);
     if changes.is_empty() {
-        ui.label("No differences left.");
-        if ui.button("End Review").clicked() {
+        ui.label(i18n::t("No differences left."));
+        if ui.button(i18n::t("End Review")).clicked() {
             run(app, "review.endCompare", json!({}));
             app.ui.pane = None;
         }
         return;
     }
     ui.horizontal(|ui| {
-        if ui.button(format!("Accept All ({})", changes.len())).clicked() {
+        if ui.button(fmt(i18n::t("Accept All ({n})"), &[("n", &changes.len().to_string())])).clicked() {
             run(app, "review.accept", json!({"all": true}));
         }
-        if ui.button(format!("Reject All ({})", changes.len())).clicked() {
+        if ui.button(fmt(i18n::t("Reject All ({n})"), &[("n", &changes.len().to_string())])).clicked() {
             run(app, "review.reject", json!({"all": true}));
         }
     });
     ui.separator();
     for (i, c) in changes.iter().enumerate() {
         let slide = c["slide"].as_u64().unwrap_or(0);
-        let (head, col) = match c["kind"].as_str().unwrap_or("") {
-            "inserted" => (format!("Slide inserted after {slide}"), Color32::from_rgb(0x2E, 0xA3, 0x6F)),
-            "deleted" => (format!("Slide {} deleted", slide.saturating_add(1)), Color32::from_rgb(0xD8, 0x3F, 0x6B)),
-            _ => (format!("Slide {} changed", slide.saturating_add(1)), Color32::from_rgb(0x2E, 0x6F, 0xD8)),
+        let kind = c["kind"].as_str().unwrap_or("");
+        let (slide_s, number) = (slide.to_string(), slide.saturating_add(1).to_string());
+        let (head, col) = match kind {
+            "inserted" => (fmt(i18n::t("Slide inserted after {slide}"), &[("slide", &slide_s)]), Color32::from_rgb(0x2E, 0xA3, 0x6F)),
+            "deleted" => (fmt(i18n::t("Slide {n} deleted"), &[("n", &number)]), Color32::from_rgb(0xD8, 0x3F, 0x6B)),
+            _ => (fmt(i18n::t("Slide {n} changed"), &[("n", &number)]), Color32::from_rgb(0x2E, 0x6F, 0xD8)),
         };
         egui::Frame::NONE.fill(t.chrome).corner_radius(CornerRadius::same(6)).inner_margin(egui::Margin::same(8)).show(ui, |ui| {
             ui.set_width(ui.available_width());
@@ -48,15 +51,18 @@ pub(super) fn revisions(app: &mut SlideApp, ui: &mut Ui) {
                     run(app, "slide.go", json!({"index": (slide as usize).min(max)}));
                 }
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    if ui.small_button("Reject").clicked() {
+                    if ui.small_button(i18n::t("Reject")).clicked() {
                         run(app, "review.reject", json!({"index": i}));
                     }
-                    if ui.small_button("Accept").clicked() {
+                    if ui.small_button(i18n::t("Accept")).clicked() {
                         run(app, "review.accept", json!({"index": i}));
                     }
                 });
             });
             for d in c["details"].as_array().into_iter().flatten().filter_map(Value::as_str).take(8) {
+                // A changed slide's details are the engine's wording (shape names in them stay); an
+                // inserted or deleted slide's detail is its title, the document's.
+                let d = if kind == "changed" { revision_detail(d) } else { d.into() };
                 ui.label(egui::RichText::new(format!("• {d}")).size(11.5).color(t.text_dim));
             }
         });
@@ -66,7 +72,7 @@ pub(super) fn revisions(app: &mut SlideApp, ui: &mut Ui) {
 
 pub(super) fn comments(app: &mut SlideApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
-    if ui.button("+ New Comment").clicked() {
+    if ui.button(i18n::t("+ New Comment")).clicked() {
         app.dialog = Some(crate::dialogs::Dialog::new("comment"));
     }
     ui.separator();
@@ -76,12 +82,14 @@ pub(super) fn comments(app: &mut SlideApp, ui: &mut Ui) {
         .map(|st| st.doc.slides.iter().enumerate().filter(|(_, sl)| !sl.comments.is_empty()).map(|(i, sl)| (i, sl.comments.clone())).collect())
         .unwrap_or_default();
     if threads.is_empty() {
-        ui.label(egui::RichText::new("No comments.").color(t.text_dim));
+        ui.label(egui::RichText::new(i18n::t("No comments.")).color(t.text_dim));
         return;
     }
     let focus = app.ui.comment_focus;
     for (si, list) in threads {
-        ui.label(egui::RichText::new(format!("Slide {}", si + 1)).font(theme::bold(12.0)).color(t.text_dim));
+        ui.label(
+            egui::RichText::new(fmt(i18n::tc("number", "Slide {n}"), &[("n", &(si + 1).to_string())])).font(theme::bold(12.0)).color(t.text_dim),
+        );
         ui.add_space(2.0);
         for (i, c) in list.iter().enumerate() {
             comment_card(app, ui, si, i, c, focus == Some((si, i)));
@@ -116,7 +124,7 @@ fn comment_card(app: &mut SlideApp, ui: &mut Ui, slide: usize, index: usize, c: 
                         focus_comment(app, slide, index);
                     }
                     let when = c.date.replace('T', " ").trim_end_matches('Z').to_string();
-                    let when = if c.resolved { format!("{when} · Resolved") } else { when };
+                    let when = if c.resolved { fmt(i18n::t("{when} · Resolved"), &[("when", &when)]) } else { when };
                     ui.label(egui::RichText::new(when).size(10.5).color(t.text_faint));
                 });
             });
@@ -144,13 +152,13 @@ fn comment_card(app: &mut SlideApp, ui: &mut Ui, slide: usize, index: usize, c: 
                             _ => {}
                         }
                     }
-                    if ui.small_button(if c.resolved { "Reopen" } else { "Resolve" }).clicked() {
+                    if ui.small_button(i18n::t(if c.resolved { "Reopen" } else { "Resolve" })).clicked() {
                         focus_comment(app, slide, index);
                         run(app, "comment.resolve", json!({"index": index, "resolved": !c.resolved}));
                     }
                     let id = ui.scope_id().with(("reply", slide, index));
                     let mut txt: String = ui.data_mut(|d| d.get_temp(id).unwrap_or_default());
-                    let r = ui.add(egui::TextEdit::singleline(&mut txt).hint_text("Reply…").desired_width(ui.available_width()));
+                    let r = ui.add(egui::TextEdit::singleline(&mut txt).hint_text(i18n::t("Reply…")).desired_width(ui.available_width()));
                     if r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) && !txt.trim().is_empty() {
                         focus_comment(app, slide, index);
                         run(app, "comment.reply", json!({"index": index, "text": txt}));
@@ -168,4 +176,24 @@ fn comment_card(app: &mut SlideApp, ui: &mut Ui, slide: usize, index: usize, c: 
             ui.data_mut(|d| d.insert_temp(key, (slide, index)));
         }
     }
+}
+
+/// A changed slide's detail from the engine (deckcraft-engine compare.rs `slide_details`) in the
+/// current language. A single word ("layout", "hidden") is a `revision` row (not a plain one: such
+/// words look like ids); "<shape name>: text, moved" keeps the name (the text after the last ": "
+/// is the list) and translates each word when every one has its row; the sentences with a name in
+/// them ("Title 1 deleted (only in the deck)") go through their templates. Otherwise as written.
+pub(crate) fn revision_detail(d: &str) -> std::borrow::Cow<'_, str> {
+    fn word(w: &str) -> Option<&str> {
+        Some(i18n::tc("revision", w)).filter(|k| *k != w)
+    }
+    if let Some(k) = word(d) {
+        return k.into();
+    }
+    if let Some((label, list)) = d.rsplit_once(": ")
+        && let Some(words) = list.split(", ").map(word).collect::<Option<Vec<_>>>()
+    {
+        return format!("{label}: {}", words.join(", ")).into();
+    }
+    i18n::t_dynamic(d)
 }

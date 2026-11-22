@@ -1049,3 +1049,353 @@ fn layout_menu_names_are_korean() {
     let layout = d.doc.masters[0].layouts.iter().find(|l| l.id == slide.layout).unwrap();
     assert_eq!(layout.name, "Blank", "the document keeps the English name");
 }
+
+/// The task panes (format pane, selection pane, animation pane, thumbnails, notes, comments …):
+/// every interface string has a Korean row or a reason to stay English, and egui's calls look it up.
+#[test]
+fn korean_coverage_panels() {
+    let mut files = vec![src().join("panels.rs")];
+    source_files(&src().join("panels"), &mut files);
+    assert!(files.len() > 12, "found the files: {files:?}");
+    assert_no_problems(&files);
+}
+
+/// The File backstage (start, new, open, info, print, export …).
+#[test]
+fn korean_coverage_backstage() {
+    let mut files = vec![src().join("backstage.rs")];
+    source_files(&src().join("backstage"), &mut files);
+    assert!(files.len() > 3, "found the files: {files:?}");
+    assert_no_problems(&files);
+}
+
+/// An id's placeholder (`{cmd}`, `{0}`) before the last value is the first match: a command id has
+/// no "`: " in it, while the engine's message after it may ("gradient needs at least two
+/// `stops`: …"). A file name before the last value is still the last match.
+#[test]
+fn template_splits_after_an_id_at_its_first_match() {
+    let mut s = deckcraft_engine::Session::with_new();
+    let id = s.execute("shape.insert", &serde_json::json!({"preset": "rect", "rect": [10, 10, 50, 50]})).unwrap()["id"].clone();
+    s.execute("edit.select", &serde_json::json!({"ids": [id]})).unwrap();
+    let err = s.execute("shape.fill", &serde_json::json!({"gradient": {"stops": []}})).err().unwrap().to_string();
+    let msg = "gradient needs at least two `stops`: [[0, \"#fff\"], [1, \"#000\"]]";
+    assert_eq!(err, format!("invalid parameters for `shape.fill`: {msg}"), "the engine's sentence");
+    let tpl = Template::parse("invalid parameters for `{cmd}`: {msg}").unwrap();
+    assert_eq!(tpl.capture(&err), Some(vec![("cmd", "shape.fill"), ("msg", msg)]));
+    let tpl = Template::parse("{name}: {app} can't open this kind of file").unwrap();
+    assert_eq!(tpl.capture("a: b.pptx: Slide can't open this kind of file"), Some(vec![("name", "a: b.pptx"), ("app", "Slide")]));
+    set_current(resolve("ko"));
+    let shown = t_dynamic(&err);
+    assert!(shown.contains("`shape.fill`") && shown.contains(msg) && !shown.contains("invalid parameters"), "{shown}");
+    set_current(resolve("en"));
+}
+
+/// The slide thumbnail's Layout menu shows the built-in layouts translated; the command takes the
+/// layout's id, so the document keeps "Title Slide". A layout the user named like a built-in one
+/// ("Title Only") reads translated in the menu too, and its saved name stays as typed.
+#[test]
+fn layout_names_are_translated_for_display_only() {
+    use egui_kittest::kittest::Queryable;
+    let mut h = korean_harness();
+    let layouts = |h: &egui_kittest::Harness<'_, crate::SlideApp>| -> Vec<(u32, String)> {
+        h.state().session.active().unwrap().doc.masters[0].layouts.iter().map(|l| (l.id.0, l.name.clone())).collect()
+    };
+    let built_in = layouts(&h);
+    h.state_mut().run("master.insertLayout", serde_json::json!({"name": "Title Only"})).unwrap();
+    let _ = h.state_mut().run("view.closeMaster", serde_json::json!({}));
+    h.run_steps(3);
+    let before = layouts(&h);
+    let mine = before.iter().find(|l| !built_in.contains(l)).unwrap().0;
+    assert_eq!(before.iter().filter(|(_, n)| n == "Title Only").count(), 2, "{before:?}");
+    // The slide's thumbnail menu (the ribbon's Layout button is above it).
+    let thumb = h.get_by_label(&fmt(tc("number", "Slide {n}"), &[("n", "1")])).rect();
+    h.get_by_label(&fmt(tc("number", "Slide {n}"), &[("n", "1")])).click_secondary();
+    h.run_steps(3);
+    h.get_all_by_label(t("Layout")).find(|n| n.rect().min.y > thumb.min.y).expect("the menu's Layout item").hover();
+    h.run_steps(3);
+    for (_, name) in &before {
+        assert!(h.query_all_by_label(tc("layout", name)).next().is_some(), "the menu lists {name:?} as {:?}", tc("layout", name));
+        assert!(h.query_by_label(name).is_none(), "{name:?} is not shown in English");
+    }
+    assert_eq!(tc("layout", "Title Slide"), "제목 슬라이드");
+    h.get_by_label("제목 슬라이드").click();
+    h.run_steps(3);
+    let layout_of_slide = |h: &egui_kittest::Harness<'_, crate::SlideApp>| {
+        let d = h.state().session.active().unwrap();
+        let slide = &d.doc.slides[d.selection.slide];
+        d.doc.masters[0].layouts.iter().find(|l| l.id == slide.layout).map(|l| (l.id.0, l.name.clone())).unwrap()
+    };
+    assert_eq!(layout_of_slide(&h).1, "Title Slide", "the document keeps the English name");
+    // The user's "Title Only" is the menu's last 제목만; picking it keeps its name as typed.
+    h.get_by_label(&fmt(tc("number", "Slide {n}"), &[("n", "1")])).click_secondary();
+    h.run_steps(3);
+    h.get_all_by_label(t("Layout")).find(|n| n.rect().min.y > thumb.min.y).unwrap().hover();
+    h.run_steps(3);
+    h.get_all_by_label(tc("layout", "Title Only")).max_by(|a, b| a.rect().min.y.total_cmp(&b.rect().min.y)).unwrap().click();
+    h.run_steps(3);
+    assert_eq!(layout_of_slide(&h), (mine, "Title Only".to_string()));
+    assert_eq!(layouts(&h), before, "no layout was renamed");
+}
+
+/// A label, or a combo box's or a field's text.
+fn shows(h: &egui_kittest::Harness<'_, crate::SlideApp>, s: &str) -> bool {
+    use egui_kittest::kittest::Queryable;
+    h.query_all_by_label(s).next().is_some() || h.query_all_by_value(s).next().is_some()
+}
+
+/// The File tab's frame on `page`: one side-menu entry and the heading say the page's Korean name,
+/// the side menu's names are all different (Info 정보, About 앱 정보), nothing says `en`.
+fn assert_backstage_frame(h: &egui_kittest::Harness<'_, crate::SlideApp>, page: &str, en: &str) {
+    use egui_kittest::kittest::{NodeT, Queryable};
+    let nav_w = crate::backstage::NAV_W + 20.0;
+    let name = tc("backstage", en);
+    // From the back arrow down (the title bar above has its own Home).
+    let top = h.get_by_role_and_label(egui::accesskit::Role::Button, t("Back")).rect().top();
+    let menu: Vec<String> = h
+        .query_all_by_role(egui::accesskit::Role::Button)
+        .filter(|n| n.rect().right() <= nav_w && n.rect().left() < 20.0 && n.rect().top() >= top)
+        .filter_map(|n| n.accesskit_node().label())
+        .collect();
+    let unique: BTreeSet<&String> = menu.iter().collect();
+    assert!(menu.len() >= 10 && unique.len() == menu.len(), "{page}: the side menu {menu:?}");
+    assert_eq!(menu.iter().filter(|m| *m == name).count(), 1, "{page}: one side-menu entry says {name:?}");
+    let heading = |n: &egui_kittest::Node<'_>| {
+        n.rect().left() > nav_w && (n.accesskit_node().label().as_deref() == Some(name) || n.value().as_deref() == Some(name))
+    };
+    assert!(h.query_all_by_role(egui::accesskit::Role::Label).any(|n| heading(&n)), "{page}: the heading says {name:?}");
+    assert!(!shows(h, en), "{page}: {en:?} is not shown in English");
+    assert!(!shows(h, "Back"));
+}
+
+/// What `page` of the File tab shows in Korean (and keeps as written).
+fn assert_backstage_page(h: &egui_kittest::Harness<'_, crate::SlideApp>, page: &str) {
+    use egui_kittest::kittest::Queryable;
+    match page {
+        "new" => {
+            for en in ["Blank Presentation", "Harbor", "Briefing", "Templates"] {
+                assert!(has_ko(en) && h.query_all_by_label(t(en)).next().is_some(), "New shows {en:?} as {:?}", t(en));
+                assert!(h.query_all_by_label(en).next().is_none(), "{en:?} in English");
+            }
+            assert!(h.query_by_label("DeckCraft").is_some(), "the DeckCraft theme keeps its name");
+        }
+        "open" => {
+            assert!(h.query_by_label("Quarterly Review.pptx").is_some(), "the file's name as written");
+            assert!(h.query_all_by_label(t("Remove from Recent")).next().is_some() && !shows(h, "Remove from Recent"));
+            assert!(h.query_by_label(t("Presentations")).is_some() && h.query_by_label(t("Browse")).is_some());
+        }
+        "info" => {
+            for en in ["Properties", "Title", "Slides", "Location", "Inspect Presentation", "Manage Presentation"] {
+                assert!(h.query_all_by_label(t(en)).next().is_some(), "Info shows {en:?} as {:?}", t(en));
+            }
+            assert!(h.query_by_label(tc("property", "Comments")).is_some(), "the Comments property is 메모");
+            let props = h.state().session.active().unwrap().doc.props.clone();
+            assert_eq!((props.title.as_str(), props.comments.as_str()), ("Title", "Notes"), "the document's values stay");
+        }
+        "print" => {
+            for en in ["Print All Slides", "Full Page Slides", "Print Hidden Slides", "Frame Slides", "Settings"] {
+                assert!(shows(h, t(en)), "Print shows {en:?} as {:?}", t(en));
+                assert!(!shows(h, en), "{en:?} in English");
+            }
+            assert!(shows(h, "Letter (8.5 × 11 in)"), "the paper's name as written");
+        }
+        "export" => {
+            for en in ["Create PDF Document", "Create Handouts", "Change File Type", "Keeps the layout, fonts and pictures"] {
+                assert!(h.query_all_by_label_contains(t(en)).next().is_some(), "Export shows {en:?} as {:?}", t(en));
+                assert!(h.query_all_by_label_contains(en).next().is_none() && !shows(h, en), "{en:?} in English");
+            }
+        }
+        "about" => {
+            assert_eq!(tc("appearance", "Appearance"), "화면 모드");
+            assert!(shows(h, "화면 모드") && !shows(h, t("Appearance")), "the appearance menu is 화면 모드, not {:?}", t("Appearance"));
+            assert!(shows(h, "밝은 모드") || shows(h, "어두운 모드"), "its value says 밝은/어두운 모드");
+            assert!(!shows(h, "Light") && !shows(h, "Dark") && !shows(h, "Appearance"));
+        }
+        _ => assert!(shows(h, t("PowerPoint Presentation (*.pptx)")), "Save As shows the type in Korean"),
+    }
+}
+
+/// The File tab in Korean: every page's heading and the side menu, the New page's tiles (a theme's
+/// and a template's name translated, the DeckCraft theme as it is), a recent file's name as written,
+/// the Info page's labels (not the document's values), Print's settings (the paper names as
+/// written), Export's tasks and About's appearance menu. Searching New in Korean finds a theme by
+/// its Korean name.
+#[test]
+fn backstage_pages_are_korean() {
+    use egui_kittest::kittest::Queryable;
+    let mut h = korean_harness();
+    h.state_mut().ui.recent = vec!["/nowhere/Quarterly Review.pptx".into()];
+    h.state_mut().run("file.properties", serde_json::json!({"title": "Title", "comments": "Notes"})).unwrap();
+    let pages =
+        [("new", "New"), ("open", "Open"), ("info", "Info"), ("print", "Print"), ("export", "Export"), ("saveAs", "Save As"), ("about", "About")];
+    for (page, en) in pages {
+        h.state_mut().run("app.backstage", serde_json::json!({"page": page})).unwrap();
+        h.run_steps(3);
+        assert_backstage_frame(&h, page, en);
+        assert_backstage_page(&h, page);
+    }
+    h.state_mut().run("app.backstage", serde_json::json!({"page": "new"})).unwrap();
+    h.run_steps(3);
+    h.state_mut().backstage.as_mut().unwrap().query = t("Harbor").into();
+    h.run_steps(3);
+    assert!(h.query_by_label(t("Harbor")).is_some(), "a Korean search finds the Harbor theme");
+    assert!(h.query_by_label(t("Briefing")).is_none(), "and leaves the rest out");
+}
+
+/// Format Shape's choices the source check can't follow (their context is a variable): every 3-D
+/// preset the pane lists has its row by id, and the compound line's Single and Double, a cap's
+/// Square, a join's Bevel and the gradient direction buttons' short names have theirs.
+#[test]
+fn format_pane_context_rows_cover_their_choices() {
+    use deckcraft_engine::cmd::three_d::{BEVELS, CAMERAS, LIGHTS, MATERIALS};
+    set_current(resolve("ko"));
+    for (context, ids) in [("bevel", BEVELS), ("camera", CAMERAS), ("material", MATERIALS), ("light", LIGHTS)] {
+        for id in ids.iter().chain(["none"].iter().filter(|_| context == "bevel")) {
+            assert_ne!(tc(context, id), *id, "{context} {id:?} has a Korean row");
+        }
+    }
+    for (context, en, ko) in
+        [("compound", "Single", "단일선"), ("compound", "Double", "이중선"), ("cap", "Square", "사각형"), ("join", "Bevel", "빗면형")]
+    {
+        assert_eq!(tc(context, en), ko);
+    }
+    for short in ["center", "top left", "top right", "bottom left", "bottom right"] {
+        assert_ne!(tc("gradient", short), short, "{short:?}");
+    }
+    for (context, en) in [("reflection", "Tight"), ("arrowsize", "Small"), ("arrowsize", "Large")] {
+        assert_ne!(tc(context, en), t(en), "{context} {en:?} has its own (noun) row");
+    }
+    set_current(resolve("en"));
+}
+
+/// The engine's words for a changed slide in Review › Compare (deckcraft-engine compare.rs
+/// `slide_details`: "layout", "hidden" …) all have a `revision` row, and its sentences with a shape's
+/// name a template.
+#[test]
+fn revision_details_have_rows() {
+    let source = std::fs::read_to_string(src().join("../../engine/src/compare.rs")).unwrap();
+    // A slide's words (`slide_details`) and a shape's, listed after its name (`shape_details`).
+    let mut words: Vec<&str> = Vec::new();
+    for f in ["fn slide_details(", "fn shape_details("] {
+        let body = source.split(f).nth(1).and_then(|b| b.split("\n}\n").next()).unwrap();
+        words.extend(body.split('"').skip(1).step_by(2).filter(|w| !w.contains('{') && w.chars().all(|c| c.is_ascii_lowercase() || c == ' ')));
+    }
+    for w in [
+        "order of objects",
+        "layout",
+        "hidden",
+        "shown",
+        "text",
+        "text formatting",
+        "moved",
+        "resized",
+        "rotated",
+        "flipped",
+        "shape",
+        "formatting",
+        "picture",
+        "properties",
+    ] {
+        assert!(words.contains(&w), "found the engine's words: {words:?}");
+    }
+    set_current(resolve("ko"));
+    for w in &words {
+        assert_ne!(tc("revision", w), *w, "{w:?} has a revision row");
+    }
+    for s in ["Title 1 deleted (only in the deck)", "Title 1 inserted (only in the file)"] {
+        let shown = t_dynamic(s);
+        assert!(shown.starts_with("Title 1 ") && !shown.contains("only in"), "{shown}");
+    }
+    set_current(resolve("en"));
+}
+
+/// Review › Compare's pane in Korean: a changed slide's heading and its details (the slide hidden,
+/// its layout changed) read in Korean; nothing of the engine's English is left.
+#[test]
+fn revisions_pane_details_are_korean() {
+    use egui_kittest::kittest::Queryable;
+    let mut h = korean_harness();
+    let rect = h.state_mut().run("shape.insert", serde_json::json!({"preset": "rect", "rect": [40, 40, 120, 80]})).unwrap()["id"].clone();
+    let before = h.state_mut().run("file.saveBytes", serde_json::json!({})).unwrap()["data"].as_str().unwrap().to_string();
+    h.state_mut().run("shape.move", serde_json::json!({"ids": [rect], "dx": 30, "dy": 0})).unwrap();
+    h.state_mut().run("slide.hide", serde_json::json!({"index": 0})).unwrap();
+    let blank = h.state().session.active().unwrap().doc.masters[0].layouts.iter().find(|l| l.name == "Blank").unwrap().id.0;
+    h.state_mut().run("slide.layout", serde_json::json!({"layout": blank})).unwrap();
+    h.state_mut().run("review.compare", serde_json::json!({"name": "before.deckcraft", "data": before})).unwrap();
+    h.state_mut().ui.pane = Some("revisions".into());
+    h.run_steps(3);
+    let v = h.state_mut().run("review.revisions", serde_json::json!({})).unwrap();
+    let details: Vec<String> = v["changes"][0]["details"].as_array().unwrap().iter().map(|d| d.as_str().unwrap().to_string()).collect();
+    assert!(details.iter().any(|d| d == "layout") && details.iter().any(|d| d == "hidden" || d == "shown"), "{details:?}");
+    assert!(details.iter().any(|d| d.ends_with(": moved")), "a shape's line: {details:?}");
+    for d in &details {
+        let ko = crate::panels::revision_detail(d).into_owned();
+        assert_ne!(&ko, d, "{d:?} has Korean");
+        assert!(h.query_by_label(&format!("• {ko}")).is_some(), "{d:?} is shown as {ko:?}");
+        assert!(h.query_by_label(&format!("• {d}")).is_none(), "{d:?} in English");
+    }
+    assert!(h.query_by_label(&fmt(t("Slide {n} changed"), &[("n", "1")])).is_some(), "the change's heading");
+}
+
+/// English search on New is as it was: the sample deck's tile answers to its plain words, not to
+/// its tile's colon ("deck:"), and a template to its own words.
+#[test]
+fn new_page_search_in_english_is_unchanged() {
+    use egui_kittest::kittest::Queryable;
+    let app = crate::SlideApp::new(deckcraft_engine::Session::with_new(), crate::Services::default());
+    let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_ui_state(
+        |ui, app: &mut crate::SlideApp| {
+            app.logic(ui.ctx());
+            app.ui(ui);
+        },
+        app,
+    );
+    h.run_steps(3);
+    h.state_mut().run("app.backstage", serde_json::json!({"page": "new"})).unwrap();
+    for (query, sample, briefing) in
+        [("deck:", false, false), ("deck northern", true, false), ("northern", true, false), ("check-in", false, true), ("", true, true)]
+    {
+        h.state_mut().backstage.as_mut().unwrap().query = query.into();
+        h.run_steps(3);
+        assert_eq!(h.query_by_label("Sample deck: Northern Lights").is_some(), sample, "{query:?}: the sample deck");
+        assert_eq!(h.query_by_label("Briefing").is_some(), briefing, "{query:?}: Briefing");
+    }
+}
+
+/// Format Shape › Size & Properties says 기준 for the position's From (its reference point), and the
+/// Selection pane's title is 선택 창 like the other panes' titles.
+#[test]
+fn pane_titles_and_position_origin_are_korean() {
+    use egui_kittest::kittest::{NodeT, Queryable};
+    let mut h = korean_harness();
+    let id = h.state_mut().run("shape.insert", serde_json::json!({"preset": "rect", "rect": [40, 40, 120, 80]})).unwrap()["id"].clone();
+    h.state_mut().run("edit.select", serde_json::json!({"ids": [id]})).unwrap();
+    h.state_mut().ui.pane = Some("format".into());
+    h.state_mut().ui.format_tab = "size".into();
+    h.run_steps(3);
+    assert!(h.query_by_role_and_label(egui::accesskit::Role::ComboBox, "기준").is_some(), "the position's From is 기준");
+    assert!(h.query_by_role_and_label(egui::accesskit::Role::ComboBox, t("From")).is_none(), "not {:?}", t("From"));
+    h.state_mut().ui.pane = Some("selection".into());
+    h.run_steps(3);
+    let title = |n: &egui_kittest::Node<'_>| n.accesskit_node().label().as_deref() == Some("선택 창") || n.value().as_deref() == Some("선택 창");
+    assert!(h.query_all_by_role(egui::accesskit::Role::Label).any(|n| title(&n)), "the Selection pane's title");
+}
+
+/// A shape's changed line keeps the shape's name and translates its words; a name with ": " in it
+/// stays whole (the list is after the last one); a word without a row leaves the line as the
+/// engine wrote it; English is as written.
+#[test]
+fn revision_detail_keeps_the_shape_name() {
+    use crate::panels::revision_detail;
+    set_current(resolve("ko"));
+    assert_eq!(revision_detail("Rectangle 3: text, moved"), "Rectangle 3: 텍스트, 이동됨");
+    assert_eq!(revision_detail("Note: shape: text formatting, resized"), "Note: shape: 텍스트 서식, 크기 변경됨");
+    assert_eq!(revision_detail("layout"), "레이아웃");
+    assert_eq!(revision_detail("Rectangle 3: text, zz no row"), "Rectangle 3: text, zz no row");
+    assert_eq!(revision_detail("Title 1 deleted (only in the deck)"), "Title 1 삭제됨 (열린 프레젠테이션에만 있음)");
+    assert_eq!(revision_detail("Title 1 inserted (only in the file)"), "Title 1 삽입됨 (비교한 파일에만 있음)");
+    set_current(resolve("en"));
+    for d in ["Rectangle 3: text, moved", "layout", "Title 1 deleted (only in the deck)"] {
+        let shown = revision_detail(d);
+        assert!(matches!(shown, std::borrow::Cow::Borrowed(_)) && shown == d, "{d:?} became {shown:?}");
+    }
+}

@@ -1,4 +1,5 @@
 use super::{Color32, CornerRadius, Rect, Sense, SlideApp, Stroke, Tokens, Ui, json, pos2, run, vec2};
+use crate::i18n;
 
 /// Design Ideas: offline suggestions — the current slide in each theme and layout variations.
 /// Rendered idea thumbnails, kept until the deck, slide or pane width changes (rendering eight
@@ -13,7 +14,7 @@ struct IdeaThumbs {
 /// `design.applyIdea` or `design.theme`.
 pub(super) fn designer(app: &mut SlideApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
-    ui.label(egui::RichText::new("Pick a design for this slide. Ideas are generated on your device.").color(t.text_dim));
+    ui.label(egui::RichText::new(i18n::t("Pick a design for this slide. Ideas are generated on your device.")).color(t.text_dim));
     ui.add_space(6.0);
     let Some(st) = app.session.active() else { return };
     let doc = st.doc.clone();
@@ -71,12 +72,13 @@ pub(super) fn designer(app: &mut SlideApp, ui: &mut Ui) {
             Stroke::new(if resp.hovered() { 2.5 } else { 1.0 }, if resp.hovered() { t.accent } else { t.border }),
             egui::StrokeKind::Outside,
         );
-        let clicked = resp.on_hover_text(tip).clicked();
+        // The idea's and the theme's names are shown translated; the commands take the ids.
+        let clicked = resp.on_hover_text(i18n::t(tip)).clicked();
         ui.add_space(8.0);
         clicked
     };
     if ideas.is_empty() {
-        ui.label(egui::RichText::new("Add a title with a picture or some text to get layout ideas.").color(t.text_dim));
+        ui.label(egui::RichText::new(i18n::t("Add a title with a picture or some text to get layout ideas.")).color(t.text_dim));
     }
     for (id, label) in &ideas {
         if thumb(ui, &format!("layout:{id}"), label) {
@@ -84,7 +86,7 @@ pub(super) fn designer(app: &mut SlideApp, ui: &mut Ui) {
         }
     }
     ui.add_space(4.0);
-    ui.label(egui::RichText::new("Themes (whole presentation)").color(t.text_dim));
+    ui.label(egui::RichText::new(i18n::t("Themes (whole presentation)")).color(t.text_dim));
     ui.add_space(4.0);
     for th in &themes {
         if thumb(ui, &format!("theme:{}", th.name), &th.name) {

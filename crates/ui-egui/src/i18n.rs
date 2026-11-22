@@ -150,6 +150,10 @@ pub fn t_dynamic(s: &str) -> std::borrow::Cow<'_, str> {
 /// are the user's or the document's and stay as written: a font named "Symbol" is not 기호.
 const WORDING: [&str; 9] = ["1", "msg", "e", "err", "reason", "label", "colour", "page", "action"];
 
+/// The placeholders whose value is an id (a command id, a slide number): no spaces, no backticks,
+/// so never the fixed text after them.
+const IDS: [&str; 2] = ["cmd", "0"];
+
 /// A catalog row with `{name}` placeholders, split into its fixed text and placeholder names.
 struct Template {
     source: String,
@@ -188,10 +192,13 @@ impl Template {
                 Some(next) => {
                     // The value has at least one character: start looking after it. Before the
                     // last value, the last match: "{name}: {app} can't open…" with a name
-                    // "a: b.pptx" splits after the name, not inside it.
+                    // "a: b.pptx" splits after the name, not inside it. An id ([`IDS`]) never
+                    // holds the fixed text, so it ends at the first match: the message after
+                    // "invalid parameters for `{cmd}`: " may hold "`: " itself.
                     let skip = rest.chars().next()?.len_utf8();
                     let after = rest.get(skip..)?;
-                    let found = if i + 2 == self.names.len() { after.rfind(next.as_str()) } else { after.find(next.as_str()) };
+                    let last = i + 2 == self.names.len() && !IDS.contains(&name.as_str());
+                    let found = if last { after.rfind(next.as_str()) } else { after.find(next.as_str()) };
                     let at = found? + skip;
                     let value = rest.get(..at)?;
                     rest = rest.get(at + next.len()..)?;

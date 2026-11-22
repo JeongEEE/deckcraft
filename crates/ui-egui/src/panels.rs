@@ -5,6 +5,7 @@ use deckcraft_model::{AnimClass, AnimStart, Fill, ShapeKind};
 use egui::{Align2, Color32, CornerRadius, Rect, Sense, Stroke, Ui, pos2, vec2};
 use serde_json::{Value, json};
 
+use crate::i18n;
 use crate::icons::{self, Icon};
 use crate::ribbon::{cref_param, paint_anim_tile};
 use crate::theme::{self, Tokens};
@@ -21,6 +22,8 @@ mod thesaurus;
 
 use animation::animation;
 use background::background;
+#[cfg(test)]
+pub(crate) use comments::revision_detail;
 use comments::{comments, revisions};
 use designer::designer;
 use format_shape::format_shape;
@@ -53,7 +56,8 @@ pub fn show(app: &mut SlideApp, ui: &mut Ui) {
                 _ => "Pane",
             };
             ui.horizontal(|ui| {
-                ui.label(egui::RichText::new(title).font(theme::bold(16.0)));
+                // `pane` rows: Selection is 선택 창, as the other panes' titles end in 창.
+                ui.label(egui::RichText::new(i18n::tc("pane", title)).font(theme::bold(16.0)));
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     let (r, resp) = ui.allocate_exact_size(vec2(20.0, 20.0), Sense::click());
                     if resp.hovered() {
@@ -98,7 +102,7 @@ fn color_button(
 ) {
     let sc = scheme(app);
     ui.horizontal(|ui| {
-        ui.label(label);
+        ui.label(i18n::t(label));
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
             let r = widgets::drop_button(ui, "Color", vec2(70.0, 22.0), true);
             widgets::color_popup(&r).show(|ui| {

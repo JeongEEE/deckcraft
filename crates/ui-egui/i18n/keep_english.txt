@@ -39,3 +39,5 @@ Norsk bokmål	the language's own name in the proofing language list, as above
 Suomi	the language's own name in the proofing language list, as above
 Srpski (latinica)	the language's own name in the proofing language list, as above
 Türkçe	the language's own name in the proofing language list, as above
+DeckCraft Presentation (*.deckcraft)	the file format's name ("DeckCraft Presentation") and its extension stay as written (Save As and Export › Change File Type)
+PDF (*.pdf)	a file format's name and extension, nothing to translate (Save As and Export › Change File Type)

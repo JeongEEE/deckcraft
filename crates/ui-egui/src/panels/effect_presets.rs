@@ -4,6 +4,7 @@
 use deckcraft_model::style::Effects;
 use egui::{Color32, CornerRadius, Painter, Rect, Role, Sense, Stroke, StrokeKind, Ui, WidgetInfo, pos2, vec2};
 
+use crate::i18n::{fmt, t};
 use crate::theme::Tokens;
 
 const TILE: egui::Vec2 = vec2(46.0, 38.0);
@@ -52,7 +53,7 @@ pub(super) fn glow_row(ui: &mut Ui, current: f64) -> Option<f64> {
     let mut picked = None;
     ui.horizontal_wrapped(|ui| {
         for r in std::iter::once(0.0).chain(GLOWS) {
-            let label = if r == 0.0 { "No glow".to_string() } else { format!("{r} pt glow") };
+            let label = if r == 0.0 { "No glow".to_string() } else { fmt(t("{n} pt glow"), &[("n", &r.to_string())]) };
             if tile(ui, &label, r == current, |p, rect| paint_glow(p, rect, r)).clicked() {
                 picked = Some(r);
             }
@@ -66,7 +67,7 @@ pub(super) fn soft_edge_row(ui: &mut Ui, current: f64) -> Option<f64> {
     let mut picked = None;
     ui.horizontal_wrapped(|ui| {
         for r in SOFT_EDGES {
-            let label = if r == 0.0 { "No soft edges".to_string() } else { format!("{r} pt soft edges") };
+            let label = if r == 0.0 { "No soft edges".to_string() } else { fmt(t("{n} pt soft edges"), &[("n", &r.to_string())]) };
             if tile(ui, &label, r == current, |p, rect| paint_soft(p, rect, r)).clicked() {
                 picked = Some(r);
             }
@@ -76,6 +77,7 @@ pub(super) fn soft_edge_row(ui: &mut Ui, current: f64) -> Option<f64> {
 }
 
 fn tile(ui: &mut Ui, label: &str, selected: bool, paint: impl FnOnce(&Painter, Rect)) -> egui::Response {
+    let label = t(label);
     let t = Tokens::get(ui.ctx());
     let (rect, resp) = ui.allocate_exact_size(TILE, Sense::click());
     resp.widget_info(|| WidgetInfo::selected(Role::Button, true, selected, label));

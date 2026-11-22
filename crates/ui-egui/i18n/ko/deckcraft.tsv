@@ -274,7 +274,7 @@ animation	Motion	이동 경로
 	Bevel	입체 테두리
 bevel	none	없음
 bevel	circle	원형
-bevel	relaxedInset	완만하게 들어감
+bevel	relaxedInset	완만하게 들어간 면
 bevel	cross	십자
 bevel	coolSlant	비스듬한 면
 bevel	angle	각진 면
@@ -2048,3 +2048,431 @@ show	All	전체 보기
 	Slide cannot write its application folder: {e}	Slide가 앱 폴더에 쓸 수 없습니다: {e}
 	The signed update has no {platform} package.	서명된 업데이트에 {platform}용 패키지가 없습니다.
 	the media can't be read: {0}	미디어를 읽을 수 없습니다: {0}
+
+# Task panes: Format Shape and Format Background, the Selection, Animation, Comments, Revisions,
+# Design Ideas, Text (SmartArt) and Thesaurus panes, the slide thumbnails and the master list
+# (panels.rs, panels/*.rs; object, section, layout and theme names are the document's and stay as
+# written, except the built-in layouts and themes, shown through their rows)
+	Pane	작업창
+pane	Selection	선택 창
+format	Fill	채우기
+format	Line	선
+	Fill & Line	채우기 및 선
+	Size & Properties	크기 및 속성
+	Text Options	텍스트 옵션
+	size (pt)	크기 (pt)
+	Reset Effects	효과 원래대로
+reflection	Tight	좁음
+	Scale Height	높이 배율
+	Scale Width	너비 배율
+	Top Left Corner	왼쪽 위 모서리
+position	From	기준
+	Select a shape to format it.	서식을 지정할 도형을 선택하세요.
+	Vertical alignment	세로 맞춤
+	Do not Autofit	자동 맞춤 안 함
+	Shrink text on overflow	넘치면 텍스트 크기 줄이기
+	Resize shape to fit text	텍스트에 맞게 도형 크기 조정
+	Wrap text in shape	도형 안에서 텍스트 줄 바꿈
+	Margins (pt)	여백 (pt)
+	Columns…	단 설정…
+	No fill	채우기 없음
+	Solid fill	단색 채우기
+	Gradient fill	그레이디언트 채우기
+	Picture or texture fill	그림 또는 텍스처 채우기
+	Pattern fill	패턴 채우기
+	Slide background fill	슬라이드 배경 채우기
+	Follow the layout	레이아웃 따르기
+	Rotate with shape	도형과 함께 회전
+	No line	선 없음
+	Solid line	실선
+	Compound type	겹선 종류
+compound	Single	단일선
+compound	Double	이중선
+	Thick Thin	굵고 얇은 선
+	Thin Thick	얇고 굵은 선
+	Triple	삼중선
+	Cap type	선 끝 모양
+	Flat	평면형
+	Round	둥근형
+cap	Square	사각형
+	Join type	연결 모양
+join	Bevel	빗면형
+	Miter	마이터형
+	Open Arrow	열린 화살표
+	Stealth	뾰족한 화살표
+	Begin arrow	시작 화살표
+	Begin size	시작 크기
+	End arrow	끝 화살표
+	End size	끝 크기
+# An arrow's size (`line_choice` gives the head and tail sizes the context `arrowsize`): nouns, as the other choices
+arrowsize	Small	작음
+arrowsize	Medium	보통
+arrowsize	Large	큼
+	Picture source	그림 원본
+	Insert…	삽입…
+	Top left	왼쪽 위
+	Top right	오른쪽 위
+	Bottom left	왼쪽 아래
+	Bottom right	오른쪽 아래
+	Mirror type	미러 종류
+	Offset left	왼쪽 오프셋
+	Offset top	위쪽 오프셋
+	Offset right	오른쪽 오프셋
+	Offset bottom	아래쪽 오프셋
+	Offset X	X 오프셋
+	Offset Y	Y 오프셋
+	Scale X	X 배율
+	Scale Y	Y 배율
+	3-D Format	3차원 서식
+	3-D Rotation	3차원 회전
+	Top bevel	위쪽 입체 테두리
+	Bottom bevel	아래쪽 입체 테두리
+	Contour	윤곽
+	Material	재질
+	X Rotation	X 회전
+	Y Rotation	Y 회전
+	Z Rotation	Z 회전
+	Distance from ground	바닥에서 거리
+	Reset 3-D	3차원 원래대로
+
+# Format Shape › Effects › 3-D: the camera, material and light presets (deckcraft-engine three_d.rs;
+# keyed by the preset id the command takes, as the `bevel` rows are)
+camera	orthographicFront	정면 직교
+camera	isometricTopUp	등각 위, 위로
+camera	isometricTopDown	등각 위, 아래로
+camera	isometricBottomUp	등각 아래, 위로
+camera	isometricBottomDown	등각 아래, 아래로
+camera	isometricLeftUp	등각 왼쪽, 위로
+camera	isometricLeftDown	등각 왼쪽, 아래로
+camera	isometricRightUp	등각 오른쪽, 위로
+camera	isometricRightDown	등각 오른쪽, 아래로
+camera	obliqueTopLeft	빗각 왼쪽 위
+camera	obliqueTopRight	빗각 오른쪽 위
+camera	obliqueBottomLeft	빗각 왼쪽 아래
+camera	obliqueBottomRight	빗각 오른쪽 아래
+camera	perspectiveFront	원근 정면
+camera	perspectiveLeft	원근 왼쪽
+camera	perspectiveRight	원근 오른쪽
+camera	perspectiveAbove	원근 위
+camera	perspectiveBelow	원근 아래
+camera	perspectiveAboveLeftFacing	원근 위, 왼쪽 향함
+camera	perspectiveAboveRightFacing	원근 위, 오른쪽 향함
+camera	perspectiveContrastingLeftFacing	원근 대비, 왼쪽 향함
+camera	perspectiveContrastingRightFacing	원근 대비, 오른쪽 향함
+camera	perspectiveHeroicLeftFacing	원근 강조, 왼쪽 향함
+camera	perspectiveHeroicRightFacing	원근 강조, 오른쪽 향함
+camera	perspectiveHeroicExtremeLeftFacing	원근 극단 강조, 왼쪽 향함
+camera	perspectiveHeroicExtremeRightFacing	원근 극단 강조, 오른쪽 향함
+camera	perspectiveRelaxed	원근 완만
+camera	perspectiveRelaxedModerately	원근 약간 완만
+material	warmMatte	따뜻한 무광
+material	matte	무광
+material	plastic	플라스틱
+material	metal	금속
+material	dkEdge	어두운 가장자리
+material	softEdge	부드러운 가장자리
+material	flat	평면
+material	legacyWireframe	와이어프레임 (이전 방식)
+material	powder	파우더
+material	translucentPowder	반투명 파우더
+material	clear	투명
+material	softmetal	부드러운 금속
+light	threePt	3점 조명
+light	balanced	균형 잡힌 조명
+light	soft	부드러운 조명
+light	harsh	강한 조명
+light	flood	투광 조명
+light	contrasting	대비 조명
+light	morning	아침
+light	sunrise	일출
+light	sunset	일몰
+light	chilly	서늘한 조명
+light	freezing	차가운 조명
+light	flat	평면 조명
+light	twoPt	2점 조명
+light	glow	빛나는 조명
+light	brightRoom	밝은 방
+
+# Format Shape › Effects presets and Format Background (panels/effect_presets.rs, background.rs)
+	No shadow	그림자 없음
+	Outer shadow	바깥쪽 그림자
+	Bottom shadow	아래쪽 그림자
+	Centered shadow	가운데 그림자
+	Inner shadow	안쪽 그림자
+	Perspective shadow	원근 그림자
+	No glow	광선 없음
+	No soft edges	부드러운 가장자리 없음
+	{n} pt glow	{n} pt 광선
+	{n} pt soft edges	{n} pt 부드러운 가장자리
+	Insert picture from file…	파일에서 그림 삽입…
+	Hide background graphics	배경 그래픽 숨기기
+	Reset Background	배경 원래대로
+	Tile picture as texture	그림을 텍스처로 바둑판식 배열
+
+# Gradient and pattern editors (panels/fillui.rs; the `gradient` rows are the short names on the
+# direction buttons, the tooltips show the whole name)
+	From center	가운데에서
+	From top left	왼쪽 위에서
+	From top right	오른쪽 위에서
+	From bottom left	왼쪽 아래에서
+	From bottom right	오른쪽 아래에서
+gradient	center	가운데
+gradient	top left	왼쪽 위
+gradient	top right	오른쪽 위
+gradient	bottom left	왼쪽 아래
+gradient	bottom right	오른쪽 아래
+	Preset gradients	기본 그레이디언트
+	Gradient stops	그레이디언트 중지점
+	Gradient bar	그레이디언트 막대
+	Gradient stop {n}	그레이디언트 중지점 {n}
+	Stop color	중지점 색
+	Remove stop	중지점 제거
+	Foreground	전경
+	Foreground color	전경색
+	Background color	배경색
+	Light horizontal	가는 가로선
+	Light vertical	가는 세로선
+	Dark horizontal	굵은 가로선
+	Dark vertical	굵은 세로선
+	Narrow horizontal	좁은 가로선
+	Narrow vertical	좁은 세로선
+	Dashed horizontal	가로 파선
+	Dashed vertical	세로 파선
+	Downward diagonal	하향 대각선
+	Upward diagonal	상향 대각선
+	Light downward diagonal	가는 하향 대각선
+	Light upward diagonal	가는 상향 대각선
+	Dark downward diagonal	굵은 하향 대각선
+	Dark upward diagonal	굵은 상향 대각선
+	Wide downward diagonal	넓은 하향 대각선
+	Wide upward diagonal	넓은 상향 대각선
+	Dashed downward diagonal	하향 대각 파선
+	Dashed upward diagonal	상향 대각 파선
+	Diagonal cross	대각선 십자
+	Small checkerboard	작은 바둑판
+	Large checkerboard	큰 바둑판
+	Small grid	작은 격자
+	Large grid	큰 격자
+	Dotted grid	점선 격자
+	Small confetti	작은 색종이
+	Large confetti	큰 색종이
+	Horizontal brick	가로 벽돌
+	Diagonal brick	대각선 벽돌
+	Solid diamond	채운 마름모
+	Outlined diamond	윤곽선 마름모
+	Dotted diamond	점선 마름모
+	Plaid	체크무늬
+	Sphere	구
+	Weave	직물
+	Divot	홈
+	Shingle	기와
+	Trellis	격자 울타리
+	Zig zag	지그재그
+
+# Selection, Animation, Text (SmartArt), Thesaurus and Design Ideas panes (the `object` rows name an
+# object in the list; not templates for status sentences)
+object	Show {name}	{name} 표시
+object	Hide {name}	{name} 숨기기
+object	Lock {name}	{name} 잠금
+object	Unlock {name}	{name} 잠금 해제
+	■ Stop	■ 중지
+	▶ Play From	▶ 여기부터 재생
+	▶ Play All	▶ 모두 재생
+	Select an object on the slide and add an animation from the Animations tab.	슬라이드에서 개체를 선택한 뒤 애니메이션 탭에서 애니메이션을 추가하세요.
+object	Shape {n}	도형 {n}
+	Timing bar {n}	타이밍 막대 {n}
+	Duration handle {n}	재생 시간 조절점 {n}
+	Start: {start}s, End: {end}s	시작: {start}s, 끝: {end}s
+	Start On Click	클릭할 때 시작
+	Start With Previous	이전 효과와 함께 시작
+	Start After Previous	이전 효과 다음에 시작
+	Select a Diagram graphic to edit its text.	텍스트를 편집할 다이어그램 그래픽을 선택하세요.
+	Type your text here	여기에 텍스트를 입력하세요
+	Diagram text	다이어그램 텍스트
+	+ Add	+ 추가
+	Search for a word	단어 검색
+	Select a word on the slide, or type one above.	슬라이드에서 단어를 선택하거나 위에 입력하세요.
+	No synonyms for "{word}".	"{word}"의 동의어가 없습니다.
+	Look up	검색
+	Pick a design for this slide. Ideas are generated on your device.	이 슬라이드의 디자인을 고르세요. 아이디어는 이 기기에서 만듭니다.
+	Add a title with a picture or some text to get layout ideas.	레이아웃 아이디어를 보려면 제목과 함께 그림이나 텍스트를 추가하세요.
+	Themes (whole presentation)	테마 (프레젠테이션 전체)
+
+# Design Ideas' layout ideas (deckcraft-engine cmd/ideas.rs; the command takes the idea's id)
+	Full-bleed picture, title on a band	화면을 채운 그림, 띠 위의 제목
+	Picture left, text right	왼쪽 그림, 오른쪽 텍스트
+	Picture right, text left	오른쪽 그림, 왼쪽 텍스트
+	Framed picture beside the title	제목 옆 테두리 그림
+	Title column beside the text	텍스트 옆 제목 열
+	Centred title over the text	텍스트 위 가운데 제목
+	Text above, title at the foot	위쪽 텍스트, 아래쪽 제목
+
+# Comments and Revisions panes; a changed slide's details are the engine's words (deckcraft-engine
+# compare.rs: `revision` rows for the single words, templates for the sentences with a shape name)
+	Compare this presentation with a revised copy from Review › Compare.	검토 › 비교에서 이 프레젠테이션을 수정한 사본과 비교하세요.
+	Compared with {name}	비교 대상: {name}
+	Not a copy of this presentation: slides are matched by position.	이 프레젠테이션의 사본이 아니어서 슬라이드를 순서대로 맞춰 비교합니다.
+	No differences left.	남은 차이가 없습니다.
+	Accept All ({n})	모두 수락 ({n})
+	Reject All ({n})	모두 거부 ({n})
+	Slide inserted after {slide}	슬라이드 {slide} 뒤에 삽입됨
+	Slide {n} deleted	슬라이드 {n} 삭제됨
+	Slide {n} changed	슬라이드 {n} 변경됨
+	Accept	수락
+	Reject	거부
+revision	order of objects	개체 순서
+revision	layout	레이아웃
+revision	notes	노트
+revision	transition	전환
+revision	animations	애니메이션
+revision	background	배경
+revision	hidden	숨김
+revision	shown	표시됨
+# A shape's changes, listed after its name ("Rectangle 3: text, moved")
+revision	text	텍스트
+revision	text formatting	텍스트 서식
+revision	moved	이동됨
+revision	resized	크기 변경됨
+revision	rotated	회전됨
+revision	flipped	뒤집힘
+revision	shape	도형 모양
+revision	formatting	서식
+revision	picture	그림
+revision	properties	속성
+	{name} deleted (only in the deck)	{name} 삭제됨 (열린 프레젠테이션에만 있음)
+	{name} inserted (only in the file)	{name} 삽입됨 (비교한 파일에만 있음)
+	+ New Comment	+ 새 댓글
+	No comments.	댓글이 없습니다.
+number	Slide {n}	슬라이드 {n}
+	{when} · Resolved	{when} · 해결됨
+	Reopen	다시 열기
+	Resolve	해결
+	Reply…	답글…
+	Show Slide	슬라이드 표시
+	+ New Slide	+ 새 슬라이드
+	{name} Slide Master	{name} 슬라이드 마스터
+
+# Backstage (the File tab): Home, New, Open, Info, Save As, Print, Export and About (backstage.rs,
+# backstage/*.rs). File names, paths and the document's properties stay as written; theme and
+# template names are shown translated (the command takes the English). The paper names
+# (deckcraft-pdf PAPERS: Letter (8.5 × 11 in), A4 (210 × 297 mm)) are not looked up: standard names.
+	Back	뒤로
+# Side-menu names and page headings: About is 앱 정보, apart from Info's 정보
+backstage	About	앱 정보
+	Back (Esc)	뒤로 (Esc)
+	Blank Presentation	빈 프레젠테이션
+	Sample deck: Northern Lights	샘플 프레젠테이션: Northern Lights
+	Presentations you open show up here. Use Open to browse for one.	연 프레젠테이션이 여기에 나타납니다. 열기에서 찾아보세요.
+	No recent presentations match “{query}”.	“{query}”에 맞는 최근 프레젠테이션이 없습니다.
+	(missing)	(없음)
+	{path} — this file can't be found	{path} — 이 파일을 찾을 수 없습니다
+	Remove from Recent	최근 항목에서 제거
+	More themes	테마 더 보기
+	More templates	템플릿 더 보기
+	Search for a file	파일 검색
+	More presentations	프레젠테이션 더 보기
+	Search for themes and templates	테마 및 템플릿 검색
+	No themes or templates match “{query}”.	“{query}”에 맞는 테마나 템플릿이 없습니다.
+	Open a presentation from a folder (Ctrl+O)	폴더에서 프레젠테이션 열기 (Ctrl+O)
+	Recover Unsaved Presentations	저장하지 않은 프레젠테이션 복구
+	There are no unsaved presentations to recover	복구할 저장하지 않은 프레젠테이션이 없습니다
+	Presentations	프레젠테이션
+
+# Built-in templates: names and summaries (deckcraft-engine templates.rs; the command takes the name)
+	Briefing	브리핑
+	Lesson	수업
+	Pitch	피치
+	Field Notes	현장 기록
+	Quarterly	분기 보고
+	Evening Talk	저녁 강연
+	A weekly check-in: what changed, what's stuck, and who does the next thing	주간 점검: 무엇이 바뀌었고, 무엇이 막혔고, 다음 일은 누가 하는지
+	A short class that ends with the learner explaining the idea	배우는 사람이 직접 설명하며 끝나는 짧은 수업
+	A ten-minute conversation about one promise, not a tour of features	기능 둘러보기가 아니라 약속 하나를 두고 나누는 10분 대화
+	What an outing set out to see, and what it actually found	나들이에서 보려던 것과 실제로 찾은 것
+	A report meant to be read aloud in half an hour	30분 동안 소리 내어 읽는 보고서
+	A public talk the audience can check on the way home	청중이 집에 가는 길에 확인해 볼 수 있는 공개 강연
+
+# Backstage › Info, Save As and About
+	PowerPoint Presentation (*.pptx)	PowerPoint 프레젠테이션 (*.pptx)
+	Opens in PowerPoint and other presentation apps	PowerPoint와 다른 프레젠테이션 앱에서 열립니다
+	DeckCraft's own format: everything is kept	DeckCraft 고유 형식으로, 모든 내용이 그대로 남습니다
+	A fixed copy that keeps its layout on any device	어느 기기에서나 레이아웃이 그대로인 고정 사본입니다
+	Outline (*.txt)	개요 (*.txt)
+	The slide titles and bullet text as plain text	슬라이드 제목과 글머리 기호 텍스트를 일반 텍스트로 저장합니다
+	Outline/RTF (*.rtf)	개요/RTF (*.rtf)
+	The slide titles and bullet text for word processors	슬라이드 제목과 글머리 기호 텍스트를 워드 프로세서용으로 저장합니다
+	PNG Picture (*.png)	PNG 그림 (*.png)
+	The current slide as a picture	현재 슬라이드를 그림으로 저장합니다
+	JPEG Picture (*.jpg)	JPEG 그림 (*.jpg)
+	The current slide as a compressed picture	현재 슬라이드를 압축한 그림으로 저장합니다
+	PNG Pictures, all slides (*.png)	PNG 그림, 모든 슬라이드 (*.png)
+	Every slide as its own picture	슬라이드마다 그림을 하나씩 저장합니다
+	JPEG Pictures, all slides (*.jpg)	JPEG 그림, 모든 슬라이드 (*.jpg)
+	Every slide as its own compressed picture	슬라이드마다 압축한 그림을 하나씩 저장합니다
+	Add a title	제목 추가
+	Specify the subject	주제 지정
+	Tags	태그
+	Add a tag	태그 추가
+	Categories	범주
+	Add a category	범주 추가
+	Specify the company	회사 지정
+	Add comments	메모 추가
+	Add an author	작성자 추가
+	No presentation is open.	열린 프레젠테이션이 없습니다.
+	Not saved yet	아직 저장 안 됨
+	Copy path	경로 복사
+	Copied the path	경로를 복사했습니다
+	Open file location	파일 위치 열기
+	Check for Issues	문제 확인
+	Before you share it, check the presentation for things people with disabilities might find hard to read.	공유하기 전에 장애가 있는 사람이 읽기 어려울 수 있는 부분이 없는지 프레젠테이션을 검사하세요.
+	There are no unsaved changes.	저장하지 않은 변경 내용이 없습니다.
+	This presentation has unsaved changes. Revert goes back to the saved file.	이 프레젠테이션에 저장하지 않은 변경 내용이 있습니다. 되돌리기를 누르면 저장한 파일로 돌아갑니다.
+	This presentation has never been saved.	이 프레젠테이션은 저장한 적이 없습니다.
+	Manage Presentation	프레젠테이션 관리
+	Hidden slides	숨긴 슬라이드
+	{n} bytes	{n}바이트
+	Save as type	파일 형식
+	Download the file	파일 다운로드
+	Save to the page	페이지에 저장
+	Choose where to save	저장할 위치 선택
+	Product Information	제품 정보
+	Open source under MIT OR Apache-2.0. Not affiliated with Microsoft.	MIT OR Apache-2.0 라이선스의 오픈 소스입니다. Microsoft와 관계가 없습니다.
+	Credits	만든 사람들
+	The people and models who built DeckCraft, which Slide is based on.	Slide의 바탕인 DeckCraft를 만든 사람과 모델입니다.
+property	Comments	메모
+# Info › About: the appearance menu, as Preferences names it
+appearance	Appearance	화면 모드
+appearance	Light	밝은 모드
+appearance	Dark	어두운 모드
+
+# Backstage › Print and Export
+	{app} prints through a PDF: it opens in your PDF viewer, where you choose the printer.	{app}에서는 PDF로 인쇄합니다. PDF 뷰어에서 열리면 거기서 프린터를 고르세요.
+	{app} prints through a PDF: it downloads, ready to print from your browser or PDF viewer.	{app}에서는 PDF로 인쇄합니다. PDF를 다운로드한 뒤 브라우저나 PDF 뷰어에서 인쇄하세요.
+	Print All Slides	모든 슬라이드 인쇄
+	Print Current Slide	현재 슬라이드 인쇄
+	Custom Range	사용자 지정 범위
+	Print range	인쇄 범위
+	Slides:	슬라이드:
+	e.g. 1-3, 5	예: 1-3, 5
+	Print layout	인쇄 레이아웃
+	Paper size	용지 크기
+	Landscape Orientation	가로 방향
+	Portrait Orientation	세로 방향
+	Print Hidden Slides	숨긴 슬라이드 인쇄
+	Frame Slides	슬라이드 테두리
+	Edit Header & Footer	머리글 및 바닥글 편집
+	Nothing to print: every slide in the range is hidden.	인쇄할 슬라이드가 없습니다. 범위 안의 슬라이드가 모두 숨겨져 있습니다.
+	Create PDF Document	PDF 문서 만들기
+	Create Handouts	유인물 만들기
+	Change File Type	파일 형식 변경
+	Create a PDF Document	PDF 문서 만들기
+	Keeps the layout, fonts and pictures	레이아웃, 글꼴, 그림이 그대로 남습니다
+	Opens on any device with a PDF viewer	PDF 뷰어가 있는 기기라면 어디서나 열립니다
+	The presentation keeps its own file	프레젠테이션 파일은 그대로 남습니다
+	Create PDF	PDF 만들기
+	Several slides on each page of a PDF	PDF 한 페이지에 슬라이드를 여러 장 넣습니다
+	Three a page leaves lines for notes	한 페이지에 3장이면 메모할 줄이 생깁니다
+	Print them for your audience	인쇄해서 청중에게 나눠 주세요
+	{n} slides per page	페이지당 슬라이드 {n}개
+	Slides per page	페이지당 슬라이드 수
+print	{n} of {total}	{n}/{total}
