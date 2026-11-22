@@ -15,3 +15,27 @@ Custom Show 1	the default name typed into Custom Shows › New show name: it bec
 AaBbCcDd	sample letters drawn in the Font dialog's preview, not wording
 MIT OR Apache-2.0 · © 2026 ArtCraft Team and the DeckCraft contributors	About's copyright and licence notice: the legal text stays as written
 DeckCraft	the built-in theme named after the original app (Photo Album › Album theme; the theme data keeps it), as the theme gallery shows it
+Slide	the app's own name (lib.rs APP_NAME): window titles and dialogs show it as is
+ArrowLeft	an egui key name sent to the show as a key id (presenter.rs), not shown
+ArrowRight	an egui key name sent to the show as a key id (presenter.rs), not shown
+A-	Presenter View's smaller-notes button: the letter and the sign show the step, not wording
+A−	Presenter View's smaller-notes button (the web popup's), as above
+English (Australia)	the language's own name in the proofing language list (canvas/squiggles.rs LANGS); each language is listed in itself
+English (Canada)	the language's own name in the proofing language list, as above
+Español (España)	the language's own name in the proofing language list, as above
+Español (México)	the language's own name in the proofing language list, as above
+Français (France)	the language's own name in the proofing language list, as above
+Français (Canada)	the language's own name in the proofing language list, as above
+Deutsch (Deutschland)	the language's own name in the proofing language list, as above
+Deutsch (Schweiz)	the language's own name in the proofing language list, as above
+Italiano	the language's own name in the proofing language list, as above
+Nederlands	the language's own name in the proofing language list, as above
+Português (Brasil)	the language's own name in the proofing language list, as above
+Português (Portugal)	the language's own name in the proofing language list, as above
+Polski	the language's own name in the proofing language list, as above
+Svenska	the language's own name in the proofing language list, as above
+Dansk	the language's own name in the proofing language list, as above
+Norsk bokmål	the language's own name in the proofing language list, as above
+Suomi	the language's own name in the proofing language list, as above
+Srpski (latinica)	the language's own name in the proofing language list, as above
+Türkçe	the language's own name in the proofing language list, as above

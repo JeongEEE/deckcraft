@@ -152,12 +152,12 @@ fn update_window(rt: &mut Runtime, ctx: &egui::Context, response: &mut Response)
                 }
                 Phase::Manual { version, reason } => {
                     ui.label(fmt(t("{app} {version} is available."), &[("app", APP_NAME), ("version", version)]));
-                    ui.label(t(reason));
+                    ui.label(crate::i18n::t_dynamic(reason).as_ref());
                     response.releases = ui.button(t("Get the installer from the releases page")).clicked();
                 }
                 Phase::Failed(reason) => {
                     ui.label(t("Couldn't prepare the update."));
-                    ui.label(t(reason));
+                    ui.label(crate::i18n::t_dynamic(reason).as_ref());
                     rt.manual |= ui.button(t("Try Again")).clicked();
                     response.releases = ui.button(t("Download from the releases page")).clicked();
                 }
@@ -182,7 +182,7 @@ fn install_failed(rt: &mut Runtime, ctx: &egui::Context) {
         .open(&mut open)
         .show(ctx, |ui| {
             ui.set_max_width(440.0);
-            ui.label(fmt(t("Couldn't install the update. {reason}"), &[("reason", t(reason))]));
+            ui.label(fmt(t("Couldn't install the update. {reason}"), &[("reason", &crate::i18n::t_dynamic(reason))]));
             close = ui.button(t("Close")).clicked();
         });
     if close || !open {

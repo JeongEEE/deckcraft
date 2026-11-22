@@ -21,7 +21,7 @@ pub(super) fn grid_options(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog) -> b
     let guides = check(ui, d, "Display drawing guides on screen", "guides", app.ui.guides);
     if let Some(err) = d.fields.get("error").cloned().filter(|s| !s.is_empty()) {
         ui.add_space(4.0);
-        ui.label(egui::RichText::new(crate::i18n::t(&err)).color(Color32::from_rgb(0xB0, 0x30, 0x30)));
+        ui.label(egui::RichText::new(crate::i18n::t_dynamic(&err)).color(Color32::from_rgb(0xB0, 0x30, 0x30)));
     }
     let (ok, cancel) = buttons(ui, "OK");
     if ok {

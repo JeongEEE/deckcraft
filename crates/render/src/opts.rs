@@ -71,6 +71,9 @@ pub struct RenderOpts<'a> {
     /// only what is on the slide is drawn over transparency: PNG export with a transparent
     /// background. Shapes filled with the background (`useBgFill`) still show it.
     pub transparent_background: bool,
+    /// Editor view: the wording of an empty placeholder's built-in prompt ("Click to add title"),
+    /// for a UI that shows them in its own language. `None` keeps the English.
+    pub prompt_text: Option<fn(&str) -> &str>,
 }
 
 impl Default for RenderOpts<'_> {
@@ -91,6 +94,7 @@ impl Default for RenderOpts<'_> {
             date_text: None,
             now: None,
             transparent_background: false,
+            prompt_text: None,
         }
     }
 }

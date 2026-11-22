@@ -22,6 +22,8 @@ struct Key {
     /// The pasteboard region the slide's drawing calls for (canvas only).
     want: Region,
     editing_text: Option<ShapeId>,
+    /// Placeholder prompts are drawn in the interface language.
+    korean: bool,
 }
 
 struct Entry {
@@ -292,6 +294,7 @@ impl Textures {
             extra: extra ^ grayscale as u64 ^ anim_key(anim),
             want,
             editing_text,
+            korean: crate::i18n::is_korean(),
         };
         if let Some(e) = &self.canvas
             && e.key == key
@@ -311,6 +314,7 @@ impl Textures {
                 size: Some(region.size()),
                 state,
                 editing_text,
+                prompt_text: Some(crate::i18n::t),
                 ..Default::default()
             };
             deckcraft_render::render_slide_drawn(p, index, &opts)
@@ -385,6 +389,7 @@ impl Textures {
             extra: grayscale as u64,
             want: Region::slide(width_px, h),
             editing_text: None,
+            korean: false, // thumbnails draw no prompts
         };
         self.clock += 1;
         let clock = self.clock;

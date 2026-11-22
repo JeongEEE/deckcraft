@@ -778,3 +778,274 @@ fn update_failure_reasons_are_korean() {
     let missing: Vec<&String> = reasons.iter().filter(|r| !has_ko(r)).collect();
     assert!(missing.is_empty(), "no Korean row: {missing:#?}");
 }
+
+/// The non-test `.rs` files under `dir`, recursively.
+fn source_files(dir: &Path, out: &mut Vec<PathBuf>) {
+    for entry in std::fs::read_dir(dir).unwrap() {
+        let path = entry.unwrap().path();
+        let name = path.file_name().unwrap().to_string_lossy().into_owned();
+        if path.is_dir() {
+            source_files(&path, out);
+        } else if name.ends_with(".rs") && name != "tests.rs" && !name.ends_with("_tests.rs") {
+            out.push(path);
+        }
+    }
+}
+
+fn assert_no_problems(files: &[PathBuf]) {
+    let problems: Vec<String> = files.iter().flat_map(|f| audit::problems(f)).collect();
+    assert!(problems.is_empty(), "no Korean row (deckcraft.tsv) or keep_english.txt entry, or not wrapped in t():\n{}", problems.join("\n"));
+}
+
+/// The canvas, the slide show and the slide sorter: every interface string has a Korean row or a
+/// reason to stay English, and egui's own calls look it up.
+#[test]
+fn korean_coverage_canvas_show_sorter() {
+    let mut files = vec![src().join("canvas.rs"), src().join("show.rs"), src().join("sorter.rs")];
+    for dir in ["canvas", "show", "sorter"] {
+        source_files(&src().join(dir), &mut files);
+    }
+    assert!(files.len() > 15, "found the files: {files:?}");
+    assert_no_problems(&files);
+}
+
+/// The top-level files outside the ribbon, dialogs, menus, panels, backstage, i18n and the shared
+/// widgets (the status bar, toasts, the presenter view, the app's frame, files and keys …), with
+/// `app/`, `capture/` and `icons/`.
+#[test]
+fn korean_coverage_top_level() {
+    const ELSEWHERE: [&str; 10] =
+        ["ribbon.rs", "dialogs.rs", "menus.rs", "panels.rs", "backstage.rs", "i18n.rs", "widgets.rs", "canvas.rs", "show.rs", "sorter.rs"];
+    let mut files = Vec::new();
+    for entry in std::fs::read_dir(src()).unwrap() {
+        let path = entry.unwrap().path();
+        let name = path.file_name().unwrap().to_string_lossy().into_owned();
+        if path.is_file() && name.ends_with(".rs") && name != "tests.rs" && !name.ends_with("_tests.rs") && !ELSEWHERE.contains(&name.as_str()) {
+            files.push(path);
+        }
+    }
+    for dir in ["app", "capture", "icons"] {
+        source_files(&src().join(dir), &mut files);
+    }
+    files.sort();
+    assert!(files.iter().any(|f| f.ends_with("status.rs")) && files.len() > 30, "found the files: {files:?}");
+    assert_no_problems(&files);
+}
+
+/// An engine error with values in it reads in Korean through its template, the values as they were.
+#[test]
+fn dynamic_message_keeps_values() {
+    let err = deckcraft_engine::cmd::file::open_checked("deck v2 (final).key", b"not a deck").err().unwrap().to_string();
+    assert_eq!(err, "deck v2 (final).key: not a presentation DeckCraft can read", "the engine's sentence");
+    set_current(resolve("en"));
+    assert_eq!(t_dynamic(&err), err, "English stays as written");
+    set_current(resolve("ko"));
+    assert_eq!(t_dynamic(&err), "deck v2 (final).key: DeckCraft가 읽을 수 있는 프레젠테이션이 아닙니다");
+    assert_eq!(
+        t_dynamic("/tmp/a: b.pptx: file size 3221225472 exceeds 2 GiB limit"),
+        "/tmp/a: b.pptx: 파일 크기(3221225472)가 2 GiB 제한을 넘습니다"
+    );
+    // A plain row still wins, and the longest matching template does.
+    assert_eq!(t_dynamic("nothing selected"), "선택한 항목이 없습니다");
+    set_current(resolve("en"));
+}
+
+/// A sentence no template matches is shown exactly as the engine wrote it, never half translated.
+#[test]
+fn dynamic_message_without_template_stays_english() {
+    set_current(resolve("ko"));
+    for s in [
+        "deck.pptx: not a presentation DeckCraft can open",
+        "the cache folder could not be created: permission denied",
+        ": not a presentation DeckCraft can read",
+        "",
+    ] {
+        let shown = t_dynamic(s);
+        assert!(matches!(shown, std::borrow::Cow::Borrowed(_)) && shown == s, "{s:?} became {shown:?}");
+    }
+    set_current(resolve("en"));
+}
+
+/// The status-bar sentence for a command that can't run reads in Korean with its reason; the
+/// command id stays as written.
+#[test]
+fn disabled_reason_message_is_fully_korean() {
+    let mut s = deckcraft_engine::Session::with_new();
+    let err = s.execute("edit.undo", &serde_json::json!({})).err().unwrap().to_string();
+    assert_eq!(err, "command `edit.undo` is not available right now: nothing to undo");
+    set_current(resolve("ko"));
+    assert_eq!(t_dynamic(&err), "지금은 `edit.undo` 명령을 쓸 수 없습니다: 실행 취소할 작업이 없습니다");
+    // A reason without a row stays English inside the Korean sentence.
+    assert_eq!(t_dynamic("command `x.y` is not available right now: zz no row"), "지금은 `x.y` 명령을 쓸 수 없습니다: zz no row");
+    set_current(resolve("en"));
+}
+
+/// Picture Format › Compress Pictures saves its result in English (ribbon/picture_format.rs); the
+/// status bar shows it through the template.
+#[test]
+fn compress_status_is_translated() {
+    set_current(resolve("ko"));
+    assert_eq!(t_dynamic("Compressed 3 picture(s): 10 KB → 5 KB"), "그림 3개 압축: 10 KB → 5 KB");
+    set_current(resolve("en"));
+}
+
+/// The status message stays English in `app.status` (the control channel reports it) and is
+/// translated as the status bar draws it; the bar's own controls, the toasts and egui's own names
+/// ("Resize panel", "Close window") are Korean too.
+#[test]
+fn status_bar_translates_at_draw_time() {
+    use egui_kittest::kittest::Queryable;
+    let mut h = korean_harness();
+    let msg = "command `edit.undo` is not available right now: nothing to undo";
+    h.state_mut().set_status(msg);
+    h.state_mut().notify("Aptos isn't installed on this computer. Text that uses it is shown in a similar font.");
+    h.run_steps(3);
+    assert_eq!(h.state().status.as_ref().map(|s| s.0.as_str()), Some(msg), "saved in English");
+    assert!(h.query_by_value(msg).is_none() && h.query_by_label(msg).is_none(), "the English sentence is not shown");
+    assert!(h.query_by_value(&t_dynamic(msg)).is_some(), "the status bar shows {:?}", t_dynamic(msg));
+    assert!(h.query_by_label_contains("Aptos 글꼴이 설치되어 있지 않습니다").is_some(), "the toast is Korean");
+    assert!(h.query_by_value(t("Slide 1 of 1")).is_none());
+    assert!(h.query_by_value(&fmt(t("Slide {n} of {total}"), &[("n", "1"), ("total", "1")])).is_some(), "the slide counter");
+    for en in [
+        "Language",
+        "Fit slide to current window",
+        "Zoom level",
+        "Zoom In",
+        "Zoom Out",
+        "Reading View",
+        "Slide Sorter",
+        "Normal",
+        "Notes",
+        "Comments",
+    ] {
+        assert!(h.query_all_by_label(en).next().is_none(), "{en:?} is shown in English");
+        assert!(h.query_all_by_label(t(en)).next().is_some(), "{en:?} is shown as {:?}", t(en));
+    }
+    assert!(h.query_by_role_and_label(egui::accesskit::Role::Slider, t("Zoom")).is_some());
+    assert_eq!(h.query_all_by_label("Slide Show").count(), 0, "no English Slide Show (status bar and ribbon tab)");
+    assert!(
+        h.query_all_by_label("Resize panel").next().is_none() && h.query_all_by_label(t("Resize panel")).next().is_some(),
+        "egui's splitter name"
+    );
+    h.state_mut().dialog = Some(crate::dialogs::Dialog::new("font"));
+    h.run_steps(3);
+    assert!(
+        h.query_all_by_label("Close window").next().is_none() && h.query_all_by_label(t("Close window")).next().is_some(),
+        "egui's window close button"
+    );
+}
+
+/// An empty title placeholder's prompt is drawn in Korean on the canvas (the renderer asks for its
+/// wording); the document's title stays empty, and English draws what it drew before.
+#[test]
+fn placeholder_prompts_are_korean() {
+    let s = deckcraft_engine::Session::with_new();
+    let doc = &s.active().unwrap().doc;
+    let slide = doc.slides.first().unwrap();
+    let title = slide.shapes.iter().find(|x| x.ph_type().is_some_and(|k| k.is_title())).expect("a title placeholder");
+    assert!(title.text.as_ref().is_none_or(|t| t.is_empty()), "the new slide's title is empty");
+    for prompt in ["Click to add title", "Click to add subtitle", "Click to add text", "Click icon to add picture"] {
+        assert!(has_ko(prompt), "{prompt:?} has a Korean row");
+    }
+    let draw = |wording: Option<fn(&str) -> &str>| {
+        deckcraft_render::render_slide(doc, 0, &deckcraft_render::RenderOpts { scale: 0.5, edit: true, prompt_text: wording, ..Default::default() })
+            .pixels
+    };
+    let english = draw(None);
+    set_current(resolve("en"));
+    assert!(draw(Some(t)) == english, "English draws the same prompts");
+    set_current(resolve("ko"));
+    assert!(draw(Some(t)) != english, "Korean draws other prompts");
+    set_current(resolve("en"));
+    assert!(
+        s.active().unwrap().doc.slides[0].shapes.iter().all(|x| x.text.as_ref().is_none_or(|t| t.is_empty())),
+        "nothing was written into the slide"
+    );
+}
+
+/// The canvas texture is cached; switching the interface language draws the slide again, so its
+/// placeholder prompts follow the language. (Slide thumbnails draw no prompts.)
+#[test]
+fn canvas_redraws_its_prompts_when_the_language_changes() {
+    let s = deckcraft_engine::Session::with_new();
+    let doc = &s.active().unwrap().doc;
+    let ctx = egui::Context::default();
+    let mut tex = crate::textures::Textures::default();
+    let visible = deckcraft_render::Region::slide(320, 180);
+    let draw = |tex: &mut crate::textures::Textures| {
+        let _ = tex.slide(&ctx, doc, 0, (320, 180), visible, true, 0, false, &[], None, None).unwrap();
+        tex.canvas_renders
+    };
+    set_current(resolve("en"));
+    let first = draw(&mut tex);
+    assert_eq!(draw(&mut tex), first, "the same language reuses the texture");
+    set_current(resolve("ko"));
+    let korean = draw(&mut tex);
+    assert!(korean > first, "Korean draws the slide again");
+    assert_eq!(draw(&mut tex), korean, "and caches that");
+    set_current(resolve("en"));
+    assert!(draw(&mut tex) > korean, "back to English draws it again");
+}
+
+/// A font's name in the missing-fonts toast is the document's: "Symbol" or "System" stays, though
+/// the catalogs translate those words; a disabled command's reason is wording and is translated.
+#[test]
+fn dynamic_message_keeps_names_that_are_also_words() {
+    set_current(resolve("ko"));
+    for names in [&["Symbol"][..], &["Modern", "System"], &["Symbol", "Modern", "System", "Aptos"]] {
+        let fonts: Vec<String> = names.iter().map(|n| n.to_string()).collect();
+        let shown = t_dynamic(&crate::toast::missing_fonts_message(&fonts).unwrap()).into_owned();
+        assert!(shown.contains("글꼴이 설치되어 있지 않습니다"), "{shown}");
+        for n in names.iter().take(3) {
+            assert!(shown.contains(n), "{n:?} stays as written: {shown}");
+        }
+    }
+    assert_ne!(t("Symbol"), "Symbol", "the word has a row (the test means something)");
+    assert_eq!(
+        t_dynamic("command `edit.undo` is not available right now: nothing to undo"),
+        "지금은 `edit.undo` 명령을 쓸 수 없습니다: 실행 취소할 작업이 없습니다"
+    );
+    set_current(resolve("en"));
+}
+
+/// The fixed text before the last value is the last match, so a value holding it keeps it.
+#[test]
+fn template_splits_before_the_last_value_at_its_last_match() {
+    let tpl = Template::parse("{name}: {app} can't open this kind of file").unwrap();
+    assert_eq!(tpl.capture("a: b.pptx: Slide can't open this kind of file"), Some(vec![("name", "a: b.pptx"), ("app", "Slide")]));
+    set_current(resolve("ko"));
+    assert_eq!(t_dynamic("a: b.pptx: Slide can't open this kind of file"), "a: b.pptx: Slide에서 열 수 없는 종류의 파일입니다");
+    set_current(resolve("en"));
+}
+
+/// The slide's Layout menu (canvas right-click) shows every built-in layout in Korean; the command
+/// keeps the layout's id and the document its English name.
+#[test]
+fn layout_menu_names_are_korean() {
+    use egui_kittest::kittest::Queryable;
+    let mut h = korean_harness();
+    let at = h.state().slide_rect.unwrap().min + egui::vec2(6.0, 6.0);
+    h.event(egui::Event::PointerMoved(at));
+    h.step();
+    for pressed in [true, false] {
+        h.event(egui::Event::PointerButton { pos: at, button: egui::PointerButton::Secondary, pressed, modifiers: egui::Modifiers::NONE });
+        h.step();
+    }
+    h.run_steps(2);
+    // The ribbon's Layout button is above the slide; the menu's item opens below the click.
+    h.get_all_by_label(t("Layout")).find(|n| n.rect().min.y > at.y).expect("the menu's Layout item").hover();
+    h.run_steps(3);
+    let names: Vec<String> = h.state().session.active().unwrap().doc.masters[0].layouts.iter().map(|l| l.name.clone()).collect();
+    assert!(names.len() >= 11, "{names:?}");
+    for name in &names {
+        assert_ne!(tc("layout", name), name.as_str(), "{name:?} has a Korean name");
+        assert!(h.query_by_label(tc("layout", name)).is_some(), "the menu lists {name:?} as {:?}", tc("layout", name));
+        assert!(h.query_by_label(name).is_none(), "{name:?} is not shown in English");
+    }
+    h.get_by_label(tc("layout", "Blank")).click();
+    h.run_steps(3);
+    let d = h.state().session.active().unwrap();
+    let slide = &d.doc.slides[d.selection.slide];
+    let layout = d.doc.masters[0].layouts.iter().find(|l| l.id == slide.layout).unwrap();
+    assert_eq!(layout.name, "Blank", "the document keeps the English name");
+}

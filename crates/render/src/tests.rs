@@ -575,6 +575,37 @@ fn placeholder_prompts_only_in_edit_view() {
     assert_eq!(ink(&show), 0);
 }
 
+/// A UI's wording for the prompts (`prompt_text`) changes only an empty placeholder's prompt: the
+/// same wording draws what `None` draws, a filled placeholder draws its own text, and neither the
+/// show nor a layout picks it up.
+#[test]
+fn prompt_wording_changes_only_the_prompts() {
+    fn same(s: &str) -> &str {
+        s
+    }
+    fn blank(_: &str) -> &str {
+        ""
+    }
+    let ink = |px: &[u8]| px.as_chunks::<4>().0.iter().filter(|px| px[0] < 200).count();
+    let slide = |p: &Presentation, edit: bool, w: Option<fn(&str) -> &str>| {
+        render_slide(p, 0, &RenderOpts { scale: 0.5, edit, prompt_text: w, ..Default::default() }).pixels
+    };
+    let p = Presentation::default();
+    assert_eq!(slide(&p, true, Some(same)), slide(&p, true, None), "the same wording draws the same prompts");
+    // The dashed placeholder outlines stay; the prompts' text goes with an empty wording.
+    assert!(ink(&slide(&p, true, Some(blank))) < ink(&slide(&p, true, None)), "the wording replaces the prompts");
+    assert_eq!(slide(&p, false, Some(blank)), slide(&p, false, None), "the show draws no prompts");
+    let mut filled = p.clone();
+    for sh in std::sync::Arc::make_mut(&mut filled.slides[0]).shapes.iter_mut().filter(|sh| sh.ph.is_some()) {
+        sh.text = Some(TextBody::from_text("Hello"));
+    }
+    assert_eq!(slide(&filled, true, Some(blank)), slide(&filled, true, None), "a filled placeholder keeps its text");
+    let layout = |w: Option<fn(&str) -> &str>| {
+        crate::render_layout(&p, 0, Some(0), &RenderOpts { scale: 0.5, edit: true, prompt_text: w, ..Default::default() }).pixels
+    };
+    assert_eq!(layout(Some(blank)), layout(None), "a layout draws its own placeholder text");
+}
+
 #[test]
 fn png_encodes() {
     let p = Presentation::default();

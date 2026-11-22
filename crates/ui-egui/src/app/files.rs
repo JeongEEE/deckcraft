@@ -399,7 +399,7 @@ impl SlideApp {
         match result {
             Ok(()) => {
                 self.reuse_target = None;
-                self.set_status(format!("Inserted {} slides", picked.len()));
+                self.set_status(format!("Inserted {n} slides", n = picked.len()));
                 true
             }
             Err(e) => {

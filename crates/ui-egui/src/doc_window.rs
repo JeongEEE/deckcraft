@@ -94,12 +94,19 @@ pub fn show(app: &mut SlideApp, ctx: &egui::Context) {
                         ui.horizontal_centered(|ui| {
                             ui.label(RichText::new(title.clone()).font(crate::theme::bold(13.0)).color(t.text));
                             ui.add_space(16.0);
-                            ui.label(RichText::new(format!("Slide {} of {n}", slide + 1)).color(t.text_dim).font(crate::theme::font(13.0)));
+                            ui.label(
+                                RichText::new(crate::i18n::fmt(
+                                    crate::i18n::t("Slide {n} of {total}"),
+                                    &[("n", &(slide + 1).to_string()), ("total", &n.to_string())],
+                                ))
+                                .color(t.text_dim)
+                                .font(crate::theme::font(13.0)),
+                            );
                             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                if ui.add_enabled(slide + 1 < n, egui::Button::new("Next")).clicked() {
+                                if ui.add_enabled(slide + 1 < n, egui::Button::new(crate::i18n::t("Next"))).clicked() {
                                     let _ = app.run("view.newWindow", json!({"delta": 1}));
                                 }
-                                if ui.add_enabled(slide > 0, egui::Button::new("Previous")).clicked() {
+                                if ui.add_enabled(slide > 0, egui::Button::new(crate::i18n::t("Previous"))).clicked() {
                                     let _ = app.run("view.newWindow", json!({"delta": -1}));
                                 }
                             });
@@ -108,7 +115,7 @@ pub fn show(app: &mut SlideApp, ctx: &egui::Context) {
                 egui::CentralPanel::default().frame(egui::Frame::NONE.fill(t.canvas).inner_margin(egui::Margin::same(16))).show(ui, |ui| {
                     let avail = ui.available_rect_before_wrap();
                     let (w, h) = pixel_size(&doc, avail.width());
-                    let tex = ensure_texture(app, ui.ctx(), &doc, (uid, revision, slide, w, h, grayscale));
+                    let tex = ensure_texture(app, ui.ctx(), &doc, (uid, revision, slide, w, h, grayscale, crate::i18n::is_korean()));
                     if let Some(tex) = tex {
                         let fitted = fit_rect(avail, w, h);
                         ui.painter().rect_filled(fitted, CornerRadius::ZERO, Color32::WHITE);
@@ -141,11 +148,12 @@ fn fit_rect(avail: Rect, w: u32, h: u32) -> Rect {
     Rect::from_center_size(avail.center(), vec2(width.max(1.0), height.max(1.0)))
 }
 
-/// What a cached slide texture was drawn from: document, revision, slide, pixel size, grayscale.
-type TexKey = (u64, u64, usize, u32, u32, bool);
+/// What a cached slide texture was drawn from: document, revision, slide, pixel size, grayscale,
+/// and whether the placeholder prompts were drawn in Korean.
+type TexKey = (u64, u64, usize, u32, u32, bool, bool);
 
 fn ensure_texture(app: &mut SlideApp, ctx: &egui::Context, doc: &deckcraft_model::Presentation, key: TexKey) -> Option<egui::TextureHandle> {
-    let (_, _, slide, w, h, grayscale) = key;
+    let (_, _, slide, w, h, grayscale, _) = key;
     if let Some(win) = app.doc_window.as_ref()
         && win.key == Some(key)
         && let Some(tex) = win.tex.clone()
@@ -155,7 +163,14 @@ fn ensure_texture(app: &mut SlideApp, ctx: &egui::Context, doc: &deckcraft_model
     let img = deckcraft_render::render_slide(
         doc,
         slide,
-        &RenderOpts { scale: w as f64 / doc.slide_size.width.max(1.0), size: Some((w, h)), edit: true, threads: 0, ..Default::default() },
+        &RenderOpts {
+            scale: w as f64 / doc.slide_size.width.max(1.0),
+            size: Some((w, h)),
+            edit: true,
+            threads: 0,
+            prompt_text: Some(crate::i18n::t),
+            ..Default::default()
+        },
     );
     let tex = crate::textures::upload(ctx, "doc-window-slide", crate::textures::to_color_image(&img, grayscale));
     if let Some(win) = app.doc_window.as_mut() {

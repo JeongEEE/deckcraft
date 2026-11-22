@@ -792,7 +792,7 @@ fn dlg_export(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog) -> bool {
     }
     let gif_params = if fmt == "gif" { gif_options(app, ui, d) } else { Ok(Value::Null) };
     if let Err(e) = &gif_params {
-        ui.label(egui::RichText::new(e).color(Tokens::get(ui.ctx()).text_dim));
+        ui.label(egui::RichText::new(crate::i18n::t_dynamic(e)).color(Tokens::get(ui.ctx()).text_dim));
     }
     let pdf_params = {
         let (layout, per) = match pdf_layout.as_str() {
@@ -1105,7 +1105,7 @@ fn dlg_accessibility(app: &mut SlideApp, ui: &mut Ui, _d: &mut Dialog) -> bool {
                             "issue",
                             &format!(
                                 "{}{}",
-                                t(item.get("issue").and_then(Value::as_str).unwrap_or("")),
+                                crate::i18n::t_dynamic(item.get("issue").and_then(Value::as_str).unwrap_or("")),
                                 item.get("name").and_then(Value::as_str).map(|n| format!(" — {n}")).unwrap_or_default()
                             ),
                         ),

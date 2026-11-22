@@ -10,6 +10,8 @@ impl SlideApp {
         }
         if !self.styled {
             theme::install_fonts_with(ctx, &self.ui_fonts.faces);
+            // Once per app: egui's own screen-reader names in the interface language.
+            ctx.add_plugin(crate::i18n::EguiNames);
             self.styled = true;
             self.restyle = true;
             // Font definitions take effect at the next pass boundary. Do not paint a language

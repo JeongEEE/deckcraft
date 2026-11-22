@@ -84,7 +84,7 @@ pub(super) fn layout_menu(app: &mut SlideApp, ui: &mut Ui, cmd: &str) {
                     Stroke::new(if resp.hovered() { 2.0 } else { 1.0 }, if resp.hovered() { t.accent } else { t.border }),
                     egui::StrokeKind::Outside,
                 );
-                ui.add_sized(vec2(96.0, 14.0), egui::Label::new(egui::RichText::new(name).size(10.5)).truncate());
+                ui.add_sized(vec2(96.0, 14.0), egui::Label::new(egui::RichText::new(crate::i18n::tc("layout", name)).size(10.5)).truncate());
                 resp
             });
             if resp.inner.clicked() {

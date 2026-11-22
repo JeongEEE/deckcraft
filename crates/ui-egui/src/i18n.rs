@@ -113,6 +113,166 @@ pub fn fmt(template: &str, args: &[(&str, &str)]) -> String {
     craft_i18n::fmt_plain(template, args)
 }
 
+/// A message made at run time (an engine error, a status sentence with a file name or a count in
+/// it) in the current language. Its plain row if it has one; otherwise the catalogs' rows with
+/// `{name}` placeholders are templates: the one whose fixed text matches `s` piece by piece (the
+/// longest fixed text when several do) is translated and its values put back in. A value in a
+/// wording placeholder ([`WORDING`]) that is itself a row's English (a disabled command's reason
+/// in "command `{0}` is not available right now: {1}") is translated too; every other value (a
+/// command id, a file or font name) stays as written. Without a matching template the message
+/// stays English, whole.
+pub fn t_dynamic(s: &str) -> std::borrow::Cow<'_, str> {
+    use std::borrow::Cow;
+    if current() == Lang::EN {
+        return Cow::Borrowed(s);
+    }
+    let plain = t(s);
+    if plain != s {
+        return Cow::Borrowed(plain);
+    }
+    let lang = current();
+    let best = TEMPLATES
+        .iter()
+        .filter(|tpl| I18N.get(lang, "", &tpl.source).is_some())
+        .filter_map(|tpl| tpl.capture(s).map(|values| (tpl, values)))
+        .max_by_key(|(tpl, _)| tpl.fixed_len);
+    let Some((tpl, values)) = best else { return Cow::Borrowed(s) };
+    let shown: Vec<(&str, &str)> = values.iter().map(|(name, value)| (*name, if WORDING.contains(name) { t(value) } else { *value })).collect();
+    Cow::Owned(fmt(t(&tpl.source), &shown))
+}
+
+/// The placeholders whose value is itself the app's or the engine's English wording, so
+/// [`t_dynamic`] translates it when it has a row: `{1}` a disabled command's reason or an internal
+/// error's message, `{msg}` a parameter error's message, `{e}`/`{err}` an error's sentence
+/// ("{name} was not applied: {e}"), `{reason}` an update failure, `{label}` a field's name
+/// ("{label} must be a number"), `{colour}` a theme colour slot, `{page}` a File page, `{action}`
+/// a command's name. The rest (`{name}`, `{a}`…`{c}` font names, `{path}`, `{0}` ids, counts)
+/// are the user's or the document's and stay as written: a font named "Symbol" is not 기호.
+const WORDING: [&str; 9] = ["1", "msg", "e", "err", "reason", "label", "colour", "page", "action"];
+
+/// A catalog row with `{name}` placeholders, split into its fixed text and placeholder names.
+struct Template {
+    source: String,
+    /// The fixed text before the first placeholder, then after each one.
+    fixed: Vec<String>,
+    names: Vec<String>,
+    fixed_len: usize,
+}
+
+impl Template {
+    /// `source` as a template, when it has a placeholder, some fixed text, and fixed text between
+    /// every two placeholders (`{a}{b}` can't be told apart).
+    fn parse(source: &str) -> Option<Template> {
+        let (mut fixed, mut names) = (Vec::new(), Vec::new());
+        let mut rest = source;
+        while let Some((before, after)) = rest.split_once('{') {
+            let (name, after) = after.split_once('}')?;
+            fixed.push(before.to_string());
+            names.push(name.to_string());
+            rest = after;
+        }
+        fixed.push(rest.to_string());
+        let fixed_len = fixed.iter().map(String::len).sum();
+        let inner_empty = fixed.get(1..fixed.len().saturating_sub(1)).is_some_and(|m| m.iter().any(String::is_empty));
+        (!names.is_empty() && fixed_len > 0 && !inner_empty).then(|| Template { source: source.to_string(), fixed, names, fixed_len })
+    }
+
+    /// The values `s` has for the placeholders, when its fixed text matches in order and every
+    /// value is non-empty (and the same each time a name repeats).
+    fn capture<'s>(&self, s: &'s str) -> Option<Vec<(&str, &'s str)>> {
+        let (first, last) = (self.fixed.first()?, self.fixed.last()?);
+        let mut rest = s.strip_prefix(first.as_str())?.strip_suffix(last.as_str())?;
+        let mut values: Vec<(&str, &'s str)> = Vec::with_capacity(self.names.len());
+        for (i, name) in self.names.iter().enumerate() {
+            let value = match self.fixed.get(i + 1).filter(|_| i + 1 < self.names.len()) {
+                Some(next) => {
+                    // The value has at least one character: start looking after it. Before the
+                    // last value, the last match: "{name}: {app} can't open…" with a name
+                    // "a: b.pptx" splits after the name, not inside it.
+                    let skip = rest.chars().next()?.len_utf8();
+                    let after = rest.get(skip..)?;
+                    let found = if i + 2 == self.names.len() { after.rfind(next.as_str()) } else { after.find(next.as_str()) };
+                    let at = found? + skip;
+                    let value = rest.get(..at)?;
+                    rest = rest.get(at + next.len()..)?;
+                    value
+                }
+                None => std::mem::take(&mut rest),
+            };
+            if value.is_empty() || values.iter().any(|(n, v)| *n == name.as_str() && *v != value) {
+                return None;
+            }
+            values.push((name, value));
+        }
+        Some(values)
+    }
+}
+
+/// The catalogs' plain rows with placeholders, read once. The rows are read as craft-i18n reads
+/// them (a leading BOM, `\r\n`, exactly three columns, `\n` `\t` `\\` escapes read left to right);
+/// a row it rejected isn't loaded there, so [`t_dynamic`] also skips any template without a
+/// translation in the current language.
+static TEMPLATES: LazyLock<Vec<Template>> = LazyLock::new(|| {
+    let mut seen = std::collections::HashSet::new();
+    EMBEDDED
+        .iter()
+        .flat_map(|(_, common, app)| [app, common])
+        .flat_map(|text| text.strip_prefix('\u{feff}').unwrap_or(text).split('\n'))
+        .map(|line| line.strip_suffix('\r').unwrap_or(line))
+        .filter(|line| !line.starts_with('#'))
+        .filter_map(|line| match line.split('\t').collect::<Vec<_>>().as_slice() {
+            ["", source, _] if source.contains('{') => unescape(source),
+            _ => None,
+        })
+        .filter(|source| seen.insert(source.clone()))
+        .filter_map(|source| Template::parse(&source))
+        .collect()
+});
+
+/// A catalog column's text: `\n`, `\t` and `\\` undone; `None` for another escape.
+fn unescape(text: &str) -> Option<String> {
+    let mut out = String::with_capacity(text.len());
+    let mut chars = text.chars();
+    while let Some(c) = chars.next() {
+        if c != '\\' {
+            out.push(c);
+            continue;
+        }
+        out.push(match chars.next()? {
+            'n' => '\n',
+            't' => '\t',
+            '\\' => '\\',
+            _ => return None,
+        });
+    }
+    Some(out)
+}
+
+/// Names egui itself gives widgets for screen readers (a panel's resize handle, a window's close
+/// button), English in egui's code. [`EguiNames`] translates them in each frame's output.
+const EGUI_NAMES: [&str; 2] = ["Resize panel", "Close window"];
+
+/// An egui plugin that shows [`EGUI_NAMES`] in the current language in the accessibility tree.
+pub struct EguiNames;
+
+impl egui::Plugin for EguiNames {
+    fn debug_name(&self) -> &'static str {
+        "i18n::EguiNames"
+    }
+
+    fn output_hook(&mut self, _ctx: &egui::Context, output: &mut egui::FullOutput) {
+        if current() == Lang::EN {
+            return;
+        }
+        let Some(update) = output.platform_output.accesskit_update.as_mut() else { return };
+        for (_, node) in &mut update.nodes {
+            if let Some(name) = node.label().and_then(|l| EGUI_NAMES.into_iter().find(|n| *n == l)) {
+                node.set_label(t(name));
+            }
+        }
+    }
+}
+
 /// Whether the Korean catalogs have a plain row for `s`.
 pub fn has_ko(s: &str) -> bool {
     I18N.from_code("ko").is_some_and(|ko| I18N.get(ko, "", s).is_some())
