@@ -72,8 +72,19 @@ UpgradeCode와 component GUID는 이후 릴리스에서 바꾸지 않는다. 바
 두 테스트는 글꼴을 넣은 빌드(`CRAFT_FONTS_DIR`)에서도 돌린다.
 
 번역은 그릴 때만 한다. 파일에 저장되는 값(슬라이드 텍스트, 레이아웃·테마·개체 이름),
-명령 ID, `ui.json` 저장값, 제어 채널·MCP·CLI·로그는 영어 그대로다. 날짜·시간 형식 목록은
-en-US 고정이라 한국어 화면에서도 영어 날짜가 나온다(한국어 날짜 형식은 범위 밖).
+명령 ID, `ui.json` 저장값, 제어 채널·MCP·CLI·로그는 영어 그대로다. 새 프레젠테이션 이름도
+엔진·저장 대화상자 기본 파일 이름은 "Presentation1"이고, 제목 표시줄 같은 화면에만
+"프레젠테이션1"로 보인다.
+
+알려진 한계:
+
+- 날짜·시간 형식 목록은 en-US 고정이라 한국어 화면에서도 영어 날짜가 나온다(한국어 날짜 형식은 범위 밖).
+- macOS 앱 메뉴(About·Services·Hide·Quit)는 winit이 만드는 기본 메뉴라 영어다. 바꾸려면
+  `unsafe` Objective-C 호출이 필요해 두지 않는다.
+- 엔진의 매개변수 오류(``invalid parameters for `…`: {msg}``)에서 `{msg}` 자리의 상세 문장은 행이 없어 영어다.
+- 슬라이드 마스터 보기에서 레이아웃 개체 틀 안의 문구("Click to edit Master title style" 등)는
+  화면 문구가 아니라 문서 내용이라 영어다.
+- 웹(wasm) 빌드는 한국어를 지원하지 않는다(위).
 
 ## 빌드와 검증
 
@@ -94,8 +105,8 @@ Command Line Tools를 가리키지만 Xcode가 설치돼 있다면, 전역 설�
 빌드 명령에 `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`를 지정할 수 있다.
 Rust가 PATH에 없다면 먼저 `. "$HOME/.cargo/env"`를 실행한다.
 
-DeckCraft는 `craft-i18n`을 쓰지 않는다(화면은 영어 전용). 글꼴만 `storytold/craft-fonts`의
-고정 커밋을 깨끗한 체크아웃으로 받아 `CRAFT_FONTS_DIR`로 지정하고, 배포 빌드는
+화면 번역은 `craft-i18n` 크레이트(craft-libs)를 쓰고 번역표는 레포 안에 있다(위 "한국어 화면").
+글꼴은 `storytold/craft-fonts`의 고정 커밋을 깨끗한 체크아웃으로 받아 `CRAFT_FONTS_DIR`로 지정하고, 배포 빌드는
 `CRAFT_FONTS_REQUIRED=1`로 누락을 막는다.
 
 macOS 패키징은 `packaging/macos/package.sh --arch universal`, Windows는 MSVC 도구와

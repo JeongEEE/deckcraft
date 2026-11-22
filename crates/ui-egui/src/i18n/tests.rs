@@ -1009,6 +1009,46 @@ fn dynamic_message_keeps_names_that_are_also_words() {
     set_current(resolve("en"));
 }
 
+/// A wording value that is a message with a value of its own (a disabled command's reason "no
+/// slide 3") is translated through its template too, one level deep; a value that matches no row
+/// stays as written, and the fonts in a nested message stay names.
+#[test]
+fn dynamic_message_translates_its_reason_one_level_deep() {
+    set_current(resolve("ko"));
+    assert_eq!(
+        t_dynamic("command `slide.go` is not available right now: no slide 3"),
+        "지금은 `slide.go` 명령을 쓸 수 없습니다: 슬라이드가 없습니다: 3"
+    );
+    assert_eq!(t_dynamic("command `slide.go` is not available right now: something new"), "지금은 `slide.go` 명령을 쓸 수 없습니다: something new");
+    let fonts = crate::toast::missing_fonts_message(&["Symbol".to_string()]).unwrap();
+    let shown = t_dynamic(&format!("command `x.y` is not available right now: {fonts}")).into_owned();
+    assert!(shown.contains("Symbol") && !shown.contains("기호"), "{shown}");
+    set_current(resolve("en"));
+    assert_eq!(t_dynamic("command `slide.go` is not available right now: no slide 3"), "command `slide.go` is not available right now: no slide 3");
+}
+
+/// A new presentation is "프레젠테이션1" on screen in Korean; the engine's name (the Save dialog's
+/// file name, the control channel's title) stays "Presentation1", and a saved file or another name
+/// is shown as it is.
+#[test]
+fn new_presentation_name_is_translated_for_display_only() {
+    let mut session = deckcraft_engine::Session::with_new();
+    let d = session.active().unwrap();
+    assert_eq!(d.title(), "Presentation1");
+    set_current(resolve("ko"));
+    assert_eq!(crate::i18n::doc_title(d), "프레젠테이션1");
+    set_current(resolve("en"));
+    assert_eq!(crate::i18n::doc_title(d), "Presentation1");
+    set_current(resolve("ko"));
+    let d = session.active_mut().unwrap();
+    d.title = "Presentation draft".into();
+    assert_eq!(crate::i18n::doc_title(d), "Presentation draft");
+    d.title = "Presentation2".into();
+    d.path = Some("/tmp/Presentation2.pptx".into());
+    assert_eq!(crate::i18n::doc_title(d), "Presentation2", "a saved file keeps its file's name");
+    set_current(resolve("en"));
+}
+
 /// The fixed text before the last value is the last match, so a value holding it keeps it.
 #[test]
 fn template_splits_before_the_last_value_at_its_last_match() {
@@ -1017,6 +1057,28 @@ fn template_splits_before_the_last_value_at_its_last_match() {
     set_current(resolve("ko"));
     assert_eq!(t_dynamic("a: b.pptx: Slide can't open this kind of file"), "a: b.pptx: Slide에서 열 수 없는 종류의 파일입니다");
     set_current(resolve("en"));
+}
+
+/// A file the system asked to open that isn't a presentation (apple_events.rs's status "Couldn't
+/// open {path}: {e}" with the engine's real error "deck.key: not a presentation DeckCraft can
+/// read"): the sentence splits at the path, not at the last ": ", and the error inside is
+/// translated too.
+#[test]
+fn couldnt_open_splits_before_the_engine_error() {
+    let dir = std::env::temp_dir().join(format!("deckcraft-i18n-open-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("deck.key");
+    std::fs::write(&path, b"not a deck").unwrap();
+    let path = path.to_string_lossy().to_string();
+    let mut app = crate::SlideApp::new(deckcraft_engine::Session::new(), crate::Services::default());
+    let e = app.open_path(&path).unwrap_err();
+    assert!(e.ends_with(": not a presentation DeckCraft can read"), "the engine's error: {e}");
+    set_current(resolve("ko"));
+    let inner = t_dynamic(&e).into_owned();
+    let shown = t_dynamic(&format!("Couldn't open {path}: {e}")).into_owned();
+    set_current(resolve("en"));
+    assert!(inner.contains("DeckCraft가 읽을 수 있는 프레젠테이션이 아닙니다"), "{inner}");
+    assert_eq!(shown, format!("{path}을(를) 열 수 없습니다: {inner}"));
 }
 
 /// The slide's Layout menu (canvas right-click) shows every built-in layout in Korean; the command
@@ -1256,13 +1318,17 @@ fn backstage_pages_are_korean() {
 }
 
 /// Format Shape's choices the source check can't follow (their context is a variable): every 3-D
-/// preset the pane lists has its row by id, and the compound line's Single and Double, a cap's
+/// preset the pane lists or a file can bring (the engine's `ALL_*` lists: an opened shape shows its
+/// legacy camera or light) has its row by id, and the compound line's Single and Double, a cap's
 /// Square, a join's Bevel and the gradient direction buttons' short names have theirs.
 #[test]
 fn format_pane_context_rows_cover_their_choices() {
-    use deckcraft_engine::cmd::three_d::{BEVELS, CAMERAS, LIGHTS, MATERIALS};
+    use deckcraft_engine::cmd::three_d::{ALL_CAMERAS, ALL_LIGHTS, ALL_MATERIALS, BEVELS, CAMERAS, LIGHTS, MATERIALS};
+    for (all, listed) in [(ALL_CAMERAS, CAMERAS), (ALL_LIGHTS, LIGHTS), (ALL_MATERIALS, MATERIALS)] {
+        assert!(listed.iter().all(|id| all.contains(id)), "the pane's lists are part of the engine's");
+    }
     set_current(resolve("ko"));
-    for (context, ids) in [("bevel", BEVELS), ("camera", CAMERAS), ("material", MATERIALS), ("light", LIGHTS)] {
+    for (context, ids) in [("bevel", BEVELS), ("camera", ALL_CAMERAS), ("material", ALL_MATERIALS), ("light", ALL_LIGHTS)] {
         for id in ids.iter().chain(["none"].iter().filter(|_| context == "bevel")) {
             assert_ne!(tc(context, id), *id, "{context} {id:?} has a Korean row");
         }
@@ -1528,6 +1594,8 @@ fn dialog_ids() -> Vec<String> {
 /// File tab page, every dialog `app.dialog` opens, and the task panes (all four Format Shape tabs,
 /// Format Background, Animation, Selection, Comments, Revisions). The net for what the source check
 /// can't judge: text through a local variable, an array helper or a `match` (Rulings 4, 10).
+/// Its limit: text drawn only with the painter (no accessibility node: the title bar's name, canvas
+/// overlays) and screens it doesn't open (menus, pop-ups, the slide show) rely on the source check.
 #[test]
 fn korean_screens_show_no_untranslated_labels() {
     let mut s = deckcraft_engine::Session::with_new();

@@ -35,7 +35,8 @@ pub(super) fn info(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage) {
         return;
     };
     let path = v.get("path").and_then(Value::as_str).map(str::to_string);
-    let title = v.get("title").and_then(Value::as_str).unwrap_or("").to_string();
+    // `file.info`'s title is the engine's ("Presentation1"); the page shows the screen name.
+    let title = app.session.active().map(i18n::doc_title).unwrap_or_default();
     let dirty = v.get("dirty").and_then(Value::as_bool).unwrap_or(false);
     ui.label(RichText::new(&title).font(theme::font(24.0)).color(t.accent));
     match &path {
@@ -152,7 +153,7 @@ pub fn format_bytes(b: u64) -> String {
 /// presentation saved as .pptx or .deckcraft takes the new file; the other types are copies.
 pub(super) fn save_as(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage, out: &mut Outcome) {
     let t = Tokens::get(ui.ctx());
-    let (title, path) = app.session.active().map(|d| (d.title(), d.path.clone())).unwrap_or_default();
+    let (title, path) = app.session.active().map(|d| (i18n::doc_title(d), d.path.clone())).unwrap_or_default();
     ui.label(RichText::new(&title).font(theme::font(15.0)).color(t.text));
     dim(ui, path.as_deref().unwrap_or("Not saved yet"));
     ui.add_space(14.0);

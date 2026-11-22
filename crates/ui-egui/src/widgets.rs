@@ -340,13 +340,13 @@ pub fn rows<R>(ui: &mut Ui, add: impl FnOnce(&mut Ui) -> R) -> R {
     .inner
 }
 
-/// A text dropdown field (font name, size): shows `current`, opens a popup with `add_items`.
-/// `label` is what assistive technology calls it ("Font", "Start"); `current` is exposed as its
-/// value, so an empty box is still announced by its purpose and never by an internal key (#1956).
-pub fn dropdown(ui: &mut Ui, label: &str, current: &str, width: f32, enabled: bool, add_items: impl FnOnce(&mut Ui)) -> Response {
-    // `current` is translated for display only (a built-in layout name, "Automatic"); a font
-    // name or a size has no row and shows as it is.
-    let (label, current) = (t(label), t(current));
+/// A text dropdown field (font name, size): shows `shown`, opens a popup with `add_items`.
+/// `label` is what assistive technology calls it ("Font", "Start"), English and translated here;
+/// `shown` is exposed as its value, so an empty box is still announced by its purpose and never by
+/// an internal key (#1956). `shown` is drawn as given: a font name stays as written (a font named
+/// "Symbol" is not 기호), and a caller showing app wording passes `t()` of it.
+pub fn dropdown(ui: &mut Ui, label: &str, shown: &str, width: f32, enabled: bool, add_items: impl FnOnce(&mut Ui)) -> Response {
+    let label = t(label);
     let t = Tokens::get(ui.ctx());
     let (rect, resp) = ui.allocate_exact_size(vec2(width, 22.0), if enabled { Sense::click() } else { Sense::hover() });
     let painter = ui.painter_at(rect);
@@ -361,13 +361,13 @@ pub fn dropdown(ui: &mut Ui, label: &str, current: &str, width: f32, enabled: bo
     painter.with_clip_rect(Rect::from_min_max(clip.min, pos2(clip.max.x - 12.0, clip.max.y))).text(
         pos2(rect.min.x + 6.0, rect.center().y),
         Align2::LEFT_CENTER,
-        current,
+        shown,
         theme::font(12.0),
         if enabled { t.text } else { t.text_faint },
     );
     chevron(&painter, pos2(rect.max.x - 9.0, rect.center().y), 3.0, t.text_dim);
     resp.widget_info(|| egui::WidgetInfo {
-        current_text_value: (!current.is_empty()).then(|| current.to_string()),
+        current_text_value: (!shown.is_empty()).then(|| shown.to_string()),
         ..egui::WidgetInfo::labeled(egui::Role::ComboBox, enabled, label)
     });
     egui::Popup::menu(&resp).width(width.max(140.0)).show(|ui| {
@@ -799,7 +799,9 @@ mod tests {
             ui.ctx().set_missing_glyph_policy(egui::MissingGlyphPolicy::Tofu);
             theme::install_fonts(ui.ctx());
             let _ = big_button_ex(ui, Icon::Paste, "Paste", true, true, false);
-            dropdown(ui, "Font size", "Automatic", 120.0, true, |_| {});
+            dropdown(ui, "Font size", crate::i18n::t("Automatic"), 120.0, true, |_| {});
+            // A font's name is the document's: shown as written, though "Symbol" is also a word.
+            dropdown(ui, "Font", "Symbol", 120.0, true, |_| {});
         });
         harness.run();
         assert!(harness.query_by_role_and_label(Role::Button, "붙여넣기").is_some());
@@ -807,6 +809,8 @@ mod tests {
         assert!(harness.query_by_role_and_label(Role::Button, "Paste").is_none());
         let combo = harness.get_by_role_and_label(Role::ComboBox, "글꼴 크기");
         assert_eq!(combo.value().as_deref(), Some("자동"));
+        assert_ne!(crate::i18n::t("Symbol"), "Symbol", "the word has a row (the check means something)");
+        assert_eq!(harness.get_by_role_and_label(Role::ComboBox, "글꼴").value().as_deref(), Some("Symbol"));
         crate::i18n::set_current(crate::i18n::resolve("en"));
     }
 

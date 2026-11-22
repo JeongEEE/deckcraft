@@ -117,11 +117,18 @@ pub fn fmt(template: &str, args: &[(&str, &str)]) -> String {
 /// it) in the current language. Its plain row if it has one; otherwise the catalogs' rows with
 /// `{name}` placeholders are templates: the one whose fixed text matches `s` piece by piece (the
 /// longest fixed text when several do) is translated and its values put back in. A value in a
-/// wording placeholder ([`WORDING`]) that is itself a row's English (a disabled command's reason
-/// in "command `{0}` is not available right now: {1}") is translated too; every other value (a
-/// command id, a file or font name) stays as written. Without a matching template the message
-/// stays English, whole.
+/// wording placeholder ([`WORDING`]) is a message itself (a disabled command's reason in
+/// "command `{0}` is not available right now: {1}") and is translated too, its plain row or its
+/// template one level deep; every other value (a command id, a file or font name) stays as
+/// written. Without a matching template the message stays English, whole.
 pub fn t_dynamic(s: &str) -> std::borrow::Cow<'_, str> {
+    dynamic(s, true)
+}
+
+/// [`t_dynamic`]; with `nested`, a wording value is itself a message and gets one more
+/// [`t_dynamic`] ("no slide 3" as a disabled command's reason), whose own values only a plain row.
+/// One level only: a message is never looked up inside itself again.
+fn dynamic(s: &str, nested: bool) -> std::borrow::Cow<'_, str> {
     use std::borrow::Cow;
     if current() == Lang::EN {
         return Cow::Borrowed(s);
@@ -131,14 +138,41 @@ pub fn t_dynamic(s: &str) -> std::borrow::Cow<'_, str> {
         return Cow::Borrowed(plain);
     }
     let lang = current();
-    let best = TEMPLATES
+    let found: Vec<(&Template, Vec<(&str, &str)>)> = TEMPLATES
         .iter()
         .filter(|tpl| I18N.get(lang, "", &tpl.source).is_some())
         .filter_map(|tpl| tpl.capture(s).map(|values| (tpl, values)))
-        .max_by_key(|(tpl, _)| tpl.fixed_len);
+        .collect();
+    // A sentence around a message ("Couldn't open {name}: {e}") is the sentence, not part of a
+    // template that starts with a value: its message "{name}: not a presentation DeckCraft can
+    // read" would take "Couldn't open …" as its name. Otherwise the longest fixed text.
+    let wrapped = found.iter().any(|(tpl, _)| tpl.wraps_a_message());
+    let best = found.into_iter().filter(|(tpl, _)| !wrapped || tpl.starts_fixed()).max_by_key(|(tpl, _)| tpl.fixed_len);
     let Some((tpl, values)) = best else { return Cow::Borrowed(s) };
-    let shown: Vec<(&str, &str)> = values.iter().map(|(name, value)| (*name, if WORDING.contains(name) { t(value) } else { *value })).collect();
-    Cow::Owned(fmt(t(&tpl.source), &shown))
+    let shown: Vec<(&str, Cow<str>)> = values
+        .iter()
+        .map(|&(name, value)| {
+            let value = match (WORDING.contains(&name), nested) {
+                (true, true) => dynamic(value, false),
+                (true, false) => Cow::Borrowed(t(value)),
+                (false, _) => Cow::Borrowed(value),
+            };
+            (name, value)
+        })
+        .collect();
+    let args: Vec<(&str, &str)> = shown.iter().map(|(name, value)| (*name, value.as_ref())).collect();
+    Cow::Owned(fmt(t(&tpl.source), &args))
+}
+
+/// A presentation's name on screen: [`deckcraft_engine::DocState::title`], except that an
+/// unsaved one's default name "Presentation{n}" (the engine's, also the Save dialog's file name and
+/// what the control channel reports) shows in the current language.
+pub fn doc_title(d: &deckcraft_engine::DocState) -> String {
+    let title = d.title();
+    match title.strip_prefix("Presentation") {
+        Some(n) if d.path.is_none() && !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()) => fmt(t("Presentation{n}"), &[("n", n)]),
+        _ => title,
+    }
 }
 
 /// The placeholders whose value is itself the app's or the engine's English wording, so
@@ -188,6 +222,17 @@ impl Template {
         (!names.is_empty() && fixed_len > 0 && !inner_empty).then(|| Template { source: source.to_string(), fixed, names, fixed_len })
     }
 
+    /// Whether it starts with fixed text, not a value.
+    fn starts_fixed(&self) -> bool {
+        self.fixed.first().is_some_and(|f| !f.is_empty())
+    }
+
+    /// Whether it starts with fixed text and ends with a message placeholder ([`WORDING`]), as
+    /// "Couldn't open {name}: {e}" does: a sentence that another message sits inside.
+    fn wraps_a_message(&self) -> bool {
+        self.starts_fixed() && self.fixed.last().is_some_and(String::is_empty) && self.names.last().is_some_and(|n| WORDING.contains(&n.as_str()))
+    }
+
     /// The values `s` has for the placeholders, when its fixed text matches in order and every
     /// value is non-empty (and the same each time a name repeats).
     fn capture<'s>(&self, s: &'s str) -> Option<Vec<(&str, &'s str)>> {
@@ -201,10 +246,13 @@ impl Template {
                     // last value, the last match: "{name}: {app} can't open…" with a name
                     // "a: b.pptx" splits after the name, not inside it. An id ([`IDS`]) never
                     // holds the fixed text, so it ends at the first match: the message after
-                    // "invalid parameters for `{cmd}`: " may hold "`: " itself.
+                    // "invalid parameters for `{cmd}`: " may hold "`: " itself. So does a value
+                    // before a message ([`WORDING`]): an error is likelier to hold ": " than a
+                    // file name ("Couldn't open {name}: {e}" with "deck.key: not a presentation…").
                     let skip = rest.chars().next()?.len_utf8();
                     let after = rest.get(skip..)?;
-                    let last = i + 2 == self.names.len() && !IDS.contains(&name.as_str());
+                    let before_message = self.names.get(i + 1).is_some_and(|n| WORDING.contains(&n.as_str()));
+                    let last = i + 2 == self.names.len() && !IDS.contains(&name.as_str()) && !before_message;
                     let found = if last { after.rfind(next.as_str()) } else { after.find(next.as_str()) };
                     let at = found? + skip;
                     let value = rest.get(..at)?;

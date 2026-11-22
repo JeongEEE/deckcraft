@@ -138,19 +138,22 @@ fn services(native_wayland: bool) -> Services {
     Services {
         pick_open: Some(Box::new(|purpose: &str| {
             let d = rfd::FileDialog::new();
+            // The file type names in the interface language (asked from the UI thread, where the
+            // language is set); "DeckCraft" and "PowerPoint" are names and have no row.
+            let f = |name| deckcraft_ui_egui::i18n::tc("file", name);
             let d = match purpose {
-                "picture" => d.add_filter("Pictures", &["png", "jpg", "jpeg", "gif", "webp", "bmp", "tif", "tiff"]),
+                "picture" => d.add_filter(f("Pictures"), &["png", "jpg", "jpeg", "gif", "webp", "bmp", "tif", "tiff"]),
                 "audio" => d.add_filter(
-                    "Audio",
+                    f("Audio"),
                     &["wav", "mp3", "m4a", "m4b", "aac", "flac", "ogg", "oga", "opus", "aif", "aiff", "aifc", "caf", "wma", "weba", "mka"],
                 ),
-                "video" => d.add_filter("Video", &["mp4", "m4v", "mov", "webm", "mkv", "wmv"]),
-                "theme" => d.add_filter("Themes and presentations", &["thmx", "pptx", "potx", "ppsx"]).add_filter("Office Theme", &["thmx"]),
+                "video" => d.add_filter(f("Video"), &["mp4", "m4v", "mov", "webm", "mkv", "wmv"]),
+                "theme" => d.add_filter(f("Themes and presentations"), &["thmx", "pptx", "potx", "ppsx"]).add_filter(f("Office Theme"), &["thmx"]),
                 _ => d
-                    .add_filter("Presentations", &["deckcraft", "pptx", "potx", "ppsx"])
-                    .add_filter("DeckCraft", &["deckcraft"])
-                    .add_filter("PowerPoint", &["pptx", "potx", "ppsx"])
-                    .add_filter("Outline", &["txt", "md"]),
+                    .add_filter(f("Presentations"), &["deckcraft", "pptx", "potx", "ppsx"])
+                    .add_filter(f("DeckCraft"), &["deckcraft"])
+                    .add_filter(f("PowerPoint"), &["pptx", "potx", "ppsx"])
+                    .add_filter(f("Outline"), &["txt", "md"]),
             };
             d.pick_file().map(|p| p.to_string_lossy().to_string())
         })),
@@ -363,6 +366,45 @@ fn main() -> eframe::Result {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The system Open dialog's file type names are shown in Korean in a Korean interface: every
+    /// `add_filter` takes its name through `f` (`tc("file", …)`), and each name but the two
+    /// product names has a row. English stays the same text.
+    #[test]
+    fn open_dialog_file_types_are_korean() {
+        use deckcraft_ui_egui::i18n;
+        let calls: Vec<&str> = include_str!("main.rs").split(concat!("add_filter", "(")).skip(1).map(str::trim_start).collect();
+        let names: Vec<&str> = calls.iter().filter_map(|c| c.strip_prefix("f(\"")?.split('"').next()).collect();
+        let heads: Vec<String> = calls.iter().map(|c| c.chars().take(40).collect()).collect();
+        assert_eq!(names.len(), calls.len(), "a file type name not given through f(): {heads:?}");
+        assert_eq!(names.len(), 9, "{names:?}");
+        i18n::set_current(i18n::resolve("ko"));
+        for name in &names {
+            let shown = i18n::tc("file", name);
+            if ["DeckCraft", "PowerPoint"].contains(name) {
+                assert_eq!(shown, *name);
+            } else {
+                assert!(shown.chars().any(|c| ('가'..='힣').contains(&c)), "{name:?} has a Korean row: {shown:?}");
+            }
+        }
+        assert_eq!(i18n::tc("file", "Outline"), "개요", "the text outline, not a shape's");
+        i18n::set_current(i18n::resolve("en"));
+        assert!(names.iter().all(|n| i18n::tc("file", n) == *n));
+    }
+
+    /// The desktop app's own status sentences (AutoRecover, a file the system asked to open) show
+    /// in Korean through the status bar's templates, the file name as written.
+    #[test]
+    fn desktop_statuses_are_korean() {
+        use deckcraft_ui_egui::i18n;
+        i18n::set_current(i18n::resolve("ko"));
+        for n in [1, 2] {
+            let s = format!("Recovered {n} unsaved presentation{} from the last session", if n == 1 { "" } else { "s" });
+            assert_eq!(i18n::t_dynamic(&s), format!("지난 세션에서 저장하지 않은 프레젠테이션 {n}개를 복구했습니다"));
+        }
+        assert_eq!(i18n::t_dynamic("Couldn't open /a/Plan.pptx: boom"), "/a/Plan.pptx을(를) 열 수 없습니다: boom");
+        i18n::set_current(i18n::resolve("en"));
+    }
 
     /// The fork keeps its settings, prefs and logs apart from upstream DeckCraft's.
     #[test]

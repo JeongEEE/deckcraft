@@ -1908,7 +1908,7 @@ paragraph	At	값
 	Exit Edit Points	점 편집 끝내기
 	Link…	링크…
 	Edit Alt Text…	대체 텍스트 편집…
-	Grid and Guides	눈금 및 안내선
+	Grid and Guides	격자 및 안내선
 	Add Vertical Guide	세로 안내선 추가
 	Add Horizontal Guide	가로 안내선 추가
 	Reset Slide	슬라이드 재설정
@@ -2260,6 +2260,40 @@ camera	perspectiveHeroicExtremeLeftFacing	원근 극단 강조, 왼쪽 향함
 camera	perspectiveHeroicExtremeRightFacing	원근 극단 강조, 오른쪽 향함
 camera	perspectiveRelaxed	원근 완만
 camera	perspectiveRelaxedModerately	원근 약간 완만
+camera	legacyObliqueTopLeft	빗각 왼쪽 위 (이전 방식)
+camera	legacyObliqueTop	빗각 위 (이전 방식)
+camera	legacyObliqueTopRight	빗각 오른쪽 위 (이전 방식)
+camera	legacyObliqueLeft	빗각 왼쪽 (이전 방식)
+camera	legacyObliqueFront	빗각 정면 (이전 방식)
+camera	legacyObliqueRight	빗각 오른쪽 (이전 방식)
+camera	legacyObliqueBottomLeft	빗각 왼쪽 아래 (이전 방식)
+camera	legacyObliqueBottom	빗각 아래 (이전 방식)
+camera	legacyObliqueBottomRight	빗각 오른쪽 아래 (이전 방식)
+camera	legacyPerspectiveTopLeft	원근 왼쪽 위 (이전 방식)
+camera	legacyPerspectiveTop	원근 위 (이전 방식)
+camera	legacyPerspectiveTopRight	원근 오른쪽 위 (이전 방식)
+camera	legacyPerspectiveLeft	원근 왼쪽 (이전 방식)
+camera	legacyPerspectiveFront	원근 정면 (이전 방식)
+camera	legacyPerspectiveRight	원근 오른쪽 (이전 방식)
+camera	legacyPerspectiveBottomLeft	원근 왼쪽 아래 (이전 방식)
+camera	legacyPerspectiveBottom	원근 아래 (이전 방식)
+camera	legacyPerspectiveBottomRight	원근 오른쪽 아래 (이전 방식)
+camera	isometricOffAxis1Left	등각 축 벗어남 1, 왼쪽
+camera	isometricOffAxis1Right	등각 축 벗어남 1, 오른쪽
+camera	isometricOffAxis1Top	등각 축 벗어남 1, 위
+camera	isometricOffAxis2Left	등각 축 벗어남 2, 왼쪽
+camera	isometricOffAxis2Right	등각 축 벗어남 2, 오른쪽
+camera	isometricOffAxis2Top	등각 축 벗어남 2, 위
+camera	isometricOffAxis3Left	등각 축 벗어남 3, 왼쪽
+camera	isometricOffAxis3Right	등각 축 벗어남 3, 오른쪽
+camera	isometricOffAxis3Bottom	등각 축 벗어남 3, 아래
+camera	isometricOffAxis4Left	등각 축 벗어남 4, 왼쪽
+camera	isometricOffAxis4Right	등각 축 벗어남 4, 오른쪽
+camera	isometricOffAxis4Bottom	등각 축 벗어남 4, 아래
+camera	obliqueTop	빗각 위
+camera	obliqueLeft	빗각 왼쪽
+camera	obliqueRight	빗각 오른쪽
+camera	obliqueBottom	빗각 아래
 material	warmMatte	따뜻한 무광
 material	matte	무광
 material	plastic	플라스틱
@@ -2272,6 +2306,9 @@ material	powder	파우더
 material	translucentPowder	반투명 파우더
 material	clear	투명
 material	softmetal	부드러운 금속
+material	legacyMatte	무광 (이전 방식)
+material	legacyPlastic	플라스틱 (이전 방식)
+material	legacyMetal	금속 (이전 방식)
 light	threePt	3점 조명
 light	balanced	균형 잡힌 조명
 light	soft	부드러운 조명
@@ -2287,6 +2324,18 @@ light	flat	평면 조명
 light	twoPt	2점 조명
 light	glow	빛나는 조명
 light	brightRoom	밝은 방
+light	legacyFlat1	평면 조명 1 (이전 방식)
+light	legacyFlat2	평면 조명 2 (이전 방식)
+light	legacyFlat3	평면 조명 3 (이전 방식)
+light	legacyFlat4	평면 조명 4 (이전 방식)
+light	legacyNormal1	보통 조명 1 (이전 방식)
+light	legacyNormal2	보통 조명 2 (이전 방식)
+light	legacyNormal3	보통 조명 3 (이전 방식)
+light	legacyNormal4	보통 조명 4 (이전 방식)
+light	legacyHarsh1	강한 조명 1 (이전 방식)
+light	legacyHarsh2	강한 조명 2 (이전 방식)
+light	legacyHarsh3	강한 조명 3 (이전 방식)
+light	legacyHarsh4	강한 조명 4 (이전 방식)
 
 # Format Shape › Effects presets and Format Background (panels/effect_presets.rs, background.rs)
 	No shadow	그림자 없음
@@ -2571,3 +2620,21 @@ appearance	Dark	어두운 모드
 	{n} slides per page	페이지당 슬라이드 {n}개
 	Slides per page	페이지당 슬라이드 수
 print	{n} of {total}	{n}/{total}
+
+# A new presentation's default name, shown in the title bar, the second window and the save
+# questions (i18n::doc_title); the engine, the Save dialog's file name and the control channel
+# keep "Presentation1"
+	Presentation{n}	프레젠테이션{n}
+
+# The system Open dialog's file type names (apps/deckcraft main.rs `tc("file", …)`; "DeckCraft" and
+# "PowerPoint" are names). Outline here is the text outline, not a shape's
+	Themes and presentations	테마 및 프레젠테이션
+	Office Theme	Office 테마
+file	Outline	개요
+
+# The desktop app's statuses (apps/deckcraft): AutoRecover reopened the last session's unsaved
+# presentations (main.rs); a file the system asked to open failed (apple_events.rs; common has this
+# row only as `@msg`, which the status bar's templates don't read)
+	Couldn't open {name}: {e}	{name}을(를) 열 수 없습니다: {e}
+	Recovered {n} unsaved presentation from the last session	지난 세션에서 저장하지 않은 프레젠테이션 {n}개를 복구했습니다
+	Recovered {n} unsaved presentations from the last session	지난 세션에서 저장하지 않은 프레젠테이션 {n}개를 복구했습니다

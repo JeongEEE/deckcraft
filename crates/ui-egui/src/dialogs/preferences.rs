@@ -12,7 +12,7 @@ pub(super) fn language_row(app: &mut SlideApp, ui: &mut Ui) {
     let current = LANGUAGES.iter().find(|l| l.0 == app.ui.language).map_or("Automatic (system)", |l| l.1);
     ui.horizontal(|ui| {
         ui.label(t("Language:"));
-        widgets::dropdown(ui, "Language", current, 160.0, true, |ui| {
+        widgets::dropdown(ui, "Language", t(current), 160.0, true, |ui| {
             for (code, name) in LANGUAGES {
                 if ui.selectable_label(app.ui.language == code, t(name)).clicked() {
                     app.ui.language = code.to_string();

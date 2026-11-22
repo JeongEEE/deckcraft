@@ -90,7 +90,8 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
         let title = app
             .session
             .active()
-            .map(|d| if dirty { crate::i18n::fmt(crate::i18n::t("{title} — Edited"), &[("title", &d.title())]) } else { d.title() })
+            .map(crate::i18n::doc_title)
+            .map(|title| if dirty { crate::i18n::fmt(crate::i18n::t("{title} — Edited"), &[("title", &title)]) } else { title })
             .unwrap_or_else(|| crate::APP_NAME.into());
         ui.painter().text(rect.center(), Align2::CENTER_CENTER, title, theme::font(13.0), t.text);
         // Right side.

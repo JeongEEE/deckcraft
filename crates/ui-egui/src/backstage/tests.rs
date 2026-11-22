@@ -534,6 +534,22 @@ fn info_shows_and_edits_the_properties() {
     assert!(h.state().backstage_open());
 }
 
+/// A new presentation's name at the top of Info is the screen name: 프레젠테이션1 in Korean,
+/// Presentation1 in English, while `file.info` keeps the engine's.
+#[test]
+fn info_shows_a_new_presentations_name_in_the_interface_language() {
+    for (language, shown) in [("ko", "프레젠테이션1"), ("en", "Presentation1")] {
+        let mut h = harness(new_app());
+        h.ctx.set_missing_glyph_policy(egui::MissingGlyphPolicy::Tofu);
+        h.state_mut().ui.language = language.into();
+        h.state_mut().run("app.backstage", json!({"page": "info"})).unwrap();
+        h.run_steps(3);
+        assert!(h.query_by_label(shown).is_some(), "{language}: {shown}");
+        assert_eq!(h.state_mut().run("file.info", json!({})).unwrap()["title"], "Presentation1");
+    }
+    crate::i18n::set_current(crate::i18n::resolve("en"));
+}
+
 /// Leaving a property field with a click on another field keeps what was typed.
 #[test]
 fn info_keeps_a_property_draft_when_another_field_is_clicked() {

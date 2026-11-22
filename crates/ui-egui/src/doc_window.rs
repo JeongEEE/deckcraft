@@ -66,8 +66,12 @@ fn shift(slide: usize, delta: i64, n: usize) -> usize {
 /// Draw the extra window, or drop it when its presentation has been closed.
 pub fn show(app: &mut SlideApp, ctx: &egui::Context) {
     let Some(uid) = app.doc_window.as_ref().map(|w| w.uid) else { return };
-    let found =
-        app.session.documents().iter().find(|d| d.uid == uid).map(|d| (d.doc.slides.len(), window_title(&d.title()), d.revision, d.doc.clone()));
+    let found = app
+        .session
+        .documents()
+        .iter()
+        .find(|d| d.uid == uid)
+        .map(|d| (d.doc.slides.len(), window_title(&crate::i18n::doc_title(d)), d.revision, d.doc.clone()));
     let Some((n, title, revision, doc)) = found else {
         app.doc_window = None;
         return;

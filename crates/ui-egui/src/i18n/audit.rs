@@ -228,6 +228,12 @@ const NEVER: &[&str] = &[
     "Error::new",
 ];
 
+/// Shared widgets' arguments drawn as given, not translated inside: (file, fn, argument, its
+/// position). `widgets::dropdown`'s `shown` is a font name or a size as often as app wording, so
+/// its callers translate (`t(…)`) what is wording. The helper check leaves the argument out, and
+/// a literal handed straight to it is judged as handed to egui (it needs `t()`).
+const SHOWN_AS_GIVEN: &[(&str, &str, &str, usize)] = &[("widgets.rs", "dropdown", "shown", 2)];
+
 /// Field names whose string value is shown.
 const LABEL_FIELDS: &[&str] = &[
     "label",
@@ -665,7 +671,7 @@ fn closing(toks: &[(Tok, usize)], k: usize) -> Option<usize> {
 /// The helpers of a file: `fn`s and `let name = |…|` closures that take a `ui` (`ui`, `*_ui`,
 /// `cui`, `sui` or a `Ui` type) and wording arguments (`&str`, `&'static str`, `impl
 /// Into<String>`; not an owned `String` or `&mut String`, which carry data or state, and not a
-/// `glyph`, an icon's character).
+/// `glyph`, an icon's character). [`SHOWN_AS_GIVEN`]'s arguments are left to their callers.
 fn helper_scopes(toks: &[(Tok, usize)]) -> Vec<Helper> {
     let mut out = Vec::new();
     for k in 0..toks.len() {
@@ -971,12 +977,14 @@ fn scan_all(file: &str, src: &str) -> (Vec<Candidate>, Vec<Candidate>) {
             Tok::Str(text) => {
                 if looks_like_text(text) && shown(&toks, k, &stack) {
                     let (unwrapped, in_tc) = wrapping(&stack, block_value(&toks, k));
+                    let unwrapped = unwrapped || shown_as_given(&toks, k, &stack);
                     out.push(Candidate { file: file.to_string(), line: *line, text: text.clone(), unwrapped, in_tc });
                 }
                 // `format!("{text}  →")`: each captured name is used where the literal is.
                 if stack.last().is_some_and(|f| f.delim == '(' && f.callee.as_deref() == Some("format!")) {
                     for x in format_captures(text) {
-                        if let Some(text) = helper_use(&scopes, x, k, &stack).filter(|t| !helpers.iter().any(|c| c.text == *t)) {
+                        if let Some(text) = helper_use(&scopes, x, k, &stack).filter(|t| !helpers.iter().any(|c| c.text == *t) && !as_given(file, t))
+                        {
                             helpers.push(Candidate { file: file.to_string(), line: *line, text, unwrapped: true, in_tc: false });
                         }
                     }
@@ -993,7 +1001,9 @@ fn scan_all(file: &str, src: &str) -> (Vec<Candidate>, Vec<Candidate>) {
                 // `x.into()` hands `x` on; `x.len()` doesn't.
                 let passed =
                     !punct(get(k + 1), '.') || matches!(ident(get(k + 2)), Some("into" | "to_string" | "to_owned" | "as_str" | "as_ref" | "clone"));
-                if let Some(text) = helper_use(&scopes, x, k, &stack).filter(|t| passed && !helpers.iter().any(|c| c.text == *t)) {
+                if let Some(text) =
+                    helper_use(&scopes, x, k, &stack).filter(|t| passed && !helpers.iter().any(|c| c.text == *t) && !as_given(file, t))
+                {
                     helpers.push(Candidate { file: file.to_string(), line: *line, text, unwrapped: true, in_tc: false });
                 }
             }
@@ -1001,6 +1011,40 @@ fn scan_all(file: &str, src: &str) -> (Vec<Candidate>, Vec<Candidate>) {
         }
     }
     (out, helpers)
+}
+
+/// Whether helper use `text` (`dropdown(shown)`) in `file` is a [`SHOWN_AS_GIVEN`] argument.
+fn as_given(file: &str, text: &str) -> bool {
+    SHOWN_AS_GIVEN.iter().any(|(f, name, arg, _)| file == *f && text == format!("{name}({arg})"))
+}
+
+/// Whether the string at `k` is itself a [`SHOWN_AS_GIVEN`] argument of the call around it
+/// (`dropdown(ui, "Start", "On Click", …)`, or a value of its block there: `if on { "On Click" }
+/// else { "" }`, `match … { _ => "On Click" }`): no lookup happens on the way to the screen.
+fn shown_as_given(toks: &[(Tok, usize)], k: usize, stack: &[Frame]) -> bool {
+    let value = block_value(toks, k);
+    let mut frames = stack.iter().rev();
+    let call = match frames.next() {
+        Some(f) if f.delim == '{' && value => frames.next(),
+        f => f,
+    };
+    let Some(callee) = call.filter(|f| f.delim == '(').and_then(|f| f.callee.as_deref()) else { return false };
+    let last = callee.rsplit("::").next().unwrap_or(callee);
+    let Some(&(_, _, _, at)) = SHOWN_AS_GIVEN.iter().find(|(_, name, _, _)| *name == last) else { return false };
+    // The argument's position: commas outside brackets back to the call's `(`, past the block
+    // the value is in (its arms' commas are not arguments').
+    let (mut depth, mut commas, mut in_block) = (0i32, 0usize, value);
+    for j in (0..k).rev() {
+        match toks.get(j).map(|t| &t.0) {
+            Some(Tok::Punct(')' | ']' | '}')) => depth += 1,
+            Some(Tok::Punct('{')) if depth == 0 && in_block => in_block = false,
+            Some(Tok::Punct('(' | '[' | '{')) if depth == 0 => break,
+            Some(Tok::Punct('(' | '[' | '{')) => depth -= 1,
+            Some(Tok::Punct(',')) if depth == 0 && !in_block => commas += 1,
+            _ => {}
+        }
+    }
+    commas == at
 }
 
 /// `helper(x)` when `x` at `k`, inside `stack`, is an argument of the innermost helper around it
@@ -1303,6 +1347,37 @@ mod scan_tests {
         "#;
         let found: Vec<String> = scan_all("x.rs", src).1.into_iter().map(|c| format!("{}:{}", c.line, c.text)).collect();
         assert_eq!(found, ["3:field(label)", "9:tip(tip)", "17:button(s)"]);
+    }
+
+    /// `widgets::dropdown`'s `shown` is drawn as given ([`SHOWN_AS_GIVEN`]): the helper check leaves
+    /// it to the callers there only (the same helper elsewhere, or another argument, is judged),
+    /// and a caller's literal in that place needs `t()`.
+    #[test]
+    fn dropdown_value_is_left_to_its_callers() {
+        let helper = r#"
+            pub fn dropdown(ui: &mut Ui, label: &str, shown: &str, width: f32) -> Response {
+                let label = t(label);
+                ui.label(shown);
+                ui.label(label)
+            }
+        "#;
+        let helpers = |file: &str| -> Vec<String> { scan_all(file, helper).1.into_iter().map(|c| c.text).collect() };
+        assert!(helpers("widgets.rs").is_empty(), "{:?}", helpers("widgets.rs"));
+        assert_eq!(helpers("panels/x.rs"), ["dropdown(shown)"], "the same helper elsewhere is judged");
+        let callers = r#"
+            fn f(ui: &mut Ui) {
+                dropdown(ui, "Start", "On Click", 112.0, true, |_| {});
+                dropdown(ui, "Start", if on { "With Previous" } else { "" }, 112.0, on, |_| {});
+                dropdown(ui, "Start", match k { 1 => "After Previous", _ => "" }, 112.0, on, |_| {});
+                dropdown(ui, "Start", if on { t("Delay") } else { "" }, 112.0, on, |_| {});
+                widgets::dropdown(ui, "Language", t("Automatic (system)"), 160.0, true, |_| {});
+                dropdown(ui, "Font", &font, 150.0, en, |ui| { ui.label(t("Rescan Installed Fonts")); });
+            }
+        "#;
+        let found: Vec<(String, bool)> = scan_all("x.rs", callers).0.into_iter().map(|c| (c.text, c.unwrapped)).collect();
+        let unwrapped: Vec<&str> = found.iter().filter(|(_, u)| *u).map(|(t, _)| t.as_str()).collect();
+        assert_eq!(unwrapped, ["On Click", "With Previous", "After Previous"], "{found:?}");
+        assert!(found.iter().any(|(t, u)| t == "Start" && !u), "the label is translated inside: {found:?}");
     }
 
     #[test]

@@ -287,7 +287,7 @@ fn dlg_setup_show(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog) -> bool {
 }
 
 fn dlg_quit(app: &mut SlideApp, ui: &mut Ui, _d: &mut Dialog) -> bool {
-    let names: Vec<String> = app.session.documents().iter().filter(|d| d.is_dirty()).map(|d| d.title()).collect();
+    let names: Vec<String> = app.session.documents().iter().filter(|d| d.is_dirty()).map(crate::i18n::doc_title).collect();
     if names.is_empty() {
         app.quit_confirmed = true;
         ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
@@ -330,7 +330,7 @@ fn dlg_quit(app: &mut SlideApp, ui: &mut Ui, _d: &mut Dialog) -> bool {
 
 fn dlg_close(app: &mut SlideApp, ui: &mut Ui, _d: &mut Dialog) -> bool {
     // File › Close and Ctrl+W on a presentation with unsaved changes.
-    let Some(name) = app.session.active().map(|d| d.title()) else { return true };
+    let Some(name) = app.session.active().map(crate::i18n::doc_title) else { return true };
     ui.label(egui::RichText::new(fmt(t("Do you want to save the changes you made to “{name}”?"), &[("name", &name)])).strong());
     ui.label(t("Your changes will be lost if you don't save them."));
     ui.add_space(8.0);
