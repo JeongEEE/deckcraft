@@ -1,5 +1,5 @@
 use super::{Icon, SlideApp, Target, Ui, big, big_button, group, json, rows, run};
-use crate::i18n::{fmt, t, tn};
+use crate::i18n::{fmt, t, tc, tn};
 
 /// Preserve, and whether the open master or layout has a title or any footer placeholder.
 fn master_checks(app: &SlideApp) -> (bool, bool, bool) {
@@ -53,7 +53,7 @@ pub(super) fn slide_master(app: &mut SlideApp, ui: &mut Ui) {
         let r = big_button(ui, Icon::Themes, "Themes", true);
         egui::Popup::menu(&r).show(|ui| {
             for th in deckcraft_model::theme::builtin_themes() {
-                if ui.button(t(&th.name)).clicked() {
+                if ui.button(tc("theme", &th.name)).clicked() {
                     run(app, "design.theme", json!({"name": th.name}));
                 }
             }

@@ -85,6 +85,10 @@
 	Alignment:	정렬:
 	Center	가운데
 	3-D	3차원
+# Video is 동영상 everywhere in Slide (Insert › Video, Video Format, the action button), over
+# common.tsv's 비디오 on purpose.
+	Video	동영상
+
 # Shape Effects › Shadow's centred shadow (common's 가운데 맞춤 reads as alignment).
 	Centered	가운데
 
@@ -343,6 +347,9 @@ chart	Combo	콤보
 	Plain	단순
 	Slate	슬레이트
 	Sunset	노을
+# A theme's or a colour scheme's name where the plain row means something else (Paper: 용지 is a
+# printer's paper). Shown with tc("theme", …); the document keeps the English name.
+theme	Paper	종이
 	Geometric	기하
 	Editorial	에디토리얼
 	Humanist	휴머니스트
@@ -1382,14 +1389,18 @@ chart	Combo	콤보
 	Type Text	텍스트 입력
 	Variant Gallery	테마 변형 갤러리
 	Variants	테마 변형
-	Video Format	비디오 서식
-	Video from File…	파일에서 비디오…
+	Video Format	동영상 서식
+	Video from File…	파일에서 동영상…
 	Wrap Text in Shape	도형 안에서 텍스트 줄 바꿈
 	Zoom…	확대/축소…
 
 # Commands: the command palette and the application menu tree (menus.rs)
 	Search commands…	명령 검색…
 	Set Up Show…	쇼 설정…
+# Two commands whose plain rows read alike (Font 글꼴, Play 재생): the palette and the Quick Access
+# Toolbar's list name them with tc("command", …) (menus.rs command_name)
+command	Fonts	테마 글꼴
+command	Playback	재생 옵션
 
 # Commands: why a command is unavailable (the engine's `enabled` checks), and the status-bar
 # sentence that carries one ({0} the command id, {1} the reason)
@@ -1517,7 +1528,7 @@ document	Outline	개요
 	Outline (.txt)	개요 (.txt)
 	Animated GIF (.gif)	애니메이션 GIF (.gif)
 	Outline/RTF (.rtf)	개요/RTF (.rtf)
-	Print layout:	인쇄 모양:
+	Print layout:	인쇄 레이아웃:
 	Full Page Slides	전체 페이지 슬라이드
 	Notes Pages	노트 페이지
 	Handouts (1 slide per page)	유인물 (페이지당 슬라이드 1개)
@@ -2007,9 +2018,12 @@ show	All	전체 보기
 	invalid parameters for `{cmd}`: {msg}	`{cmd}` 매개변수가 올바르지 않습니다: {msg}
 	no active presentation	활성 프레젠테이션이 없습니다
 	internal error in `{0}` (the presentation was kept as it was): {1}	`{0}` 내부 오류 (프레젠테이션은 그대로 두었습니다): {1}
-	no slide {0}	슬라이드가 없습니다: {0}
-	no shape {0}	도형이 없습니다: {0}
-	no layout {0}	레이아웃이 없습니다: {0}
+# deckcraft-model's NoShape/NoLayout and the engine's "no slide {i}"/"no shape {id}": the value is
+# a slide number or an object id, one word ({id} rather than the engine's {0}, so t_dynamic matches
+# it only to that and not to "no slide to mark")
+	no slide {id}	슬라이드가 없습니다: {id}
+	no shape {id}	도형이 없습니다: {id}
+	no layout {id}	레이아웃이 없습니다: {id}
 	no slide	슬라이드 없음
 	{name}: not a presentation DeckCraft can read	{name}: DeckCraft가 읽을 수 있는 프레젠테이션이 아닙니다
 	{name} is password-protected. DeckCraft can't open password-protected presentations yet.	{name} 파일은 암호로 보호되어 있습니다. DeckCraft는 아직 암호로 보호된 프레젠테이션을 열 수 없습니다.
@@ -2039,6 +2053,87 @@ show	All	전체 보기
 	the slide list is not shown while editing a master	마스터를 편집하는 동안에는 슬라이드 목록이 표시되지 않습니다
 	invalid parameters for `file.export`: “{text}” isn't a valid slide range: use numbers and ranges such as 1-3, 5	“{text}”은(는) 올바른 슬라이드 범위가 아닙니다. 1-3, 5처럼 번호와 범위를 쓰세요
 	invalid parameters for `file.export`: the presentation has {count} slides; “{part}” is outside them	프레젠테이션의 슬라이드는 {count}개입니다. “{part}”은(는) 그 범위를 벗어납니다
+# The engine's reasons a command didn't run that a click in the app can meet (a selection or a
+# state it needs: deckcraft-engine cmd/*.rs `bad(…)`), shown after "invalid parameters for `{cmd}`: ".
+# Messages only a script can meet (a missing or malformed parameter) stay English.
+	Flip is not available for a Diagram graphic; use `smartArt.layout` to change how it is laid out	다이어그램 그래픽은 뒤집을 수 없습니다. 배치를 바꾸려면 `smartArt.layout`을 쓰세요
+	a master needs at least one layout	마스터에는 레이아웃이 하나 이상 있어야 합니다
+	a photo album holds at most 48 pictures or text boxes	사진 앨범에는 그림이나 텍스트 상자를 48개까지 넣을 수 있습니다
+	a text box needs some text	텍스트 상자에 텍스트를 입력하세요
+	add at least one picture or text box	그림이나 텍스트 상자를 하나 이상 추가하세요
+	an outline keeps at least two points	경로에는 점이 두 개 이상 있어야 합니다
+	both shapes need connection sites (lines and groups have none)	두 도형 모두 연결 지점이 있어야 합니다 (선과 그룹에는 없습니다)
+	built-in sound failed	기본 제공 소리를 넣지 못했습니다
+	can't merge those cells	그 셀들은 병합할 수 없습니다
+	choose the slides (or sections) to zoom to	확대/축소할 슬라이드(또는 구역)를 고르세요
+	font file larger than 64 MB	글꼴 파일이 64MB보다 큽니다
+	insert failed	삽입하지 못했습니다
+	name is empty	이름이 비어 있습니다
+	need at least two points	점이 두 개 이상 필요합니다
+	no animation to change (select an animated object or give `index`)	바꿀 애니메이션이 없습니다 (애니메이션이 있는 개체를 선택하거나 `index`를 지정하세요)
+	no background found: select a picture whose edges show its background	배경을 찾지 못했습니다. 가장자리에 배경이 보이는 그림을 선택하세요
+	no border to erase there	그곳에는 지울 테두리가 없습니다
+	no handout master	유인물 마스터가 없습니다
+	no master	마스터가 없습니다
+	no matches	일치하는 항목이 없습니다
+	no notes master	노트 마스터가 없습니다
+	no section	구역이 없습니다
+	no segment ends at that point	그 점에서 끝나는 세그먼트가 없습니다
+	no such animation	해당 애니메이션이 없습니다
+	no such comment	해당 댓글이 없습니다
+	no such layout	해당 레이아웃이 없습니다
+	no such revision	해당 변경 내용이 없습니다
+	no such section	해당 구역이 없습니다
+	no such shape	해당 도형이 없습니다
+	no such slide	해당 슬라이드가 없습니다
+	no table there	그곳에는 표가 없습니다
+	no target shapes selected	대상 도형을 선택하지 않았습니다
+	not a font DeckCraft can read (or already added)	DeckCraft가 읽을 수 없는 글꼴이거나 이미 추가한 글꼴입니다
+	not a theme or PowerPoint file	테마나 PowerPoint 파일이 아닙니다
+	not editing text	텍스트를 편집하고 있지 않습니다
+	nothing to group	그룹으로 묶을 개체가 없습니다
+	nothing to regroup	다시 그룹으로 묶을 개체가 없습니다
+	only a segment of a closed outline can be deleted	닫힌 경로의 세그먼트만 삭제할 수 있습니다
+	only videos have poster frames	포스터 프레임은 동영상에만 있습니다
+	open Slide Master view	슬라이드 마스터 보기를 여세요
+	pick animations with the Animation Painter first	먼저 애니메이션 복사로 애니메이션을 가져오세요
+	pick formatting with the Format Painter first	먼저 서식 복사로 서식을 가져오세요
+	picture options need a picture background	그림 옵션은 그림 배경에만 쓸 수 있습니다
+	place the insertion point in text first	먼저 텍스트 안에 커서를 두세요
+	select a layout in Slide Master view	슬라이드 마스터 보기에서 레이아웃을 선택하세요
+	select a picture	그림을 선택하세요
+	select a shape	도형을 선택하세요
+	select a shape with text	텍스트가 있는 도형을 선택하세요
+	select a table	표를 선택하세요
+	select an animated shape first	먼저 애니메이션이 있는 도형을 선택하세요
+	select two or more objects on the slide	슬라이드에서 개체를 두 개 이상 선택하세요
+	select two or more shapes (not lines, groups, tables or charts)	도형을 두 개 이상 선택하세요 (선, 그룹, 표, 차트 제외)
+	slide background fill applies to shapes and text boxes	슬라이드 배경 채우기는 도형과 텍스트 상자에만 쓸 수 있습니다
+	slides use this layout	이 레이아웃을 쓰는 슬라이드가 있습니다
+	text is longer than 400 characters	텍스트가 400자보다 깁니다
+	that cell isn't merged	그 셀은 병합되어 있지 않습니다
+	that photo album is no longer in this presentation	그 사진 앨범은 이제 이 프레젠테이션에 없습니다
+	that side of the point has no handle	점의 그쪽에는 핸들이 없습니다
+	the album is larger than 64 MB	앨범이 64MB보다 큽니다
+	the first point ends no segment	첫 점에서 끝나는 세그먼트가 없습니다
+	the first point of an open outline ends no segment	열린 경로의 첫 점에서 끝나는 세그먼트는 없습니다
+	the line doesn't divide any cell	그 선은 어떤 셀도 나누지 않습니다
+	the list is full	목록이 가득 찼습니다
+	the outline is closed already	경로가 이미 닫혀 있습니다
+	the outline is open already	경로가 이미 열려 있습니다
+	the picture was not inserted	그림을 삽입하지 못했습니다
+	the picture's data is missing	그림 데이터가 없습니다
+	the processed picture couldn't be stored	처리한 그림을 저장하지 못했습니다
+	the text being edited is gone	편집하던 텍스트가 없어졌습니다
+	the word isn't there	그 단어가 없습니다
+	this album holds more than the editor can carry; editing it would delete the rest	이 앨범에는 편집기가 다룰 수 있는 것보다 항목이 많습니다. 편집하면 나머지가 삭제됩니다
+	this format isn't available in that language	이 형식은 그 언어에서 쓸 수 없습니다
+	this object doesn't hold text	이 개체에는 텍스트가 없습니다
+	this picture's format can't be processed	이 그림 형식은 처리할 수 없습니다
+	this slide is not part of a photo album	이 슬라이드는 사진 앨범에 속하지 않습니다
+	too many guides	안내선이 너무 많습니다
+	transparency needs a solid or picture background	투명도는 단색이나 그림 배경에만 쓸 수 있습니다
+
 # Messages with a value that dialogs show (Export's GIF checks, the Accessibility Checker, the
 # update window; through t_dynamic)
 	Width: enter {min} to {max} pixels	너비: {min}~{max} 픽셀 사이로 입력하세요

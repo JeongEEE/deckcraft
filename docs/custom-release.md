@@ -55,6 +55,26 @@ UpgradeCode와 component GUID는 이후 릴리스에서 바꾸지 않는다. 바
 연결은 건드리지 않는다. ArtCraft 로고·워드마크는 배포물과 화면에서 뺐고, DeckCraft 기반이라는
 텍스트 출처와 원본 저작권·라이선스는 남긴다.
 
+## 한국어 화면
+
+화면 언어는 시스템 언어를 따른다(데스크톱 앱이 시작할 때 한 번 읽는다). Preferences의
+"언어"에서 자동·한국어·English를 고를 수 있고, 고른 값은 `ui.json`의 `language`에 저장된다.
+웹(wasm) 빌드는 배포하지 않으며 한글 글꼴이 없어 한국어를 지원하지 않는다.
+
+번역표는 `crates/ui-egui/i18n/ko/` 아래 두 개다. `common.tsv`는 craft-i18n 공용 목록의 사본이고,
+`deckcraft.tsv`는 Slide 포크 목록이다. 같은 영어 키가 둘에 있으면 `deckcraft.tsv` 행이 이긴다.
+영어로 두는 화면 문구는 이유와 함께 `crates/ui-egui/i18n/keep_english.txt`에 적는다.
+새 화면 문구는 `t()`·`tc()`를 거쳐 그리고 `deckcraft.tsv`에 행을 넣는다.
+
+빠진 번역은 테스트가 잡는다. `korean_coverage_all`은 `crates/ui-egui/src` 전체 소스에서 행이
+없거나 `t()`를 거치지 않은 화면 문구를 찾고, `korean_screens_show_no_untranslated_labels`는
+한국어로 리본 탭·백스테이지·대화상자·작업창을 그려 영어로만 된 라벨이 남았는지 본다.
+두 테스트는 글꼴을 넣은 빌드(`CRAFT_FONTS_DIR`)에서도 돌린다.
+
+번역은 그릴 때만 한다. 파일에 저장되는 값(슬라이드 텍스트, 레이아웃·테마·개체 이름),
+명령 ID, `ui.json` 저장값, 제어 채널·MCP·CLI·로그는 영어 그대로다. 날짜·시간 형식 목록은
+en-US 고정이라 한국어 화면에서도 영어 날짜가 나온다(한국어 날짜 형식은 범위 밖).
+
 ## 빌드와 검증
 
 Rust 1.95 이상, rustfmt, clippy, `wasm32-unknown-unknown` target이 필요하다.

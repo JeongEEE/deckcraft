@@ -5,7 +5,6 @@ use deckcraft_engine::Mods;
 use serde_json::json;
 
 use crate::SlideApp;
-use crate::i18n::t;
 use crate::theme::{self, Tokens};
 
 /// Shortcuts the UI handles itself (views, show, zoom, palette, file dialogs). True when consumed.
@@ -109,12 +108,18 @@ pub(crate) fn palette_items(session: &deckcraft_engine::Session, q: &str) -> Vec
         .map(|c| (c.id.to_string(), c.label.to_string(), c.shortcut))
         .chain(crate::UI_COMMANDS.iter().filter(|c| !deckcraft_engine::cmd::needs_arguments(c.3)).map(|c| (c.0.to_string(), c.1.to_string(), c.2)))
         .filter(|(id, label, _)| {
-            q.is_empty() || label.to_lowercase().contains(q) || t(label).to_lowercase().contains(q) || id.to_lowercase().contains(q)
+            q.is_empty() || label.to_lowercase().contains(q) || command_name(label).to_lowercase().contains(q) || id.to_lowercase().contains(q)
         })
         .collect();
-    items.sort_by_key(|(_, l, _)| !(l.to_lowercase().starts_with(q) || t(l).to_lowercase().starts_with(q)));
+    items.sort_by_key(|(_, l, _)| !(l.to_lowercase().starts_with(q) || command_name(l).to_lowercase().starts_with(q)));
     items.truncate(60);
     items
+}
+
+/// A command's name as the palette and the Quick Access Toolbar's list show it: its `command`
+/// row where two commands would read alike in Korean (Font and Fonts), else its plain row.
+pub(crate) fn command_name(label: &str) -> &str {
+    crate::i18n::tc("command", label)
 }
 
 /// ⇧⌘P: search every command by name and run it.
@@ -160,7 +165,7 @@ pub fn palette(app: &mut SlideApp, ctx: &egui::Context) {
             egui::ScrollArea::vertical().max_height(320.0).show(ui, |ui| {
                 for (k, (id, label, sc)) in items.iter().enumerate() {
                     let r = ui.horizontal(|ui| {
-                        let resp = ui.selectable_label(k == sel, crate::i18n::t(label));
+                        let resp = ui.selectable_label(k == sel, command_name(label));
                         if let Some(s) = sc {
                             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                                 ui.label(egui::RichText::new(crate::ribbon::pretty_shortcut(s)).color(t.text_faint));

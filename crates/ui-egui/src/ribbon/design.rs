@@ -1,4 +1,4 @@
-use crate::i18n::{fmt, t};
+use crate::i18n::{fmt, t, tc};
 
 use super::{
     Align2, Color32, CornerRadius, Icon, Rect, Sense, SlideApp, Stroke, Tokens, Ui, big, big_button, enabled, group, json, pos2, run, scheme,
@@ -25,7 +25,7 @@ pub(super) fn design(app: &mut SlideApp, ui: &mut Ui) {
                     paint_theme_tile(p, r, th);
                 }
             },
-            |i| names.get(i).cloned().unwrap_or_default(),
+            |i| names.get(i).map(|n| tc("theme", n).to_string()).unwrap_or_default(),
         ) && let Some(n) = names.get(i)
         {
             run(app, "design.theme", json!({"name": n}));
@@ -42,8 +42,8 @@ pub(super) fn design(app: &mut SlideApp, ui: &mut Ui) {
         let names: Vec<String> = variants
             .iter()
             .map(|c| match c.name.rsplit_once(' ') {
-                Some((name, n)) if n.parse::<u32>().is_ok() => format!("{} {n}", t(name)),
-                _ => t(&c.name).to_string(),
+                Some((name, n)) if n.parse::<u32>().is_ok() => format!("{} {n}", tc("theme", name)),
+                _ => tc("theme", &c.name).to_string(),
             })
             .collect();
         let sel = variants.iter().position(|c| c.colors == th.colors.colors);
@@ -79,7 +79,7 @@ pub(super) fn design(app: &mut SlideApp, ui: &mut Ui) {
                             theme::to_color32(*c),
                         );
                     }
-                    p.text(rect.min + vec2(104.0, 10.0), Align2::LEFT_CENTER, t(&cs.name), theme::font(12.0), Tokens::get(ui.ctx()).text);
+                    p.text(rect.min + vec2(104.0, 10.0), Align2::LEFT_CENTER, tc("theme", &cs.name), theme::font(12.0), Tokens::get(ui.ctx()).text);
                     if resp.clicked() {
                         run(app, "design.colors", json!({"name": cs.name}));
                         ui.close();
@@ -92,8 +92,9 @@ pub(super) fn design(app: &mut SlideApp, ui: &mut Ui) {
                 ui.close();
             }
         });
-        let r = big_button(ui, Icon::Fonts, "Fonts", true);
-        r.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, t("Fonts")));
+        // The command's name (테마 글꼴), as the palette and the Quick Access Toolbar say it.
+        let r = big_button(ui, Icon::Fonts, tc("command", "Fonts"), true);
+        r.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, tc("command", "Fonts")));
         egui::Popup::menu(&r).width(220.0).show(|ui| {
             for fs in deckcraft_model::theme::builtin_font_schemes() {
                 if ui.button(format!("{}\n   {} / {}", t(&fs.name), fs.major.latin, fs.minor.latin)).clicked() {

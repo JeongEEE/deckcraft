@@ -55,6 +55,7 @@ fn korean_pref_translates_common_rows() {
     for (en, ko) in [("Comment", "댓글"), ("Align", "정렬"), ("Center", "가운데"), ("3-D", "3차원")] {
         assert_eq!(t(en), ko, "Slide's term for {en:?} wins over common.tsv's (Ruling 15)");
     }
+    assert_eq!((t("Video"), t("Video Format")), ("동영상", "동영상 서식"), "Video is 동영상 everywhere, over common.tsv's 비디오");
     set_current(resolve("en"));
     assert!(!is_korean());
     assert_eq!(t("Cancel"), "Cancel");
@@ -1069,6 +1070,19 @@ fn korean_coverage_backstage() {
     assert_no_problems(&files);
 }
 
+/// All of `src/` at once: a file no area test lists (a new top-level module, a new folder) is
+/// still checked. The area tests stay to say where a failure is.
+#[test]
+fn korean_coverage_all() {
+    let found = audit::candidates(&src());
+    assert!(found.len() > 2000, "the scan sees the whole crate: {}", found.len());
+    for area in ["ribbon", "dialogs", "backstage", "panels", "canvas", "show", "sorter", "app", "top:status", "top:menus"] {
+        assert!(found.iter().any(|c| audit::area(&c.file) == area), "the scan reaches {area}");
+    }
+    let problems = audit::problems(&src());
+    assert!(problems.is_empty(), "no Korean row (deckcraft.tsv) or keep_english.txt entry, or not wrapped in t():\n{}", problems.join("\n"));
+}
+
 /// An id's placeholder (`{cmd}`, `{0}`) before the last value is the first match: a command id has
 /// no "`: " in it, while the engine's message after it may ("gradient needs at least two
 /// `stops`: …"). A file name before the last value is still the last match.
@@ -1397,5 +1411,309 @@ fn revision_detail_keeps_the_shape_name() {
     for d in ["Rectangle 3: text, moved", "layout", "Title 1 deleted (only in the deck)"] {
         let shown = revision_detail(d);
         assert!(matches!(shown, std::borrow::Cow::Borrowed(_)) && shown == d, "{d:?} became {shown:?}");
+    }
+}
+
+/// Labels and texts on screen that read as English only: an ASCII word, no Hangul. A label that
+/// mixes Korean and English ("슬라이드 3 of 8") isn't caught: the source check and the area tests
+/// cover those. A text
+/// run (`TextRun`) is skipped: under a label it repeats the label's value, which is checked; under a
+/// text field it is what the field holds (a typed or default value, the document's), not wording.
+fn english_on_screen(h: &egui_kittest::Harness<'_, crate::SlideApp>) -> BTreeSet<String> {
+    use egui::accesskit::Role;
+    use egui_kittest::kittest::{NodeT, Queryable};
+    let mut out = BTreeSet::new();
+    for n in h.query_all(egui_kittest::kittest::by()) {
+        let node = n.accesskit_node();
+        if matches!(node.role(), Role::TextRun | Role::TextInput | Role::MultilineTextInput) {
+            continue;
+        }
+        for s in [node.label(), n.value()].into_iter().flatten() {
+            let s = s.trim();
+            let hangul = s.chars().any(|c| ('\u{AC00}'..='\u{D7A3}').contains(&c) || ('\u{3131}'..='\u{318E}').contains(&c));
+            if !hangul && s.split(|c: char| !c.is_ascii_alphabetic()).any(|w| w.len() >= 2) {
+                out.insert(s.to_string());
+            }
+        }
+    }
+    out
+}
+
+/// What may read as English on a Korean screen, each for its reason (Global Constraints: names,
+/// units and the document's own words stay as written):
+/// - `keep_english.txt`'s entries;
+/// - the document's words: its shapes' names (the Selection pane), its title (Info: the file's
+///   name or the first slide's title);
+/// - font family names (Replace Font, Theme Fonts);
+/// - the proofing languages' own names (`squiggles::LANGS`), or their tags (`ar-SA`) where the
+///   interface fonts can't draw the name;
+/// - the AutoCorrect list's English words and the papers' names (Print, `PAPERS`): data shown as written;
+/// - a number with a unit (`0.75 pt`, `in`): unit symbols stay;
+/// - on the Date and Time dialog only (`screen`), a date or time in its en-US formats (month and
+///   day names, AM/PM; Korean date formats are out of scope);
+/// - a built-in theme's or colour scheme's name with a number after it (`DeckCraft 2`, a theme's
+///   colour variant). Not keep_english's: "Slide 3" is a slide's name left in English.
+fn allowed_english(h: &egui_kittest::Harness<'_, crate::SlideApp>, screen: &str, s: &str) -> bool {
+    const UNITS: [&str; 5] = ["pt", "in", "cm", "mm", "px"];
+    const DATE_WORDS: [&str; 35] = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+        "AM",
+        "PM",
+        "Sept",
+        "Mon",
+        "Sun",
+    ];
+    let app = h.state();
+    let st = app.session.active().unwrap();
+    let doc = &st.doc;
+    let words: Vec<&str> = s.split(|c: char| !c.is_ascii_alphabetic()).filter(|w| !w.is_empty()).collect();
+    let listed = |s: &str| {
+        audit::keep_english().iter().any(|k| k == s)
+            || doc.slides.iter().flat_map(|sl| &sl.shapes).any(|sh| sh.name == s)
+            || doc.props.title == s
+            || st.title() == s
+            || crate::ribbon::font_families(app).iter().any(|f| f == s)
+            || crate::squiggles::LANGS.iter().any(|(name, tag)| *name == s || *tag == s)
+            || deckcraft_engine::cmd::text::AUTOCORRECT.iter().any(|(a, b)| *a == s || *b == s)
+            || deckcraft_engine::cmd::file::PAPERS.iter().any(|p| p.1 == s)
+    };
+    let scheme = |name: &str| {
+        deckcraft_model::theme::builtin_themes().iter().any(|t| t.name == name)
+            || deckcraft_model::theme::builtin_color_schemes().iter().any(|c| c.name == name)
+    };
+    listed(s)
+        || s.rsplit_once(' ').is_some_and(|(name, n)| n.parse::<u32>().is_ok() && scheme(name))
+        || words.iter().all(|w| UNITS.contains(w))
+        || (screen == "dialog dateTime" && s.chars().any(|c| c.is_ascii_digit()) && words.iter().all(|w| DATE_WORDS.contains(w)))
+}
+
+/// The dialogs' ids, from `dialogs.rs`'s `fn title` (every dialog the app can open by id).
+fn dialog_ids() -> Vec<String> {
+    let source = std::fs::read_to_string(src().join("dialogs.rs")).unwrap();
+    let body = source.split("fn title(id: &str)").nth(1).and_then(|b| b.split("\n}\n").next()).unwrap();
+    body.lines().filter_map(|l| l.trim().strip_prefix('"')?.split_once("\" =>").map(|(id, _)| id.to_string())).collect()
+}
+
+/// Every screen in Korean draws no label that is English words only, except keep_english.txt's
+/// and the document's own words: each ribbon tab (and Shape Format with a shape selected), every
+/// File tab page, every dialog `app.dialog` opens, and the task panes (all four Format Shape tabs,
+/// Format Background, Animation, Selection, Comments, Revisions). The net for what the source check
+/// can't judge: text through a local variable, an array helper or a `match` (Rulings 4, 10).
+#[test]
+fn korean_screens_show_no_untranslated_labels() {
+    let mut s = deckcraft_engine::Session::with_new();
+    deckcraft_engine::sample::open_sample(&mut s).unwrap();
+    let app = crate::SlideApp::new(s, crate::Services::default());
+    let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1400.0, 900.0)).build_ui_state(
+        |ui, app: &mut crate::SlideApp| {
+            app.logic(ui.ctx());
+            app.ui(ui);
+        },
+        app,
+    );
+    // Without the Korean font (a build without CRAFT_FONTS_DIR) Hangul draws as boxes; the labels
+    // are still Korean.
+    h.ctx.set_missing_glyph_policy(egui::MissingGlyphPolicy::Tofu);
+    h.run_steps(3);
+    let english = english_on_screen(&h);
+    assert!(["Home", "Insert", "New Slide", "Slide 1"].iter().all(|s| english.contains(*s)), "the net sees English labels: {english:?}");
+    h.state_mut().ui.language = "ko".into();
+    h.run_steps(3);
+    // What the rules let through, and what they don't.
+    assert!(allowed_english(&h, "Design", "DeckCraft 2") && allowed_english(&h, "Home", "Slide"), "a theme's variant, the app's name");
+    assert!(!allowed_english(&h, "Home", "Slide 3"), "a slide's name left in English is caught");
+    assert!(allowed_english(&h, "dialog dateTime", "November 22, 2026") && !allowed_english(&h, "Home", "November 22, 2026"));
+    let mut seen: BTreeMap<String, String> = BTreeMap::new();
+    let mut look = |h: &mut egui_kittest::Harness<'_, crate::SlideApp>, screen: &str| {
+        h.run_steps(3);
+        // The Spelling dialog lists the document's misspelt words and the dictionary's
+        // suggestions: the document's words, not wording.
+        let spelling = h.state_mut().session.execute("review.spelling", &serde_json::json!({})).unwrap_or_default();
+        let spelt: BTreeSet<String> = spelling
+            .as_array()
+            .into_iter()
+            .flatten()
+            .flat_map(|i| std::iter::once(&i["word"]).chain(i["suggestions"].as_array().into_iter().flatten()))
+            .filter_map(|w| w.as_str().map(str::to_string))
+            .collect();
+        for s in english_on_screen(h).into_iter().filter(|s| !spelt.contains(s) && !allowed_english(h, screen, s)) {
+            seen.entry(s).or_insert_with(|| screen.to_string());
+        }
+    };
+    for tab in crate::ribbon::TABS {
+        h.state_mut().ui.tab = tab.into();
+        look(&mut h, tab);
+    }
+    let band = h.state().session.active().unwrap().doc.slides[0].shapes.iter().find(|s| s.name == "Aurora Band").unwrap().id.0;
+    h.state_mut().run("edit.select", serde_json::json!({"ids": [band]})).unwrap();
+    h.state_mut().ui.tab = "Shape Format".into();
+    look(&mut h, "Shape Format");
+    for tab in ["fill", "effects", "size", "text"] {
+        h.state_mut().ui.pane = Some("format".into());
+        h.state_mut().ui.format_tab = tab.into();
+        look(&mut h, &format!("pane format/{tab}"));
+    }
+    for pane in ["background", "animation", "selection", "comments", "revisions"] {
+        h.state_mut().ui.pane = Some(pane.into());
+        look(&mut h, &format!("pane {pane}"));
+    }
+    h.state_mut().ui.pane = None;
+    let ids = dialog_ids();
+    for id in ["font", "paragraph", "find", "preferences"] {
+        assert!(ids.iter().any(|d| d == id), "found the dialogs: {ids:?}");
+    }
+    for id in &ids {
+        h.state_mut().run("app.dialog", serde_json::json!({"id": id})).unwrap();
+        look(&mut h, &format!("dialog {id}"));
+        h.state_mut().dialog = None;
+    }
+    for page in ["home", "new", "open", "info", "saveAs", "print", "export", "about"] {
+        h.state_mut().run("app.backstage", serde_json::json!({"page": page})).unwrap();
+        look(&mut h, &format!("backstage {page}"));
+    }
+    let listing: Vec<String> = seen.iter().map(|(s, screen)| format!("  {screen}: {s:?}")).collect();
+    assert!(seen.is_empty(), "English on Korean screens (translate it, or add a keep_english.txt entry with its reason):\n{}", listing.join("\n"));
+}
+
+/// The command palette and the Quick Access Toolbar's list name every command: two different
+/// English names never read as one Korean name there (Font and Fonts, Play and Playback).
+#[test]
+fn command_names_stay_distinct_in_korean() {
+    set_current(resolve("ko"));
+    let mut by_korean: BTreeMap<String, BTreeSet<&str>> = BTreeMap::new();
+    let labels = deckcraft_engine::cmd::command_specs().iter().map(|c| c.label).chain(crate::UI_COMMANDS.iter().map(|c| c.1)).collect::<Vec<_>>();
+    for label in labels {
+        by_korean.entry(crate::menus::command_name(label).to_string()).or_default().insert(label);
+    }
+    let same: Vec<String> = by_korean.iter().filter(|(_, en)| en.len() > 1).map(|(ko, en)| format!("  {ko}: {en:?}")).collect();
+    set_current(resolve("en"));
+    assert!(same.is_empty(), "different commands with one Korean name (add a `command` row):\n{}", same.join("\n"));
+    // Design's Fonts button says what the palette and the Quick Access Toolbar say.
+    use egui_kittest::kittest::Queryable;
+    let mut h = korean_harness();
+    h.state_mut().ui.tab = "Design".into();
+    h.run_steps(3);
+    assert!(h.query_by_role_and_label(egui::accesskit::Role::Button, "테마 글꼴").is_some(), "Design › 테마 글꼴");
+}
+
+/// The built-in theme Paper reads 종이 (its `theme` row), not the printer's paper 용지 of the plain
+/// row, which Print keeps; a new presentation from its tile keeps the English theme name.
+#[test]
+fn theme_names_are_translated_for_display_only() {
+    use egui_kittest::kittest::Queryable;
+    let mut h = korean_harness();
+    assert_eq!((tc("theme", "Paper"), t("Paper")), ("종이", "용지"));
+    assert_eq!(tc("theme", "Harbor"), t("Harbor"), "a theme without its own row reads as its plain row");
+    h.state_mut().run("app.backstage", serde_json::json!({"page": "new"})).unwrap();
+    h.run_steps(3);
+    assert!(h.query_by_label("용지").is_none(), "the Paper theme isn't shown as the printer's paper");
+    h.get_by_label("종이").click();
+    h.run_steps(3);
+    let d = h.state().session.active().unwrap();
+    assert_eq!(d.doc.masters[0].theme.name, "Paper", "the document keeps the English name");
+    h.state_mut().run("app.backstage", serde_json::json!({"page": "new"})).unwrap();
+    h.run_steps(3);
+    h.state_mut().backstage.as_mut().unwrap().query = "종이".into();
+    h.run_steps(3);
+    assert!(h.query_by_label("종이").is_some() && h.query_by_label(t("Harbor")).is_none(), "a Korean search finds it by its shown name");
+}
+
+/// A short template whose value is an id or a count ("no slide {id}", "{n} bytes", "Slide {n}:
+/// {issue}") reads only the sentences it is: other sentences that happen to start or end like it
+/// stay English whole, not half translated. A `{0}` that holds a whole reason ("not a PPTX file:
+/// {0}") still takes one with spaces.
+#[test]
+fn short_templates_leave_other_sentences_alone() {
+    set_current(resolve("ko"));
+    for s in [
+        "no slide to mark",
+        "no slide with id 7",
+        "no shape 12 on the current slide",
+        "no slide 9 (the presentation has 8)",
+        "every reference resolves to its own copied bytes",
+        "Slide update helper: stopped",
+    ] {
+        assert_eq!(t_dynamic(s), s, "{s:?} stays English");
+    }
+    let reason = "not a PPTX file: the presentation has no slide master";
+    assert_eq!(t_dynamic(reason), "PPTX 파일이 아닙니다: the presentation has no slide master");
+    for (s, kept) in [("no slide 9", "9"), ("no shape 12", "12"), ("512 bytes", "512"), ("Slide 3: Missing alt text", "3")] {
+        let shown = t_dynamic(s);
+        assert!(shown != s && shown.contains(kept), "{s:?} is translated with its value: {shown:?}");
+    }
+    set_current(resolve("en"));
+}
+
+/// The engine's reasons a click can meet (Flip on a diagram, Group with one object …) read in
+/// Korean after the "invalid parameters" template, and every such row is still the engine's
+/// wording (a row whose sentence the engine no longer writes would never be used).
+#[test]
+fn engine_state_errors_are_korean() {
+    let section = DECKCRAFT.split("# The engine's reasons a command didn't run").nth(1).unwrap();
+    let section = section.split_once('\n').unwrap().1.split("# Messages with a value").next().unwrap();
+    let mut engine = String::new();
+    let mut files = Vec::new();
+    source_files(&src().join("../../engine/src"), &mut files);
+    for f in files {
+        engine.push_str(&std::fs::read_to_string(f).unwrap());
+    }
+    let mut n = 0;
+    for (_, _, en, ko) in rows(section) {
+        assert!(engine.contains(&format!("\"{en}\"")), "the engine still writes {en:?}");
+        // The app's words: Close Path 경로 닫기, Flip 뒤집기.
+        assert!(!ko.contains("윤곽선") && !ko.contains("대칭 이동"), "{en:?} → {ko:?} says 경로 and 뒤집기 as the app does");
+        n += 1;
+    }
+    assert!(n > 60, "read the section: {n} rows");
+    let mut s = deckcraft_engine::Session::with_new();
+    let id = s.execute("shape.insert", &serde_json::json!({"preset": "rect", "rect": [10, 10, 50, 50]})).unwrap()["id"].clone();
+    s.execute("edit.select", &serde_json::json!({"ids": [id]})).unwrap();
+    let err = s.execute("arrange.group", &serde_json::json!({})).err().unwrap().to_string();
+    set_current(resolve("ko"));
+    let shown = t_dynamic(&err).into_owned();
+    set_current(resolve("en"));
+    assert!(shown.contains("`arrange.group`") && !shown.contains("select") && has_ko(err.rsplit(": ").next().unwrap()), "{err:?} → {shown:?}");
+}
+
+/// keep_english.txt lets "Slide" through as the app's name; nothing else may say it. A label
+/// meaning a slide written "Slide" would pass every check, so the only interface "Slide" in the
+/// source is `APP_NAME`, and no command or menu is named "Slide".
+#[test]
+fn slide_stays_english_only_as_the_app_name() {
+    assert!(audit::keep_english().iter().any(|k| k == crate::APP_NAME));
+    let found: Vec<String> = audit::candidates(&src()).into_iter().filter(|c| c.text == "Slide").map(|c| format!("{}:{}", c.file, c.line)).collect();
+    assert_eq!(found.len(), 1, "\"Slide\" is interface text only as APP_NAME: {found:?}");
+    assert!(found[0].starts_with("lib.rs:"), "{found:?}");
+    for c in deckcraft_engine::cmd::command_specs() {
+        assert!(c.label != "Slide" && !c.menu.contains(&"Slide"), "{} is named or filed under \"Slide\"", c.id);
     }
 }

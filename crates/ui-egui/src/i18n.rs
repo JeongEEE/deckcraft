@@ -154,6 +154,13 @@ const WORDING: [&str; 9] = ["1", "msg", "e", "err", "reason", "label", "colour",
 /// so never the fixed text after them.
 const IDS: [&str; 2] = ["cmd", "0"];
 
+/// The placeholders whose value is one word: a command id `{cmd}`, an object id or slide number
+/// `{id}` or a count `{n}`. A short template with one ("no slide {id}", "{n} bytes") then doesn't
+/// swallow a sentence it isn't ("no slide to mark" stays English instead of reading
+/// "슬라이드가 없습니다: to mark"). Not `{0}`: the engine's `{0}` is a command id in some sentences
+/// and a whole reason in others ("not a PPTX file: {0}").
+const ONE_WORD: [&str; 3] = ["cmd", "id", "n"];
+
 /// A catalog row with `{name}` placeholders, split into its fixed text and placeholder names.
 struct Template {
     source: String,
@@ -206,7 +213,10 @@ impl Template {
                 }
                 None => std::mem::take(&mut rest),
             };
-            if value.is_empty() || values.iter().any(|(n, v)| *n == name.as_str() && *v != value) {
+            if value.is_empty()
+                || values.iter().any(|(n, v)| *n == name.as_str() && *v != value)
+                || (ONE_WORD.contains(&name.as_str()) && value.contains(char::is_whitespace))
+            {
                 return None;
             }
             values.push((name, value));

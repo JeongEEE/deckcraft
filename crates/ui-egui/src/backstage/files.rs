@@ -7,7 +7,7 @@ use crate::i18n;
 /// A new-presentation tile: a theme preview drawn in code (or a blank slide) over its name.
 fn tile(ui: &mut Ui, label: &str, theme: Option<&deckcraft_model::Theme>, big: bool) -> egui::Response {
     // A theme's or a template's name is shown translated; the command takes the English one.
-    let label = i18n::t(label);
+    let label = i18n::tc("theme", label);
     let t = Tokens::get(ui.ctx());
     let thumb_w = if big { 200.0 } else { 160.0 };
     let (rect, resp) = ui.allocate_exact_size(vec2(thumb_w + 16.0, thumb_w * 9.0 / 16.0 + 44.0), Sense::click());
@@ -78,9 +78,10 @@ fn shown_matches(name: &str, query: &str) -> bool {
 }
 
 /// True when `text` has a translation and `query` (lower case) is in it. English has none, so its
-/// search stays what the English text (or the engine) matches.
+/// search stays what the English text (or the engine) matches. A theme's name reads as the tiles
+/// show it (`theme` rows; other text falls back to its plain row).
 fn translated_has(text: &str, query: &str) -> bool {
-    let shown = i18n::t(text);
+    let shown = i18n::tc("theme", text);
     shown != text && shown.to_lowercase().contains(query)
 }
 

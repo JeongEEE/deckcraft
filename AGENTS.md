@@ -11,6 +11,8 @@ upstream contribution workflow below for work in this fork.
   app id `slide` and updater repository `JeongEEE/deckcraft` independent from upstream. Cargo
   package/crate names, command ids and `DECKCRAFT_*` environment variables remain unchanged.
   The file format name "DeckCraft Presentation" and the built-in "DeckCraft" theme keep their names.
+- New interface text goes through `t()` and gets a row in `crates/ui-egui/i18n/ko/deckcraft.tsv`;
+  `korean_coverage_all` checks it.
 - Maintain the Slide section in `MyProjectsWiki/wiki/` alongside architectural or operational
   changes, then run its sync script.
 - Commit messages are Korean Conventional Commits, without generated/coauthor attribution.

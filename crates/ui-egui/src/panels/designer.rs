@@ -89,7 +89,7 @@ pub(super) fn designer(app: &mut SlideApp, ui: &mut Ui) {
     ui.label(egui::RichText::new(i18n::t("Themes (whole presentation)")).color(t.text_dim));
     ui.add_space(4.0);
     for th in &themes {
-        if thumb(ui, &format!("theme:{}", th.name), &th.name) {
+        if thumb(ui, &format!("theme:{}", th.name), i18n::tc("theme", &th.name)) {
             run(app, "design.theme", json!({"name": th.name}));
         }
     }

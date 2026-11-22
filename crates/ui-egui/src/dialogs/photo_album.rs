@@ -1,5 +1,5 @@
 use super::{Dialog, SlideApp, Tokens, Ui, Value, buttons, check, field, json};
-use crate::i18n::{fmt, t};
+use crate::i18n::{fmt, t, tc};
 
 fn album_items(d: &Dialog) -> Option<Vec<Value>> {
     let raw = d.fields.get("items").map(String::as_str).unwrap_or("[]");
@@ -67,19 +67,22 @@ fn pick_album_picture(app: &mut SlideApp) -> Option<Value> {
 
 /// Draw an accessible album combo box, preserving its current/default selection and storing a
 /// newly chosen key; the caller supplies the visible label. The choices' names and `name` are
-/// English and shown translated; the keys stored stay as given.
-fn album_choice(ui: &mut Ui, d: &mut Dialog, id: &str, name: &str, key: &str, default: &str, choices: &[(&str, &str)]) {
+/// English and shown translated, once: a choice's name by its `context` row (a theme's name) or
+/// its plain row. The keys stored stay as given.
+#[allow(clippy::too_many_arguments)]
+fn album_choice(ui: &mut Ui, d: &mut Dialog, id: &str, name: &str, key: &str, default: &str, choices: &[(&str, &str)], context: Option<&str>) {
+    let show = |l| context.map_or_else(|| t(l), |c| tc(c, l));
     let cur = d.get(key, default);
     let label = choices.iter().find(|(k, _)| *k == cur).map(|(_, l)| *l).unwrap_or(default);
-    let opened = craft_ui::ComboBox::from_id_salt(id).selected_text(t(label)).width(220.0).show_ui(ui, |ui| {
+    let opened = craft_ui::ComboBox::from_id_salt(id).selected_text(show(label)).width(220.0).show_ui(ui, |ui| {
         for (k, l) in choices {
-            if ui.selectable_label(cur == *k, t(l)).clicked() {
+            if ui.selectable_label(cur == *k, show(l)).clicked() {
                 d.fields.insert(key.into(), (*k).to_string());
             }
         }
     });
     let access = t(name).to_string();
-    let shown = t(label).to_string();
+    let shown = show(label).to_string();
     opened.response.widget_info(move || {
         let mut info = egui::WidgetInfo::labeled(egui::Role::ComboBox, true, access.clone());
         info.current_text_value = Some(shown.clone());
@@ -266,6 +269,7 @@ pub(super) fn photo_album_dialog(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog
                 ("2title", "2 pictures with title"),
                 ("4title", "4 pictures with title"),
             ],
+            None,
         );
         ui.label(t("Frame shape"));
         album_choice(
@@ -276,11 +280,21 @@ pub(super) fn photo_album_dialog(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog
             "frame",
             "rect",
             &[("none", "None"), ("rect", "Rectangle"), ("rounded", "Rounded"), ("simple", "Simple, white")],
+            None,
         );
         check(ui, d, "Captions under pictures", "captions", false);
         check(ui, d, "ALL pictures black and white", "grayscale", false);
         ui.label(t("Album theme"));
-        album_choice(ui, d, "album_theme", "Album theme", "theme", "DeckCraft", &ALBUM_THEMES.iter().map(|n| (*n, *n)).collect::<Vec<_>>());
+        album_choice(
+            ui,
+            d,
+            "album_theme",
+            "Album theme",
+            "theme",
+            "DeckCraft",
+            &ALBUM_THEMES.iter().map(|n| (*n, *n)).collect::<Vec<_>>(),
+            Some("theme"),
+        );
     });
     let captions = d.fields.get("captions").is_some_and(|v| v == "1");
     let grayscale = d.fields.get("grayscale").is_some_and(|v| v == "1");

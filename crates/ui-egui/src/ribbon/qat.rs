@@ -125,7 +125,7 @@ pub fn run_index(app: &mut SlideApp, index: usize) -> bool {
 /// (`"Add\nAnimation"` as `"Add Animation"`), so a label without a row of its own is looked up
 /// with each space as the big button's line break, and shown on one line again.
 pub(crate) fn shown_label(label: &str) -> String {
-    let direct = t(label);
+    let direct = crate::menus::command_name(label);
     if direct != label {
         return direct.to_string();
     }
