@@ -14,3 +14,4 @@ Abc	sample letters drawn on the Quick Styles tiles (ribbon/galleries.rs), not wo
 Custom Show 1	the default name typed into Custom Shows › New show name: it becomes the show's name saved in the document
 AaBbCcDd	sample letters drawn in the Font dialog's preview, not wording
 MIT OR Apache-2.0 · © 2026 ArtCraft Team and the DeckCraft contributors	About's copyright and licence notice: the legal text stays as written
+DeckCraft	the built-in theme named after the original app (Photo Album › Album theme; the theme data keeps it), as the theme gallery shows it

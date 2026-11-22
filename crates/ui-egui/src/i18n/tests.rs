@@ -258,8 +258,9 @@ fn korean_gallery_names() {
     let charts: Vec<&str> = crate::ribbon::chart_menu_types().into_iter().flatten().map(|k| k.label()).collect();
     names.extend(charts.iter().filter(|l| I18N.get(ko, "chart", l).is_none()).map(|l| l.to_string()));
     let keep = audit::keep_english();
-    // Kept in every language: the built-in theme's name and the font schemes named after fonts.
-    let named = ["DeckCraft", "Inter", "Times / Arial"];
+    // Kept in every language: the font schemes named after fonts (the built-in "DeckCraft" theme
+    // is in keep_english.txt).
+    let named = ["Inter", "Times / Arial"];
     let missing: Vec<&String> = names.iter().filter(|n| !has_ko(n) && !keep.contains(*n) && !named.contains(&n.as_str())).collect();
     assert!(
         missing.is_empty(),
@@ -652,4 +653,128 @@ fn dialog_titles_keep_the_app_name() {
     assert_eq!(crate::dialogs::shown_title("zz-no-such-dialog"), crate::APP_NAME);
     set_current(craft_i18n::Lang::EN);
     assert_eq!(crate::dialogs::shown_title("font"), "Font");
+}
+
+/// Dialogs 2: the dialogs from Paragraph to Zoom and the fork's update card / modal.
+#[test]
+fn korean_coverage_dialogs_2() {
+    let dialogs = src().join("dialogs");
+    let mut problems = Vec::new();
+    for file in [
+        "paragraph",
+        "photo_album",
+        "preferences",
+        "size_position",
+        "slide_size",
+        "tabs",
+        "theme_colors",
+        "theme_fonts",
+        "trim",
+        "zoom",
+        "updates_ui",
+        "updates_ui/view",
+    ] {
+        problems.extend(audit::problems(&dialogs.join(format!("{file}.rs"))));
+    }
+    assert!(problems.is_empty(), "no Korean row (deckcraft.tsv) or keep_english.txt entry, or not wrapped in t():\n{}", problems.join("\n"));
+}
+
+/// Every dialog source file (tests aside) and `dialogs.rs` is covered.
+#[test]
+fn korean_coverage_dialogs_all() {
+    fn walk(dir: &Path, out: &mut Vec<PathBuf>) {
+        for entry in std::fs::read_dir(dir).unwrap() {
+            let path = entry.unwrap().path();
+            let name = path.file_name().unwrap().to_string_lossy().into_owned();
+            if path.is_dir() {
+                walk(&path, out);
+            } else if name.ends_with(".rs") && name != "tests.rs" && !name.ends_with("_tests.rs") {
+                out.push(path);
+            }
+        }
+    }
+    let mut files = vec![src().join("dialogs.rs")];
+    walk(&src().join("dialogs"), &mut files);
+    files.sort();
+    assert!(files.len() > 25, "found the dialog files: {files:?}");
+    let problems: Vec<String> = files.iter().flat_map(|f| audit::problems(f)).collect();
+    assert!(problems.is_empty(), "no Korean row (deckcraft.tsv) or keep_english.txt entry, or not wrapped in t():\n{}", problems.join("\n"));
+}
+
+/// Choice lists the audit only checks for a row (arrays, a match, a helper that takes them):
+/// Paragraph's line spacing, the tab kinds and the Photo Album lists show translated.
+#[test]
+fn dialogs_2_choice_lists_are_korean() {
+    use egui_kittest::kittest::Queryable;
+    for en in ["Single", "1.5 lines", "Double", "Multiple", "Exactly", "Left", "Center", "Right", "Decimal"] {
+        assert!(has_ko(en), "{en:?} has a Korean row");
+    }
+    let mut h = korean_harness();
+    h.state_mut().dialog = Some(crate::dialogs::Dialog::new("tabs"));
+    h.run_steps(3);
+    assert!(h.query_by_label(t("Decimal")).is_some() && h.query_by_label("Decimal").is_none(), "the tab kinds are Korean");
+    h.state_mut().dialog = Some(crate::dialogs::Dialog::new("paragraph"));
+    h.run_steps(3);
+    let combos: Vec<Option<String>> = h.query_all_by_role(egui::accesskit::Role::ComboBox).map(|n| n.value()).collect();
+    assert!(
+        h.query_by_label(t("Single")).is_some() || combos.iter().any(|v| v.as_deref() == Some(t("Single"))),
+        "line spacing shows {:?}: {combos:?}",
+        t("Single")
+    );
+    h.state_mut().dialog = Some(crate::dialogs::Dialog::new("photoAlbum"));
+    h.run_steps(3);
+    assert!(h.query_by_label("Picture layout").is_none(), "no English list name");
+    let layout = h.get_by_role_and_label(egui::accesskit::Role::ComboBox, t("Picture layout"));
+    assert_eq!(layout.value().as_deref(), Some(t("1 picture")), "the chosen layout is shown translated");
+    // With the real fonts the album body is taller than the harness, so the combo sits below the
+    // scrolled-out part of the body; bring it into view before opening it.
+    layout.scroll_to_me();
+    h.run_steps(2);
+    h.get_by_role_and_label(egui::accesskit::Role::ComboBox, t("Picture layout")).click();
+    h.run_steps(2);
+    assert!(h.query_by_label("Fit to slide").is_none(), "no English item");
+    h.get_by_label(t("Fit to slide")).click();
+    h.run_steps(2);
+    let fields = &h.state().dialog.as_ref().expect("the album stays open").fields;
+    assert_eq!(fields.get("layout").map(String::as_str), Some("fit"), "the English key is stored");
+}
+
+/// The fixed reasons deckcraft-update gives for a failed check or install reach the update window
+/// (through `t()`) or the window after a failed install (the helper's recorded outcome), so each
+/// has a Korean row. Reasons with a value in them wait for t_dynamic.
+#[test]
+fn update_failure_reasons_are_korean() {
+    // Never shown: the helper checks its own invocation before it records an outcome, launch
+    // errors are only logged, and the rest are test doubles.
+    const INTERNAL: [&str; 7] = [
+        "Slide's update restart record is too large.",
+        "Invalid Slide update helper arguments.",
+        "Missing Slide update plan.",
+        "No update folder.",
+        "The update helper is outside Slide's own update folder.",
+        "An update restart file must have an absolute path.",
+        "Simulated native restart failure",
+    ];
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../update/src");
+    let mut reasons = BTreeSet::new();
+    for entry in std::fs::read_dir(&dir).unwrap() {
+        let path = entry.unwrap().path();
+        if path.extension().is_none_or(|e| e != "rs") {
+            continue;
+        }
+        let text = std::fs::read_to_string(&path).unwrap();
+        for opener in ["Err(\"", "ok_or(\"", "ok_or_else(|| \"", "map_err(|_| \""] {
+            for (at, _) in text.match_indices(opener) {
+                let rest = &text[at + opener.len()..];
+                let Some(end) = rest.find('"') else { continue };
+                let s = &rest[..end];
+                if !s.contains(['{', '\\']) && !INTERNAL.contains(&s) {
+                    reasons.insert(s.to_string());
+                }
+            }
+        }
+    }
+    assert!(reasons.len() > 30, "found the updater's reasons: {reasons:?}");
+    let missing: Vec<&String> = reasons.iter().filter(|r| !has_ko(r)).collect();
+    assert!(missing.is_empty(), "no Korean row: {missing:#?}");
 }

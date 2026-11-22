@@ -296,7 +296,7 @@ bevel	artDeco	아르데코
 	{title} — Edited	{title} — 편집됨
 	Present	발표
 	Search commands (⇧⌘P)	명령 검색 (⇧⌘P)
-	Light/Dark appearance	밝은/어두운 화면
+	Light/Dark appearance	밝은/어두운 모드
 	Scroll ribbon left	리본 왼쪽으로 스크롤
 	Scroll ribbon right	리본 오른쪽으로 스크롤
 chart	Line	꺾은선형
@@ -1614,7 +1614,7 @@ show	Show	쇼 시작
 	Automatic bulleted and numbered lists	글머리 기호 및 번호 목록 자동 만들기
 	Replace text as you type	입력할 때 텍스트 바꾸기
 	With	다음으로
-	Dark appearance	어두운 모양
+	Dark appearance	어두운 모드
 	Interface size:	화면 크기:
 	Interface size	화면 크기
 	Measurement units:	측정 단위:
@@ -1664,3 +1664,190 @@ show	Show	쇼 시작
 	Spacing (pt):	간격 (pt):
 	Display grid on screen	화면에 격자 표시
 	Display drawing guides on screen	화면에 그리기 안내선 표시
+
+# Dialogs 2: Paragraph, Tabs, Photo Album, Size and Position, Theme Colors and Fonts, Zoom and the
+# update card, prompt and window (dialogs/*.rs, dialogs/updates_ui/*.rs; field values, saved
+# settings and the toast stay English). Paragraph:
+	Exactly	고정
+	Multiple	배수
+	1.5 lines	1.5줄
+	Justify low	양쪽 맞춤 (낮게)
+	Distributed	균등 분할
+	Indentation	들여쓰기
+	Before text	텍스트 앞
+	After text	텍스트 뒤
+	First line	첫 줄
+	Hanging	내어쓰기
+paragraph	By	값
+	Spacing before	단락 앞
+	Spacing after	단락 뒤
+paragraph	At	값
+	Indent before text must be a number of inches	텍스트 앞 들여쓰기는 인치 단위 숫자여야 합니다
+	Indent after text must be a number of inches	텍스트 뒤 들여쓰기는 인치 단위 숫자여야 합니다
+	Special indent must be a number of inches	특수 들여쓰기는 인치 단위 숫자여야 합니다
+	Spacing before must be a number	단락 앞 간격은 숫자여야 합니다
+	Spacing after must be a number	단락 뒤 간격은 숫자여야 합니다
+	Line spacing must be a number	줄 간격은 숫자여야 합니다
+# Tabs
+	Decimal	소수점
+	Default tab stops (in):	기본 탭 간격 (in):
+	Tab stops:	탭 정지 위치:
+	Clear the tab at {pos}"	{pos}" 위치의 탭 지우기
+	Tab stop position (in):	탭 정지 위치 (in):
+# Photo Album
+	Text: {text}	텍스트: {text}
+	Pass pictures to insert.photoAlbum	insert.photoAlbum에 그림을 넘기세요
+	The web build inserts album pictures from data passed to insert.photoAlbum	웹 빌드는 insert.photoAlbum에 넘긴 데이터로 앨범 그림을 삽입합니다
+	That file is empty	파일이 비어 있습니다
+	That picture is larger than 32 MB	그림이 32 MB보다 큽니다
+	Pictures in album	앨범의 그림
+	No pictures yet	아직 그림이 없습니다
+	Add Pictures…	그림 추가…
+	A photo album holds at most 48 pictures or text boxes	사진 앨범에는 그림과 텍스트 상자를 48개까지 넣을 수 있습니다
+	The picture list is invalid	그림 목록이 올바르지 않습니다
+	New Text Box	새 텍스트 상자
+	Type the text for the new text box	새 텍스트 상자에 넣을 텍스트를 입력하세요
+	Text is longer than 400 characters	텍스트가 400자를 넘습니다
+	Text box:	텍스트 상자:
+	Rotate Left	왼쪽으로 회전
+	Rotate Right	오른쪽으로 회전
+	More Brightness	밝기 높이기
+	Less Brightness	밝기 낮추기
+	More Contrast	대비 높이기
+	Less Contrast	대비 낮추기
+	Picture layout	그림 레이아웃
+	Fit to slide	슬라이드에 맞춤
+	1 picture	그림 1개
+	2 pictures	그림 2개
+	4 pictures	그림 4개
+	1 picture with title	그림 1개와 제목
+	2 pictures with title	그림 2개와 제목
+	4 pictures with title	그림 4개와 제목
+	Frame shape	프레임 모양
+	Rounded	둥근 모서리
+	Simple, white	단순형, 흰색
+	Captions under pictures	그림 아래 캡션
+	ALL pictures black and white	모든 그림을 흑백으로
+	Album theme	앨범 테마
+	Add a picture or a text box first	먼저 그림이나 텍스트 상자를 추가하세요
+	Select a picture to rotate it or change brightness and contrast	그림을 선택하면 회전하거나 밝기와 대비를 바꿀 수 있습니다
+	Text boxes have no picture options	텍스트 상자에는 그림 옵션이 없습니다
+	Rotation {rot}°, brightness {brightness}, contrast {contrast}	회전 {rot}°, 밝기 {brightness}, 대비 {contrast}
+# Size and Position
+	Height (in):	높이 (in):
+	Width (in):	너비 (in):
+	Rotation (°):	회전 (°):
+	Scale height (%):	높이 배율 (%):
+	Scale width (%):	너비 배율 (%):
+	Lock aspect ratio	가로 세로 비율 고정
+	From the top-left corner of the slide	슬라이드 왼쪽 위 모서리 기준
+	Horizontal (in):	가로 (in):
+	Vertical (in):	세로 (in):
+	Scale width	너비 배율
+	Scale height	높이 배율
+	{label} must be a number	{label} 값은 숫자여야 합니다
+# Theme Colors and Theme Fonts
+	{colour} hex	{colour} 16진수 값
+	Scheme name	구성표 이름
+	Applies to this presentation's theme colours.	이 프레젠테이션의 테마 색에 적용합니다.
+	Enter a scheme name.	구성표 이름을 입력하세요.
+	{colour} needs a colour like #RRGGBB.	{colour}에는 #RRGGBB 같은 색 코드를 입력하세요.
+	Heading:	제목:
+	Heading font	제목 글꼴
+	Body:	본문:
+	Body font	본문 글꼴
+	Heading sample  {major}	제목 견본  {major}
+	Body sample  {minor}	본문 견본  {minor}
+	Heading and body fonts for this presentation.	이 프레젠테이션의 제목 글꼴과 본문 글꼴입니다.
+	Choose a heading font.	제목 글꼴을 고르세요.
+	Choose a body font.	본문 글꼴을 고르세요.
+# Zoom
+	Zoom to	확대/축소 비율
+	Percent:	백분율:
+	Enter a zoom percent	확대/축소 비율을 입력하세요
+# Updates: the corner card, the restart prompt and the update window (the version numbers, the
+# app name and MB stay as written)
+	Checking for updates	업데이트 확인 중
+	Looking for a new version	새 버전을 찾고 있습니다
+	Downloading the update	업데이트 다운로드 중
+	Trying to connect again	다시 연결하고 있습니다
+	Preparing the update download	업데이트 다운로드 준비 중
+	You can keep working	계속 작업해도 됩니다
+	Verifying the update	업데이트 검증 중
+	Checking the downloaded file	다운로드한 파일을 확인하고 있습니다
+	Update ready	업데이트 준비됨
+	Open the restart options	다시 시작 옵션 열기
+	Update ready to install	업데이트를 설치할 준비가 되었습니다
+	The new version is ready.\nRestart {app} now?	새 버전이 준비되었습니다.\n지금 {app} 앱을 다시 시작할까요?
+	Presentations with unsaved changes are asked about first,\nand the open files open again after the restart.	저장하지 않은 프레젠테이션은 먼저 저장할지 묻고,\n열려 있던 파일은 다시 시작한 뒤 다시 열립니다.
+	Restart to Update	다시 시작하여 업데이트
+	Later	나중에
+	{app} Update	{app} 업데이트
+	You can check for updates.	업데이트를 확인할 수 있습니다.
+	{app} {version} is up to date.	최신 버전을 사용하고 있습니다 ({app} {version}).
+	{app} {version} is available.	{app} {version} 버전이 나왔습니다.
+	Get the installer from the releases page	릴리스 페이지에서 설치 파일 받기
+	Couldn't prepare the update.	업데이트를 준비하지 못했습니다.
+	Try Again	다시 시도
+	Download from the releases page	릴리스 페이지에서 다운로드
+	Couldn't install the update. {reason}	업데이트를 설치하지 못했습니다. {reason}
+	{app} was updated to {version}.	{app} 앱이 {version} 버전으로 업데이트되었습니다.
+# Updates: why a check or an install failed (deckcraft-update and updates_ui.rs; the window shows
+# them through t(), a reason with a value in it stays English until t_dynamic). Every fixed reason
+# the user can see has a row: `update_failure_reasons_are_korean` checks crates/update/src.
+	Slide's update worker stopped unexpectedly.	Slide 업데이트 작업이 예기치 않게 멈췄습니다.
+	Slide's update worker disconnected.	Slide 업데이트 작업과 연결이 끊겼습니다.
+	Slide's update signing key has not been configured.	Slide 업데이트 서명 키가 설정되지 않았습니다.
+	Slide is not installed as an app.	Slide가 앱으로 설치되어 있지 않습니다.
+	Move Slide.app to Applications before using automatic updates.	자동 업데이트를 쓰려면 Slide.app을 응용 프로그램 폴더로 옮기세요.
+	Slide automatic updates support installed macOS and Windows copies.	Slide 자동 업데이트는 설치된 macOS·Windows 버전만 지원합니다.
+	Slide's installation changed while the update was downloaded.	업데이트를 다운로드하는 동안 Slide 설치가 바뀌었습니다.
+	The update is not a stable Slide fork release.	이 업데이트는 Slide 포크의 정식 릴리스가 아닙니다.
+	This release has no signed Slide update manifest.	이 릴리스에는 서명된 Slide 업데이트 목록이 없습니다.
+	This release has no Slide update signature.	이 릴리스에는 Slide 업데이트 서명이 없습니다.
+	The update manifest belongs to another release.	업데이트 목록이 다른 릴리스의 것입니다.
+	This platform has no Slide automatic update package.	이 플랫폼용 Slide 자동 업데이트 패키지가 없습니다.
+	The signed update identity or version is invalid.	서명된 업데이트의 앱 정보나 버전이 올바르지 않습니다.
+	Invalid Slide release path.	Slide 릴리스 경로가 올바르지 않습니다.
+	An update record exceeds its size limit.	업데이트 기록이 크기 제한을 넘습니다.
+	Too many files in the Slide update.	Slide 업데이트에 파일이 너무 많습니다.
+	Unexpected update archive root.	업데이트 압축 파일의 최상위 폴더가 예상과 다릅니다.
+	Update archive is too large.	업데이트 압축 파일이 너무 큽니다.
+	Unsafe or duplicate file in the Slide update archive.	Slide 업데이트 압축 파일에 안전하지 않거나 중복된 파일이 있습니다.
+	The update archive is missing Slide programs.	업데이트 압축 파일에 Slide 프로그램이 없습니다.
+	The extracted update size is invalid.	압축을 푼 업데이트의 크기가 올바르지 않습니다.
+	Unsafe staged update file.	준비된 업데이트 파일이 안전하지 않습니다.
+	Missing Slide programs.	Slide 프로그램이 없습니다.
+	An update bundle is not a regular directory.	업데이트 번들이 일반 폴더가 아닙니다.
+	The app has no parent folder.	앱의 상위 폴더가 없습니다.
+	Slide did not exit; no update was installed.	Slide가 종료되지 않아 업데이트를 설치하지 않았습니다.
+	Another Slide window is still running; no update was installed.	다른 Slide 창이 아직 실행 중이라 업데이트를 설치하지 않았습니다.
+	This platform cannot install this Slide update.	이 플랫폼에서는 이 Slide 업데이트를 설치할 수 없습니다.
+	The updated Slide exited before its first frame.	업데이트한 Slide가 첫 화면을 그리기 전에 종료되었습니다.
+	The updated Slide did not finish starting within 60 seconds.	업데이트한 Slide가 60초 안에 시작을 마치지 못했습니다.
+	Cannot read installed Slide version.	설치된 Slide의 버전을 읽을 수 없습니다.
+	The installed Slide is already this version or newer.	설치된 Slide가 이미 이 버전이거나 더 최신입니다.
+	No app parent.	앱의 상위 폴더가 없습니다.
+	The downloaded bundle is not Slide.	다운로드한 번들이 Slide가 아닙니다.
+	The downloaded Slide bundle has the wrong version or executable.	다운로드한 Slide 번들의 버전이나 실행 파일이 맞지 않습니다.
+	No application folder.	응용 프로그램 폴더가 없습니다.
+	Windows Installer cannot represent this path.	Windows Installer가 이 경로를 다룰 수 없습니다.
+	Invalid character in the MSI installation folder.	MSI 설치 폴더 이름에 쓸 수 없는 문자가 있습니다.
+	The signed update has an invalid or duplicate package.	서명된 업데이트에 올바르지 않거나 중복된 패키지가 있습니다.
+	The update signature or manifest size is invalid.	업데이트 서명이나 목록의 크기가 올바르지 않습니다.
+	The update must be newer than the installed version.	업데이트는 설치된 버전보다 최신이어야 합니다.
+	The update package size changed or is not a regular file.	업데이트 패키지의 크기가 바뀌었거나 일반 파일이 아닙니다.
+	The update package checksum does not match its signature.	업데이트 패키지의 체크섬이 서명과 맞지 않습니다.
+	Invalid hexadecimal key or signature.	16진수 키나 서명이 올바르지 않습니다.
+	This Slide copy is managed by its build or package manager.	이 Slide는 빌드 도구나 패키지 관리자가 관리합니다.
+	Slide is registered for both your account and everyone; choose a copy in its installer.	Slide가 내 계정용과 모든 사용자용으로 모두 등록되어 있습니다. 설치 프로그램에서 하나를 고르세요.
+	Windows lists zero or multiple Slide MSI products; use the installer to repair the registration.	Windows에 Slide MSI 제품이 없거나 여러 개 등록되어 있습니다. 설치 프로그램으로 등록을 복구하세요.
+	Slide's registry and MSI context do not agree.	Slide의 레지스트리와 MSI 설치 정보가 맞지 않습니다.
+	Slide's MSI registration is incomplete; repair it with the installer.	Slide의 MSI 등록이 완전하지 않습니다. 설치 프로그램으로 복구하세요.
+	No Slide folder.	Slide 폴더가 없습니다.
+	The portable update contains the wrong Slide version.	포터블 업데이트의 Slide 버전이 맞지 않습니다.
+	The MSI completed without installing the expected Slide version. See the update log.	MSI가 끝났지만 예상한 Slide 버전이 설치되지 않았습니다. 업데이트 로그를 확인하세요.
+	A macOS update cannot install on Windows.	macOS용 업데이트는 Windows에 설치할 수 없습니다.
+	No Windows system directory.	Windows 시스템 폴더가 없습니다.
+	The update was not signed by Slide's release key.	Slide 릴리스 키로 서명된 업데이트가 아닙니다.
+	Non-UTF8 update filename.	업데이트 파일 이름이 UTF-8이 아닙니다.

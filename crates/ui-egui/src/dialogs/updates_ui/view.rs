@@ -2,6 +2,7 @@
 //! The notice once an update has installed is the app's toast.
 use super::{Phase, Runtime, VERSION};
 use crate::APP_NAME;
+use crate::i18n::{fmt, t};
 use crate::icons::{self, Icon};
 use crate::theme::{self, Tokens};
 use egui::{Align, Align2, RichText, Sense, Stroke, vec2};
@@ -28,10 +29,12 @@ fn badge(ui: &mut egui::Ui, size: f32) {
 fn progress(ui: &mut egui::Ui, phase: &Phase) {
     let t = Tokens::get(ui.ctx());
     let (title, fraction, subtitle) = match phase {
-        Phase::Checking => ("Checking for updates", None, "Looking for a new version".to_string()),
-        Phase::Downloading { reconnecting: true, .. } => ("Downloading the update", None, "Trying to connect again".to_string()),
-        Phase::Downloading { total: 0, .. } => ("Preparing the update download", None, "You can keep working".to_string()),
-        Phase::Downloading { done, total, .. } if done >= total => ("Verifying the update", None, "Checking the downloaded file".to_string()),
+        Phase::Checking => ("Checking for updates", None, crate::i18n::t("Looking for a new version").to_string()),
+        Phase::Downloading { reconnecting: true, .. } => ("Downloading the update", None, crate::i18n::t("Trying to connect again").to_string()),
+        Phase::Downloading { total: 0, .. } => ("Preparing the update download", None, crate::i18n::t("You can keep working").to_string()),
+        Phase::Downloading { done, total, .. } if done >= total => {
+            ("Verifying the update", None, crate::i18n::t("Checking the downloaded file").to_string())
+        }
         Phase::Downloading { done, total, .. } => (
             "Downloading the update",
             Some((*done as f64 / *total as f64).clamp(0.0, 1.0) as f32),
@@ -41,7 +44,7 @@ fn progress(ui: &mut egui::Ui, phase: &Phase) {
     };
     ui.horizontal(|ui| {
         ui.add(egui::Spinner::new().size(16.0).color(t.accent));
-        ui.label(RichText::new(title).strong().color(t.text));
+        ui.label(RichText::new(crate::i18n::t(title)).strong().color(t.text));
         if let Some(fraction) = fraction {
             ui.with_layout(egui::Layout::right_to_left(Align::Center), |ui| {
                 // Never 100 % while the file is still being checked.
@@ -72,7 +75,11 @@ fn corner(rt: &mut Runtime, ctx: &egui::Context) {
                     let t = Tokens::get(ctx);
                     ui.horizontal(|ui| {
                         badge(ui, 28.0);
-                        if ui.button(RichText::new("Update ready").color(t.text)).on_hover_text("Open the restart options").clicked() {
+                        if ui
+                            .button(RichText::new(crate::i18n::t("Update ready")).color(t.text))
+                            .on_hover_text(crate::i18n::t("Open the restart options"))
+                            .clicked()
+                        {
                             rt.visible = true;
                         }
                     });
@@ -94,26 +101,29 @@ fn restart_prompt(rt: &mut Runtime, ctx: &egui::Context, version: &str, response
             badge(ui, 48.0);
             ui.add_space(6.0);
             ui.vertical(|ui| {
-                ui.label(RichText::new("Update ready to install").font(theme::bold(20.0)).color(t.text));
+                ui.label(RichText::new(crate::i18n::t("Update ready to install")).font(theme::bold(20.0)).color(t.text));
                 ui.label(RichText::new(format!("{APP_NAME} {VERSION}  →  {version}")).color(t.text_dim));
             });
         });
         ui.add_space(18.0);
-        ui.label(RichText::new(format!("The new version is ready.\nRestart {APP_NAME} now?")).color(t.text));
+        ui.label(RichText::new(fmt(crate::i18n::t("The new version is ready.\nRestart {app} now?"), &[("app", APP_NAME)])).color(t.text));
         ui.add_space(12.0);
         egui::Frame::NONE.fill(t.selected).corner_radius(8).inner_margin(12).show(ui, |ui| {
             ui.set_width(ui.available_width());
             ui.label(
-                RichText::new("Presentations with unsaved changes are asked about first,\nand the open files open again after the restart.")
-                    .small()
-                    .color(t.text),
+                RichText::new(crate::i18n::t(
+                    "Presentations with unsaved changes are asked about first,\nand the open files open again after the restart.",
+                ))
+                .small()
+                .color(t.text),
             );
         });
         ui.add_space(20.0);
         ui.with_layout(egui::Layout::right_to_left(Align::Center), |ui| {
-            let restart = egui::Button::new(RichText::new("Restart to Update").strong().color(t.accent_text)).fill(t.accent).corner_radius(7);
+            let restart =
+                egui::Button::new(RichText::new(crate::i18n::t("Restart to Update")).strong().color(t.accent_text)).fill(t.accent).corner_radius(7);
             response.restart = ui.add_sized(vec2(178.0, 36.0), restart).clicked();
-            later = ui.add_sized(vec2(84.0, 36.0), egui::Button::new("Later").corner_radius(7)).clicked();
+            later = ui.add_sized(vec2(84.0, 36.0), egui::Button::new(crate::i18n::t("Later")).corner_radius(7)).clicked();
         });
     });
     response.modal = true;
@@ -125,7 +135,7 @@ fn restart_prompt(rt: &mut Runtime, ctx: &egui::Context, version: &str, response
 /// Help ▸ Check for Updates, a release this copy can't install, or a failure asked about.
 fn update_window(rt: &mut Runtime, ctx: &egui::Context, response: &mut Response) {
     let mut open = true;
-    egui::Window::new(format!("{APP_NAME} Update"))
+    egui::Window::new(fmt(t("{app} Update"), &[("app", APP_NAME)]))
         .id(egui::Id::unique("slide.update.window"))
         .collapsible(false)
         .resizable(false)
@@ -134,26 +144,26 @@ fn update_window(rt: &mut Runtime, ctx: &egui::Context, response: &mut Response)
             ui.set_max_width(440.0);
             match &rt.phase {
                 Phase::Idle => {
-                    ui.label("You can check for updates.");
+                    ui.label(t("You can check for updates."));
                 }
                 Phase::Checking | Phase::Downloading { .. } => progress(ui, &rt.phase),
                 Phase::Current => {
-                    ui.label(format!("{APP_NAME} {VERSION} is up to date."));
+                    ui.label(fmt(t("{app} {version} is up to date."), &[("app", APP_NAME), ("version", VERSION)]));
                 }
                 Phase::Manual { version, reason } => {
-                    ui.label(format!("{APP_NAME} {version} is available."));
-                    ui.label(reason);
-                    response.releases = ui.button("Get the installer from the releases page").clicked();
+                    ui.label(fmt(t("{app} {version} is available."), &[("app", APP_NAME), ("version", version)]));
+                    ui.label(t(reason));
+                    response.releases = ui.button(t("Get the installer from the releases page")).clicked();
                 }
                 Phase::Failed(reason) => {
-                    ui.label("Couldn't prepare the update.");
-                    ui.label(reason);
-                    rt.manual |= ui.button("Try Again").clicked();
-                    response.releases = ui.button("Download from the releases page").clicked();
+                    ui.label(t("Couldn't prepare the update."));
+                    ui.label(t(reason));
+                    rt.manual |= ui.button(t("Try Again")).clicked();
+                    response.releases = ui.button(t("Download from the releases page")).clicked();
                 }
                 Phase::Ready(_) => {}
             }
-            if ui.button("Close").clicked() {
+            if ui.button(t("Close")).clicked() {
                 rt.visible = false;
             }
         });
@@ -165,15 +175,15 @@ fn install_failed(rt: &mut Runtime, ctx: &egui::Context) {
     let Some(reason) = &rt.install_failed else { return };
     let mut open = true;
     let mut close = false;
-    egui::Window::new(format!("{APP_NAME} Update"))
+    egui::Window::new(fmt(t("{app} Update"), &[("app", APP_NAME)]))
         .id(egui::Id::unique("slide.update.failed"))
         .collapsible(false)
         .resizable(false)
         .open(&mut open)
         .show(ctx, |ui| {
             ui.set_max_width(440.0);
-            ui.label(format!("Couldn't install the update. {reason}"));
-            close = ui.button("Close").clicked();
+            ui.label(fmt(t("Couldn't install the update. {reason}"), &[("reason", t(reason))]));
+            close = ui.button(t("Close")).clicked();
         });
     if close || !open {
         rt.install_failed = None;

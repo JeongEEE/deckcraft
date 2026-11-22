@@ -389,3 +389,40 @@ fn the_restart_prompt_keeps_keys_from_the_slide_and_escape_only_puts_it_off() {
     assert!(!h.state().updates_rt.restart_requested);
     assert!(!h.state().update_prompt_open());
 }
+
+/// [`update_harness`] for Korean text: a build without craft-fonts has no Hangul face, so
+/// missing glyphs draw as boxes (the test checks names, not glyphs).
+fn korean_update_harness(a: SlideApp) -> egui_kittest::Harness<'static, SlideApp> {
+    egui_kittest::Harness::builder()
+        .with_size(egui::vec2(800.0, 480.0))
+        .with_step_dt(1.0 / 60.0)
+        .with_context_setup(crate::theme::install_fonts)
+        .allow_missing_glyphs()
+        .build_ui_state(|ui, a| super::show(a, ui.ctx()), a)
+}
+
+#[test]
+fn the_update_prompt_and_window_are_korean() {
+    use crate::i18n::{resolve, set_current, t};
+    set_current(resolve("ko"));
+    let mut a = app();
+    ready(&mut a);
+    let mut h = korean_update_harness(a);
+    h.run_steps(3);
+    for en in ["Update ready to install", "Restart to Update", "Later"] {
+        assert_ne!(t(en), en, "{en:?} has a Korean row");
+        assert!(h.query_by_label(t(en)).is_some(), "the prompt shows {:?}", t(en));
+        assert!(h.query_by_label(en).is_none(), "no English {en:?}");
+    }
+    let mut a = app();
+    a.updates_rt.requested = true;
+    fail(&mut a.updates_rt, "Slide's update worker disconnected.".into());
+    let mut h = korean_update_harness(a);
+    h.run_steps(3);
+    for en in ["Couldn't prepare the update.", "Slide's update worker disconnected.", "Try Again", "Close"] {
+        assert_ne!(t(en), en, "{en:?} has a Korean row");
+        assert!(h.query_by_label(t(en)).is_some(), "the window shows {:?}", t(en));
+    }
+    assert!(h.query_by_label("Slide 업데이트").is_some(), "the window title keeps the app name");
+    set_current(craft_i18n::Lang::EN);
+}
